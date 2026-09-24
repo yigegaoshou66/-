@@ -2,73 +2,80 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>闲管家 · 订单管理助手</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        .top-bar { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; background: #eef4ff; padding: 15px; border-radius: 6px; }
-        .top-bar label { font-weight: bold; color: #0056b3; }
-        .top-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        .page-btn { background-color: #6c757d; padding: 5px 10px; font-size: 12px; }
-        .page-btn:hover { background-color: #5a6268; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
-        th { background-color: #f8f9fa; white-space: nowrap; }
-        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .status-11 { background-color: #fff3cd; color: #856404; } /* 待付款 */
-        .status-12 { background-color: #cce5ff; color: #004085; } /* 待发货 */
-        .status-21 { background-color: #d4edda; color: #155724; } /* 已发货 */
-        .status-22 { background-color: #d1ecf1; color: #0c5460; } /* 已完成 */
-        .status-23, .status-24 { background-color: #f8d7da; color: #721c24; } /* 已退款/已关闭 */
-        .status-msg { margin-top: 10px; color: #555; font-weight: bold; }
-        .pagination { margin-top: 15px; text-align: right; }
-        .action-btn { padding: 4px 8px; font-size: 12px; background-color: #17a2b8; margin-right: 3px; }
-        .action-btn:hover { background-color: #138496; }
-        .item-info { font-size: 12px; color: #666; margin-top: 4px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 15px; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); background-attachment: fixed; margin: 0; color: #1c1c1e;
+        }
+        .container { 
+            max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.45); 
+            backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); padding: 20px;
+        }
+        h1 { color: #1c1c1e; text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+        .top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; background: rgba(255, 255, 255, 0.3); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.4); }
+        .top-bar label { font-weight: bold; color: #333; font-size: 13px; }
+        .top-bar select { padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.5); border-radius: 10px; font-size: 13px; outline: none; }
+        button { padding: 10px 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; background: rgba(0, 122, 255, 0.85); backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); }
+        button:hover { transform: scale(1.02); background: rgba(0, 122, 255, 1); }
+        button:disabled { background-color: #ccc; box-shadow: none; }
+        .page-btn { background: rgba(108, 117, 125, 0.8); padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+        
+        /* 表格容器 - 移动端横向滑动 */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); padding: 4px; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th, td { padding: 12px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        th { background: rgba(255, 255, 255, 0.4); font-weight: 600; color: #333; white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .status-11 { background-color: #fff3cd; color: #856404; }
+        .status-12 { background-color: #cce5ff; color: #004085; }
+        .status-21 { background-color: #d4edda; color: #155724; }
+        .status-22 { background-color: #d1ecf1; color: #0c5460; }
+        .status-23, .status-24 { background-color: #f8d7da; color: #721c24; }
+        .status-msg { margin-top: 10px; color: #333; font-weight: bold; font-size: 13px; }
+        .pagination { margin-top: 15px; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+        .action-btn { padding: 6px 10px; font-size: 12px; background: rgba(23, 162, 184, 0.8); margin-right: 3px; border-radius: 8px; }
+        .item-info { font-size: 11px; color: #666; margin-top: 2px; }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            h1 { font-size: 20px; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .top-bar select { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>闲管家 · 订单管理助手</h1>
-    
     <div class="top-bar">
-        <label>📦 订单状态筛选：</label>
+        <label>📦 状态筛选：</label>
         <select id="statusFilter">
-            <option value="">全部订单</option>
-            <option value="11">待付款</option>
-            <option value="12">待发货</option>
-            <option value="21">已发货</option>
-            <option value="22">已完成</option>
-            <option value="23">已退款</option>
-            <option value="24">已关闭</option>
+            <option value="">全部订单</option><option value="11">待付款</option><option value="12">待发货</option><option value="21">已发货</option><option value="22">已完成</option><option value="23">已退款</option><option value="24">已关闭</option>
         </select>
-        <button onclick="loadOrders(1)">刷新订单列表</button>
+        <button onclick="loadOrders(1)">刷新订单</button>
     </div>
 
     <div id="statusMsg" class="status-msg">正在加载订单列表...</div>
 
-    <table id="orderTable">
-        <thead>
-            <tr>
-                <th>订单号 (order_no)</th>
-                <th>买家昵称</th>
-                <th>商品标题 / 规格</th>
-                <th>订单金额 (元)</th>
-                <th>订单状态</th>
-                <th>下单时间</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div class="table-wrapper">
+        <table id="orderTable">
+            <thead>
+                <tr><th>订单号</th><th>买家昵称</th><th>商品标题 / 规格</th><th>金额 (元)</th><th>状态</th><th>下单时间</th><th>操作</th></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 
     <div class="pagination">
-        <span id="pageInfo" style="margin-right: 10px; font-size: 14px;"></span>
+        <span id="pageInfo" style="font-size: 12px; color:#333;"></span>
         <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
         <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
     </div>
@@ -76,125 +83,60 @@
 
 <script>
     const WORKER_URL = "https://xian-guanjia-worker.1113630283.workers.dev";
-
     let currentPage = 1;
     const pageSize = 20; 
-
     const tableBody = document.getElementById('tableBody');
     const statusMsg = document.getElementById('statusMsg');
     const statusFilter = document.getElementById('statusFilter');
     const pageInfo = document.getElementById('pageInfo');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const statusMap = { 11: "待付款", 12: "待发货", 21: "已发货", 22: "已完成", 23: "已退款", 24: "已关闭" };
 
-    const statusMap = {
-        11: "待付款", 12: "待发货", 21: "已发货",
-        22: "已完成", 23: "已退款", 24: "已关闭"
-    };
-
-    // 1. 加载订单列表
     async function loadOrders(pageNo = 1) {
         currentPage = pageNo;
         statusMsg.innerText = "正在加载订单列表...";
         tableBody.innerHTML = "";
         pageInfo.innerText = `第 ${currentPage} 页`;
-
-        const bodyParams = {
-            page_no: currentPage,
-            page_size: pageSize
-        };
-
+        const bodyParams = { page_no: currentPage, page_size: pageSize };
         const selectedStatus = statusFilter.value;
-        if (selectedStatus) {
-            bodyParams.order_status = parseInt(selectedStatus);
-        }
-
-        const requestData = {
-            path: "/api/open/order/list",
-            body: bodyParams
-        };
+        if (selectedStatus) bodyParams.order_status = parseInt(selectedStatus);
 
         try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/order/list", body: bodyParams }) });
             const result = await response.json();
-            
             if (result.code === 0) {
-                // ⚠️ 适配真实返回结构：订单在 result.data.list 里
                 const orders = result.data.list || [];
-                
-                if (orders.length === 0) {
-                    statusMsg.innerText = "暂无订单数据。";
-                } else {
+                if (orders.length === 0) statusMsg.innerText = "暂无订单数据。";
+                else {
                     statusMsg.innerText = `成功加载 ${orders.length} 条订单。`;
-                    renderOrderList(orders);
+                    orders.forEach(order => {
+                        const tr = document.createElement('tr');
+                        const goods = order.goods || {};
+                        const priceInYuan = (order.total_amount / 100).toFixed(2); 
+                        const status = order.order_status;
+                        const timeStamp = order.create_time || order.order_time;
+                        const timeStr = timeStamp ? new Date(timeStamp * 1000).toLocaleString('zh-CN') : '未知时间';
+                        tr.innerHTML = `
+                            <td>${order.order_no}</td>
+                            <td>${order.buyer_nick}</td>
+                            <td><div>${goods.title || '未知商品'}</div><div class="item-info">规格：${goods.sku_text || ''}</div></td>
+                            <td><b>${priceInYuan} 元</b></td>
+                            <td><span class="status-badge status-${status}">${statusMap[status] || '未知'}</span></td>
+                            <td>${timeStr}</td>
+                            <td><button class="action-btn" onclick="alert('改价功能开发中')">改价</button><button class="action-btn" onclick="alert('发货功能开发中')">发货</button></td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
                 }
-                
                 prevBtn.disabled = (currentPage <= 1);
                 nextBtn.disabled = (orders.length < pageSize); 
-            } else {
-                statusMsg.innerText = "加载失败：" + result.msg;
-            }
-        } catch (error) {
-            statusMsg.innerText = "请求出错：" + error.message;
-        }
+            } else statusMsg.innerText = "加载失败：" + result.msg;
+        } catch (error) { statusMsg.innerText = "请求出错：" + error.message; }
     }
 
-    // 2. 渲染订单列表（已适配真实 JSON 字段）
-    function renderOrderList(orders) {
-        orders.forEach(order => {
-            const tr = document.createElement('tr');
-            
-            // 根据真实 JSON 提取数据
-            const orderNo = order.order_no;
-            const buyerNick = order.buyer_nick;
-            // 商品信息嵌套在 goods 对象里
-            const goods = order.goods || {};
-            const title = goods.title || '未知商品';
-            const skuText = goods.sku_text || '';
-            
-            // 金额单位是“分”，除以100转为“元”
-            const priceInYuan = (order.total_amount / 100).toFixed(2); 
-            const status = order.order_status;
-            const statusText = statusMap[status] || `未知(${status})`;
-            const statusClass = `status-${status}`;
-            
-            // 时间转换 (基于 create_time 或 order_time)
-            const timeStamp = order.create_time || order.order_time;
-            const timeStr = timeStamp ? new Date(timeStamp * 1000).toLocaleString('zh-CN') : '未知时间';
-
-            tr.innerHTML = `
-                <td>${orderNo}</td>
-                <td>${buyerNick}</td>
-                <td>
-                    <div>${title}</div>
-                    <div class="item-info">规格：${skuText}</div>
-                </td>
-                <td><b>${priceInYuan} 元</b></td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                <td>${timeStr}</td>
-                <td>
-                    <button class="action-btn" onclick="alert('改价功能尚未接入接口，等待下一步开发！')">改价</button>
-                    <button class="action-btn" onclick="alert('发货功能尚未接入接口，等待下一步开发！')">发货</button>
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
-    }
-
-    function changePage(delta) {
-        const newPage = currentPage + delta;
-        if (newPage < 1) return;
-        loadOrders(newPage);
-    }
-
-    statusFilter.addEventListener('change', () => {
-        loadOrders(1);
-    });
-
+    function changePage(delta) { const newPage = currentPage + delta; if (newPage < 1) return; loadOrders(newPage); }
+    statusFilter.addEventListener('change', () => { loadOrders(1); });
     loadOrders(1);
 </script>
 </body>
