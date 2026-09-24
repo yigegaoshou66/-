@@ -8,7 +8,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 12px; 
+            padding: 8px; 
             background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
             background-attachment: fixed;
             margin: 0; color: #1c1c1e;
@@ -42,81 +42,180 @@
         .container { 
             max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.6); 
             backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 20px; 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); padding: 15px;
-            display: none; /* 默认隐藏，密码正确后显示 */
+            border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); padding: 10px;
+            display: none; 
         }
-        h1 { color: #1c1c1e; text-align: center; margin-bottom: 10px; font-size: 20px; font-weight: 800; }
+        h1 { color: #1c1c1e; text-align: center; margin-bottom: 12px; font-size: 18px; font-weight: 800; }
 
-        /* 退出按钮 */
         .logout-btn { text-align: right; margin-bottom: 5px; }
         .logout-btn button { width: auto; padding: 6px 12px; font-size: 12px; background: #6c757d; margin-bottom: 0; }
 
-        /* 入口按钮 */
-        .entry-links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .entry-links { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
         .entry-links a { 
-            text-align: center; text-decoration: none; padding: 14px; border-radius: 14px; 
-            color: #fff; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center; text-decoration: none; padding: 12px; border-radius: 12px; 
+            color: #fff; font-weight: bold; font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .entry-order { background: linear-gradient(135deg, #17a2b8, #0f6674); }
         .entry-kami { background: linear-gradient(135deg, #6f42c1, #462688); }
 
-        .top-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.4); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.6); }
-        .top-bar label { font-weight: bold; color: #333; font-size: 13px; }
-        .top-bar input { padding: 10px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); border-radius: 10px; font-size: 16px; outline: none; width: 100%; }
+        .top-bar { display: flex; flex-direction: row; align-items: center; gap: 8px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.5); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.6); }
+        .top-bar label { display: none; } /* 手机端隐藏标签 */
+        .top-bar input { padding: 8px 12px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); border-radius: 8px; font-size: 14px; outline: none; width: 100%; }
         
         button { 
-            padding: 12px 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; 
-            background: #007bff; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); transition: 0.2s; width: 100%; margin-bottom: 10px;
+            padding: 10px 14px; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; 
+            background: #007bff; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); transition: 0.2s; width: 100%; margin-bottom: 8px;
         }
         button:active { transform: scale(0.98); }
         .btn-publish { background: #17a2b8; }
         .btn-down { background: #dc3545; }
-        .btn-save { background: #28a745; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
+        .btn-save { background: #28a745; padding: 6px 10px; font-size: 12px; width: auto; margin-bottom: 0; }
         
-        /* 表格卡片化布局 */
+        /* ================= 📱 手机端卡片化布局（紧凑） ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
-        tr { display: block; background: rgba(255, 255, 255, 0.8); border-radius: 16px; margin-bottom: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.9); }
-        td { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px dashed rgba(0,0,0,0.05); font-size: 13px; text-align: right; color: #1c1c1e; }
-        td:last-child { border-bottom: none; padding-bottom: 0; }
-        td::before { content: attr(data-label); font-weight: bold; color: #666; text-align: left; margin-right: 10px; flex-shrink: 0; }
         
-        .input-box { width: 80px; padding: 6px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; text-align: center; }
-        .status-msg { margin-top: 10px; color: #333; font-weight: bold; font-size: 13px; }
+        tr { 
+            display: flex; flex-wrap: wrap; 
+            background: #fff; border-radius: 12px; 
+            margin-bottom: 8px; padding: 12px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); 
+        }
+        
+        td { 
+            display: flex; align-items: center; 
+            padding: 2px 0; border: none; 
+            font-size: 12px; text-align: left; color: #1c1c1e; 
+            flex: 0 0 auto; margin-right: 12px; 
+        }
+        td::before { content: attr(data-label); font-weight: normal; color: #888; margin-right: 4px; flex-shrink: 0; }
+        
+        td[data-label="标题"], td[data-label="商品ID"], td[data-label="操作"] { 
+            flex: 0 0 100%; width: 100%; margin-right: 0;
+        }
+        
+        td[data-label="标题"] { font-size: 14px; font-weight: bold; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid #f0f0f0; }
+        td[data-label="标题"]::before { display: none; }
+        td[data-label="商品ID"] { font-size: 10px; color: #aaa; padding-bottom: 2px; }
+        td[data-label="商品ID"]::before { font-size: 10px; }
+        
+        td[data-label="价格"]::before { content: "价:"; }
+        td[data-label="库存"]::before { content: "存:"; }
+        td[data-label="状态"]::before { display: none; }
+        
+        td[data-label="操作"] { 
+            margin-top: 8px; padding-top: 8px; 
+            border-top: 1px dashed #e5e5e5; 
+            justify-content: flex-start; gap: 6px; flex-wrap: wrap;
+        }
+        td[data-label="操作"]::before { display: none; }
+        td[data-label="操作"] button { padding: 6px 10px; font-size: 12px; margin: 0; box-shadow: none; border-radius: 6px; width: auto; }
+        
+        /* SKU 展开行 */
+        tr.sku-row {
+            display: flex; flex-wrap: wrap;
+            background: #f8f9fa; border-radius: 8px;
+            margin-top: -4px; margin-bottom: 8px;
+            margin-left: 10px; 
+            padding: 8px 10px;
+            box-shadow: none;
+            border: 1px solid #e9ecef; border-left: 3px solid #007bff;
+        }
+        tr.sku-row td { font-size: 12px; padding: 2px 0; margin-right: 8px; }
+        tr.sku-row td::before { width: auto; margin-right: 4px; }
+        
+        tr.sku-row td[data-label="SKU_ID"] { font-size: 10px; color: #999; width: 100%; margin-bottom: 2px; }
+        tr.sku-row td[data-label="SKU_ID"]::before { display: none; }
+        tr.sku-row td[data-label="规格"] { font-weight: bold; width: 100%; margin-bottom: 4px; }
+        tr.sku-row td[data-label="规格"]::before { display: none; }
+        
+        tr.sku-row td[data-label="价格"], tr.sku-row td[data-label="库存"] { margin-right: 8px; }
+        tr.sku-row .input-box { width: 55px; padding: 4px; font-size: 12px; text-align: center; margin: 0 2px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        tr.sku-row td[data-label="操作"] { width: 100%; margin-top: 4px; padding-top: 4px; border-top: none; justify-content: flex-end; }
         
         /* 状态标签 */
-        .badge-on { background: #28a745; color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
-        .badge-off { background: #dc3545; color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
-        .badge-sold { background: #6c757d; color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
-        .badge-unknown { background: #ffc107; color: #333; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        .badge-on { background: #28a745; color: white; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-off { background: #dc3545; color: white; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-sold { background: #6c757d; color: white; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-unknown { background: #ffc107; color: #333; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
 
-        /* ================= 💻 电脑端专属优化 ================= */
+        .status-msg { margin-top: 8px; color: #333; font-weight: bold; font-size: 12px; }
+
+        /* ================= 💻 电脑端专属优化（彻底还原表格） ================= */
         @media (min-width: 768px) {
-            /* 1. 入口链接并排显示 */
-            .entry-links { flex-direction: row; }
+            body { padding: 12px; }
+            .container { padding: 15px; border-radius: 20px; }
+            h1 { font-size: 20px; margin-bottom: 10px; }
             
-            /* 2. 顶部工具栏横向排列 */
-            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; }
-            .top-bar label { white-space: nowrap; }
-            .top-bar input { flex: 1; min-width: 150px; width: auto; }
-            .top-bar button { width: auto; margin-bottom: 0; }
+            .entry-links { flex-direction: row; gap: 10px; margin-bottom: 15px; }
+            .entry-links a { padding: 14px; font-size: 15px; border-radius: 14px; }
+
+            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 12px; }
+            .top-bar label { display: block; white-space: nowrap; }
+            .top-bar input { flex: 1; min-width: 150px; width: auto; padding: 10px; font-size: 16px; border-radius: 10px; }
+            .top-bar button { width: auto; margin-bottom: 0; padding: 12px 18px; font-size: 14px; }
             
-            /* 3. 表格还原成真正的表格 */
+            /* 强制清理手机端所有 Flex 属性，回归经典 Table */
             .table-wrapper { overflow-x: auto; }
-            table { display: table; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-            thead { display: table-header-group; background: rgba(0,0,0,0.03); }
-            thead tr { display: table-row; background: none; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; }
-            thead th { display: table-cell; padding: 12px; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
-            tbody tr { display: table-row; background: transparent; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
-            tbody tr:hover { background: rgba(255, 255, 255, 0.5); }
-            tbody td { display: table-cell; padding: 12px; text-align: left; border: none; vertical-align: middle; }
-            tbody td::before { display: none; } /* 隐藏手机端的标签 */
+            table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-collapse: collapse; }
+            thead { display: table-header-group !important; background: rgba(0,0,0,0.03); }
+            thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
+            thead th { display: table-cell !important; padding: 12px !important; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            
+            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
+            tbody tr:hover { background: rgba(255, 255, 255, 0.5) !important; }
+            tbody td { display: table-cell !important; padding: 12px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 13px; }
+            tbody td::before { display: none !important; }
+            
+            /* 强制清理特殊单元格在手机端的设定 */
+            tbody td[data-label="标题"], tbody td[data-label="商品ID"], tbody td[data-label="操作"] {
+                width: auto !important; margin: 0 !important; border: none !important; padding: 12px !important;
+            }
+            tbody td[data-label="标题"] { font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
             
             /* 操作栏按钮自适应 */
-            td[data-label="操作"] { display: table-cell; }
-            td[data-label="操作"] button { width: auto; margin-bottom: 0; }
+            td[data-label="操作"] { display: table-cell !important; }
+            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0 !important; padding: 6px 10px !important; font-size: 12px !important; }
+
+            /* SKU 展开行彻底重置 */
+            tr.sku-row { 
+                display: table-row !important; 
+                background: #fafafa !important; 
+                border-radius: 0 !important; 
+                margin: 0 !important; 
+                box-shadow: none !important; 
+                border: none !important; 
+                border-left: none !important;
+            }
+            tr.sku-row td { 
+                display: table-cell !important; 
+                padding: 12px !important; 
+                font-size: 13px !important; 
+                width: auto !important; 
+                margin: 0 !important; 
+                border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+            }
+            tr.sku-row td[data-label="SKU_ID"], tr.sku-row td[data-label="规格"] { 
+                font-weight: normal !important; 
+                font-size: 13px !important; 
+                color: #1c1c1e !important; 
+            }
+            tr.sku-row .input-box { 
+                width: 80px !important; 
+                padding: 6px !important; 
+                font-size: 14px !important; 
+                border-radius: 8px !important; 
+            }
+            tr.sku-row td[data-label="操作"] { 
+                justify-content: flex-start !important; 
+                width: auto !important; 
+                margin: 0 !important; 
+                padding: 12px !important; 
+                border-top: none !important; 
+            }
         }
     </style>
 </head>
