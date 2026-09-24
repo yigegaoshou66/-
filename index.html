@@ -2,198 +2,332 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>闲管家 · 库存管理助手</title>
+    <title>闲管家 · 综合管理助手</title>
     <style>
+        /* 全局基础样式 */
         body { font-family: sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 10px; }
+
+        /* 顶层入口链接区 */
+        .entry-links { text-align: right; margin-bottom: 20px; }
+        .entry-links a { text-decoration: none; padding: 10px 20px; border-radius: 4px; color: white; font-weight: bold; margin-left: 10px; display: inline-block; transition: 0.2s; }
+        .entry-links a:hover { opacity: 0.8; }
+        .entry-order { background-color: #17a2b8; }
+        .entry-kami { background-color: #6f42c1; }
+
+        /* 导航栏样式 */
+        .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .nav-tabs button { background: none; border: none; color: #666; font-size: 16px; font-weight: bold; padding: 10px 20px; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-tabs button.active { color: #007bff; border-bottom-color: #007bff; }
+
+        .top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; background: #eef4ff; padding: 15px; border-radius: 6px; }
+        .top-bar label { font-weight: bold; color: #0056b3; font-size: 14px; }
+        .top-bar input, .top-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
         button:hover { background-color: #0056b3; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f8f9fa; }
-        .sku-row { background-color: #f9f9f9; }
-        .stock-input { width: 80px; padding: 5px; }
-        .save-btn { padding: 5px 10px; background-color: #28a745; font-size: 12px; }
-        .save-btn:hover { background-color: #218838; }
-        .status-msg { margin-top: 10px; color: green; font-weight: bold; }
+        .btn-publish { background-color: #17a2b8; }
+        .btn-down { background-color: #dc3545; }
+        .btn-save { background-color: #28a745; font-size: 12px; padding: 5px 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+        th { background-color: #f8f9fa; white-space: nowrap; }
+        .input-box { width: 70px; padding: 5px; margin-right: 5px; }
+        .status-msg { margin-top: 10px; color: #555; font-weight: bold; }
+        
+        /* 订单状态颜色 */
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-11 { background-color: #fff3cd; color: #856404; }
+        .status-12 { background-color: #cce5ff; color: #004085; }
+        .status-21 { background-color: #d4edda; color: #155724; }
+        .status-22 { background-color: #d1ecf1; color: #0c5460; }
+        .status-23, .status-24 { background-color: #f8d7da; color: #721c24; }
+        
+        /* 分页 */
+        .pagination { margin-top: 15px; text-align: right; }
+        .page-btn { background-color: #6c757d; padding: 5px 10px; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>闲管家 · 库存管理助手</h1>
-    <button onclick="loadProducts()">刷新商品列表</button>
-    <div id="statusMsg" class="status-msg">正在加载商品列表...</div>
+    <h1>闲管家 · 综合管理助手</h1>
 
-    <table id="productTable">
-        <thead>
-            <tr>
-                <th>商品ID (product_id)</th>
-                <th>商品标题 / 规格</th>
-                <th>当前库存</th>
-                <th>修改库存</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <!-- 🟢 新增：独立页面的跳转入口 -->
+    <div class="entry-links">
+        <a href="orders.html" class="entry-order">📋 打开独立订单页</a>
+        <a href="kami.html" class="entry-kami">🎫 打开卡密管理页</a>
+    </div>
+
+    <!-- 导航栏（当前页面的商品与订单标签） -->
+    <div class="nav-tabs">
+        <button id="tab-product" class="active" onclick="switchTab('product')">📦 商品管理</button>
+        <button id="tab-order" onclick="switchTab('order')">📋 订单管理 (本页)</button>
+    </div>
+
+    <!-- ==================== 商品管理页面 ==================== -->
+    <div id="product-page">
+        <div class="top-bar">
+            <label>🏪 当前店铺（闲鱼会员名）：</label>
+            <input type="text" id="userNameInput" value="一个游戏高手" placeholder="请输入你的闲鱼会员名">
+            <span style="font-size: 12px; color: #666;">（上架商品必须传此项，请核对你的店铺名）</span>
+        </div>
+        <button onclick="loadProducts()">刷新商品列表</button>
+        <div id="productStatusMsg" class="status-msg">正在加载商品列表...</div>
+
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th>商品ID</th>
+                    <th>商品标题</th>
+                    <th>价格 (元)</th>
+                    <th>库存</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 订单管理页面（当前页内） ==================== -->
+    <div id="order-page" style="display: none;">
+        <div class="top-bar">
+            <label>📦 订单状态筛选：</label>
+            <select id="orderStatusFilter">
+                <option value="">全部订单</option>
+                <option value="11">待付款</option>
+                <option value="12">待发货</option>
+                <option value="21">已发货</option>
+                <option value="22">已完成</option>
+                <option value="23">已退款</option>
+                <option value="24">已关闭</option>
+            </select>
+            <button onclick="loadOrders(1)">刷新订单列表</button>
+        </div>
+        <div id="orderStatusMsg" class="status-msg">正在加载订单列表...</div>
+
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>买家昵称</th>
+                    <th>商品标题 / 规格</th>
+                    <th>订单金额 (元)</th>
+                    <th>订单状态</th>
+                    <th>下单时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody"></tbody>
+        </table>
+
+        <div class="pagination">
+            <span id="orderPageInfo" style="margin-right: 10px; font-size: 14px;"></span>
+            <button class="page-btn" id="orderPrevBtn" onclick="changeOrderPage(-1)">上一页</button>
+            <button class="page-btn" id="orderNextBtn" onclick="changeOrderPage(1)">下一页</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    // ================= 配置区域 =================
-    // 你的 Cloudflare Worker 线上地址
+    // ================= 全局配置 =================
     const WORKER_URL = "https://xian-guanjia-worker.1113630283.workers.dev";
     // ============================================
 
-    const tableBody = document.getElementById('tableBody');
-    const statusMsg = document.getElementById('statusMsg');
+    const productTableBody = document.getElementById('productTableBody');
+    const productStatusMsg = document.getElementById('productStatusMsg');
+    const userNameInput = document.getElementById('userNameInput');
+    
+    const orderTableBody = document.getElementById('orderTableBody');
+    const orderStatusMsg = document.getElementById('orderStatusMsg');
+    const orderStatusFilter = document.getElementById('orderStatusFilter');
+    const orderPageInfo = document.getElementById('orderPageInfo');
+    const orderPrevBtn = document.getElementById('orderPrevBtn');
+    const orderNextBtn = document.getElementById('orderNextBtn');
 
-    // 1. 加载商品列表
+    let currentOrderPage = 1;
+    const orderPageSize = 20;
+    const orderStatusMap = { 11: "待付款", 12: "待发货", 21: "已发货", 22: "已完成", 23: "已退款", 24: "已关闭" };
+
+    // ================= 导航栏切换 =================
+    function switchTab(tabName) {
+        document.getElementById('tab-product').classList.remove('active');
+        document.getElementById('tab-order').classList.remove('active');
+        document.getElementById('product-page').style.display = 'none';
+        document.getElementById('order-page').style.display = 'none';
+
+        if (tabName === 'product') {
+            document.getElementById('tab-product').classList.add('active');
+            document.getElementById('product-page').style.display = 'block';
+        } else {
+            document.getElementById('tab-order').classList.add('active');
+            document.getElementById('order-page').style.display = 'block';
+            loadOrders(1); 
+        }
+    }
+
+    // ================= 商品管理逻辑 =================
     async function loadProducts() {
-        statusMsg.innerText = "正在加载商品列表...";
-        tableBody.innerHTML = "";
+        productStatusMsg.innerText = "正在加载商品列表...";
+        productTableBody.innerHTML = "";
 
-        const requestData = {
-            path: "/api/open/product/list",
-            body: { page: 1, page_size: 10 }
-        };
+        const requestData = { path: "/api/open/product/list", body: { page: 1, page_size: 10 } };
 
         try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
             const result = await response.json();
             
             if (result.code === 0) {
-                statusMsg.innerText = "加载成功！点击下方商品的【展开规格】即可修改库存。";
-                renderProductList(result.data.list);
-            } else {
-                statusMsg.innerText = "加载失败：" + result.msg;
-            }
-        } catch (error) {
-            statusMsg.innerText = "请求出错：" + error.message;
-        }
+                productStatusMsg.innerText = "加载成功！点击下方商品的【展开规格】即可修改价格和库存。";
+                result.data.list.forEach(product => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${product.product_id}</td>
+                        <td><b>${product.title || '无标题'}</b></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <button onclick="toggleSkuList(${product.product_id}, this)" data-expanded="false">展开规格</button>
+                            <button class="btn-publish" onclick="publishProduct(${product.product_id}, this)">上架</button>
+                            <button class="btn-down" onclick="downShelfProduct(${product.product_id}, this)">下架</button>
+                        </td>
+                    `;
+                    productTableBody.appendChild(tr);
+                });
+            } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
+        } catch (error) { productStatusMsg.innerText = "请求出错：" + error.message; }
     }
 
-    // 2. 渲染商品列表
-    function renderProductList(products) {
-        products.forEach(product => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${product.product_id}</td>
-                <td><b>${product.title || '无标题'}</b></td>
-                <td>-</td>
-                <td><button onclick="toggleSkuList(${product.product_id}, this)">展开规格</button></td>
-            `;
-            tableBody.appendChild(tr);
-        });
-    }
-
-    // 3. 展开/收起 SKU 列表（核心修改部分）
     async function toggleSkuList(productId, btn) {
         const mainRow = btn.closest('tr');
-
-        // 判断当前状态：如果是已展开状态，则执行收起逻辑
         if (btn.dataset.expanded === 'true') {
             let nextRow = mainRow.nextElementSibling;
-            // 循环删除下方所有带 sku-row 类的行
-            while (nextRow && nextRow.classList.contains('sku-row')) {
-                let rowToDelete = nextRow;
-                nextRow = nextRow.nextElementSibling; // 先拿到下一个，再删除当前
-                rowToDelete.remove();
-            }
-            // 恢复按钮状态
-            btn.innerText = "展开规格";
-            btn.dataset.expanded = "false";
-            return; 
+            while (nextRow && nextRow.classList.contains('sku-row')) { let rowToDelete = nextRow; nextRow = nextRow.nextElementSibling; rowToDelete.remove(); }
+            btn.innerText = "展开规格"; btn.dataset.expanded = "false"; return; 
         }
 
-        // 如果是收起状态，则执行展开逻辑
-        btn.innerText = "加载中...";
-        btn.disabled = true;
+        document.querySelectorAll('.sku-row').forEach(row => row.remove());
+        document.querySelectorAll('#productTableBody button').forEach(otherBtn => {
+            if (otherBtn.dataset.expanded === 'true') { otherBtn.innerText = "展开规格"; otherBtn.dataset.expanded = "false"; }
+        });
 
-        const requestData = {
-            path: "/api/open/product/detail",
-            body: { product_id: productId }
-        };
-
+        btn.innerText = "加载中..."; btn.disabled = true;
         try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
             const result = await response.json();
-
             if (result.code === 0 && result.data.sku_items) {
-                let lastInsertedRow = mainRow; // 记录上一个插入的行，用于按顺序插入
-
+                let lastInsertedRow = mainRow; 
                 result.data.sku_items.forEach(sku => {
                     const skuTr = document.createElement('tr');
                     skuTr.className = 'sku-row';
+                    const priceInYuan = (sku.price / 100).toFixed(2); 
                     skuTr.innerHTML = `
                         <td>└─ SKU_ID: ${sku.sku_id}</td>
                         <td>${sku.sku_text}</td>
-                        <td>${sku.stock}</td>
-                        <td>
-                            <input type="number" class="stock-input" id="stock_${sku.sku_id}" value="${sku.stock}">
-                            <button class="save-btn" onclick="updateStock(${productId}, ${sku.sku_id})">保存</button>
-                        </td>
+                        <td><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"> 元</td>
+                        <td><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"> 件</td>
+                        <td><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})">保存修改</button></td>
                     `;
-                    // 在上一行的后面插入，保证顺序正确
                     lastInsertedRow.parentNode.insertBefore(skuTr, lastInsertedRow.nextSibling);
-                    lastInsertedRow = skuTr; // 更新最后插入的行
+                    lastInsertedRow = skuTr; 
                 });
-                
-                btn.innerText = "收起规格";
-                btn.disabled = false;
-                btn.dataset.expanded = "true"; // 标记为已展开
-            } else {
-                alert("获取规格失败：" + (result.msg || "未知错误"));
-                btn.innerText = "重试";
-                btn.disabled = false;
-            }
-        } catch (error) {
-            alert("网络错误：" + error.message);
-            btn.innerText = "重试";
-            btn.disabled = false;
-        }
+                btn.innerText = "收起规格"; btn.disabled = false; btn.dataset.expanded = "true"; 
+            } else { alert("获取规格失败：" + (result.msg || "未知错误")); btn.innerText = "重试"; btn.disabled = false; }
+        } catch (error) { alert("网络错误：" + error.message); btn.innerText = "重试"; btn.disabled = false; }
     }
 
-    // 4. 修改库存
-    async function updateStock(productId, skuId) {
-        const newStock = document.getElementById(`stock_${skuId}`).value;
-        if (newStock === '') return alert("请输入库存数量");
+    async function updateSkuData(productId, skuId) {
+        const newStockStr = document.getElementById(`stock_${skuId}`).value;
+        const newPriceYuanStr = document.getElementById(`price_${skuId}`).value;
+        if (newStockStr === '' || newPriceYuanStr === '') return alert("请输入价格和库存");
+        const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100);
+        const newStock = parseInt(newStockStr);
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/edit/stock", body: { product_id: productId, sku_items: [ { sku_id: skuId, stock: newStock, price: newPriceFen } ] } }) });
+            const result = await response.json();
+            if (result.code === 0) alert("价格和库存修改成功！"); else alert("修改失败：" + result.msg);
+        } catch (error) { alert("请求出错：" + error.message); }
+    }
 
-        const requestData = {
-            path: "/api/open/product/edit/stock",
-            body: {
-                product_id: productId,
-                sku_items: [ { sku_id: skuId, stock: parseInt(newStock) } ]
-            }
-        };
+    async function publishProduct(productId, btn) {
+        const userName = userNameInput.value.trim();
+        if (!userName) return alert("请先在上方填写你的闲鱼会员名！");
+        if (!confirm(`确定要将商品 ${productId} 上架到店铺【${userName}】吗？`)) return;
+        btn.innerText = "上架中..."; btn.disabled = true;
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/publish", body: { product_id: productId, user_name: [userName] } }) });
+            const result = await response.json();
+            if (result.code === 0) alert("上架指令发送成功！"); else alert("上架失败：" + result.msg);
+        } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "上架"; btn.disabled = false; }
+    }
+
+    async function downShelfProduct(productId, btn) {
+        if (!confirm(`确定要将商品 ${productId} 下架吗？`)) return;
+        btn.innerText = "下架中..."; btn.disabled = true;
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: productId } }) });
+            const result = await response.json();
+            if (result.code === 0) alert("下架指令发送成功！"); else alert("下架失败：" + result.msg);
+        } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "下架"; btn.disabled = false; }
+    }
+
+    // ================= 订单管理逻辑 =================
+    async function loadOrders(pageNo = 1) {
+        currentOrderPage = pageNo;
+        orderStatusMsg.innerText = "正在加载订单列表...";
+        orderTableBody.innerHTML = "";
+        orderPageInfo.innerText = `第 ${currentOrderPage} 页`;
+
+        const bodyParams = { page_no: currentOrderPage, page_size: orderPageSize };
+        const selectedStatus = orderStatusFilter.value;
+        if (selectedStatus) bodyParams.order_status = parseInt(selectedStatus);
 
         try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/order/list", body: bodyParams }) });
             const result = await response.json();
-
+            
             if (result.code === 0) {
-                alert("修改成功！");
-            } else {
-                alert("修改失败：" + result.msg);
-            }
-        } catch (error) {
-            alert("请求出错：" + error.message);
-        }
+                const orders = result.data.list || [];
+                if (orders.length === 0) {
+                    orderStatusMsg.innerText = "暂无订单数据。";
+                } else {
+                    orderStatusMsg.innerText = `成功加载 ${orders.length} 条订单。`;
+                    orders.forEach(order => {
+                        const tr = document.createElement('tr');
+                        const goods = order.goods || {};
+                        const priceInYuan = (order.total_amount / 100).toFixed(2); 
+                        const statusText = orderStatusMap[order.order_status] || `未知(${order.order_status})`;
+                        const timeStr = order.create_time ? new Date(order.create_time * 1000).toLocaleString('zh-CN') : '未知时间';
+
+                        tr.innerHTML = `
+                            <td>${order.order_no}</td>
+                            <td>${order.buyer_nick}</td>
+                            <td><div>${goods.title || '未知商品'}</div><div style="font-size:12px; color:#666;">规格：${goods.sku_text || ''}</div></td>
+                            <td><b>${priceInYuan} 元</b></td>
+                            <td><span class="status-badge status-${order.order_status}">${statusText}</span></td>
+                            <td>${timeStr}</td>
+                            <td><button class="btn-edit" style="background-color: #ffc107; color: #333;" onclick="alert('改价功能暂未接入接口，等待下一步开发')">改价</button></td>
+                        `;
+                        orderTableBody.appendChild(tr);
+                    });
+                }
+                orderPrevBtn.disabled = (currentOrderPage <= 1);
+                orderNextBtn.disabled = (orders.length < orderPageSize); 
+            } else { orderStatusMsg.innerText = "加载失败：" + result.msg; }
+        } catch (error) { orderStatusMsg.innerText = "请求出错：" + error.message; }
     }
 
-    // 页面打开后自动执行加载
+    function changeOrderPage(delta) {
+        const newPage = currentOrderPage + delta;
+        if (newPage < 1) return;
+        loadOrders(newPage);
+    }
+
+    orderStatusFilter.addEventListener('change', () => { loadOrders(1); });
+
+    // 页面打开后自动加载商品列表
     loadProducts();
 </script>
 </body>

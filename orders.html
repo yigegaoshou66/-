@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>闲管家 · 订单管理助手</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .top-bar { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; background: #eef4ff; padding: 15px; border-radius: 6px; }
+        .top-bar label { font-weight: bold; color: #0056b3; }
+        .top-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .page-btn { background-color: #6c757d; padding: 5px 10px; font-size: 12px; }
+        .page-btn:hover { background-color: #5a6268; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+        th { background-color: #f8f9fa; white-space: nowrap; }
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-11 { background-color: #fff3cd; color: #856404; } /* 待付款 */
+        .status-12 { background-color: #cce5ff; color: #004085; } /* 待发货 */
+        .status-21 { background-color: #d4edda; color: #155724; } /* 已发货 */
+        .status-22 { background-color: #d1ecf1; color: #0c5460; } /* 已完成 */
+        .status-23, .status-24 { background-color: #f8d7da; color: #721c24; } /* 已退款/已关闭 */
+        .status-msg { margin-top: 10px; color: #555; font-weight: bold; }
+        .pagination { margin-top: 15px; text-align: right; }
+        .action-btn { padding: 4px 8px; font-size: 12px; background-color: #17a2b8; margin-right: 3px; }
+        .action-btn:hover { background-color: #138496; }
+        .item-info { font-size: 12px; color: #666; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>闲管家 · 订单管理助手</h1>
+    
+    <div class="top-bar">
+        <label>📦 订单状态筛选：</label>
+        <select id="statusFilter">
+            <option value="">全部订单</option>
+            <option value="11">待付款</option>
+            <option value="12">待发货</option>
+            <option value="21">已发货</option>
+            <option value="22">已完成</option>
+            <option value="23">已退款</option>
+            <option value="24">已关闭</option>
+        </select>
+        <button onclick="loadOrders(1)">刷新订单列表</button>
+    </div>
+
+    <div id="statusMsg" class="status-msg">正在加载订单列表...</div>
+
+    <table id="orderTable">
+        <thead>
+            <tr>
+                <th>订单号 (order_no)</th>
+                <th>买家昵称</th>
+                <th>商品标题 / 规格</th>
+                <th>订单金额 (元)</th>
+                <th>订单状态</th>
+                <th>下单时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <div class="pagination">
+        <span id="pageInfo" style="margin-right: 10px; font-size: 14px;"></span>
+        <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
+        <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
+    </div>
+</div>
+
+<script>
+    const WORKER_URL = "https://xian-guanjia-worker.1113630283.workers.dev";
+
+    let currentPage = 1;
+    const pageSize = 20; 
+
+    const tableBody = document.getElementById('tableBody');
+    const statusMsg = document.getElementById('statusMsg');
+    const statusFilter = document.getElementById('statusFilter');
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    const statusMap = {
+        11: "待付款", 12: "待发货", 21: "已发货",
+        22: "已完成", 23: "已退款", 24: "已关闭"
+    };
+
+    // 1. 加载订单列表
+    async function loadOrders(pageNo = 1) {
+        currentPage = pageNo;
+        statusMsg.innerText = "正在加载订单列表...";
+        tableBody.innerHTML = "";
+        pageInfo.innerText = `第 ${currentPage} 页`;
+
+        const bodyParams = {
+            page_no: currentPage,
+            page_size: pageSize
+        };
+
+        const selectedStatus = statusFilter.value;
+        if (selectedStatus) {
+            bodyParams.order_status = parseInt(selectedStatus);
+        }
+
+        const requestData = {
+            path: "/api/open/order/list",
+            body: bodyParams
+        };
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            const result = await response.json();
+            
+            if (result.code === 0) {
+                // ⚠️ 适配真实返回结构：订单在 result.data.list 里
+                const orders = result.data.list || [];
+                
+                if (orders.length === 0) {
+                    statusMsg.innerText = "暂无订单数据。";
+                } else {
+                    statusMsg.innerText = `成功加载 ${orders.length} 条订单。`;
+                    renderOrderList(orders);
+                }
+                
+                prevBtn.disabled = (currentPage <= 1);
+                nextBtn.disabled = (orders.length < pageSize); 
+            } else {
+                statusMsg.innerText = "加载失败：" + result.msg;
+            }
+        } catch (error) {
+            statusMsg.innerText = "请求出错：" + error.message;
+        }
+    }
+
+    // 2. 渲染订单列表（已适配真实 JSON 字段）
+    function renderOrderList(orders) {
+        orders.forEach(order => {
+            const tr = document.createElement('tr');
+            
+            // 根据真实 JSON 提取数据
+            const orderNo = order.order_no;
+            const buyerNick = order.buyer_nick;
+            // 商品信息嵌套在 goods 对象里
+            const goods = order.goods || {};
+            const title = goods.title || '未知商品';
+            const skuText = goods.sku_text || '';
+            
+            // 金额单位是“分”，除以100转为“元”
+            const priceInYuan = (order.total_amount / 100).toFixed(2); 
+            const status = order.order_status;
+            const statusText = statusMap[status] || `未知(${status})`;
+            const statusClass = `status-${status}`;
+            
+            // 时间转换 (基于 create_time 或 order_time)
+            const timeStamp = order.create_time || order.order_time;
+            const timeStr = timeStamp ? new Date(timeStamp * 1000).toLocaleString('zh-CN') : '未知时间';
+
+            tr.innerHTML = `
+                <td>${orderNo}</td>
+                <td>${buyerNick}</td>
+                <td>
+                    <div>${title}</div>
+                    <div class="item-info">规格：${skuText}</div>
+                </td>
+                <td><b>${priceInYuan} 元</b></td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${timeStr}</td>
+                <td>
+                    <button class="action-btn" onclick="alert('改价功能尚未接入接口，等待下一步开发！')">改价</button>
+                    <button class="action-btn" onclick="alert('发货功能尚未接入接口，等待下一步开发！')">发货</button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    function changePage(delta) {
+        const newPage = currentPage + delta;
+        if (newPage < 1) return;
+        loadOrders(newPage);
+    }
+
+    statusFilter.addEventListener('change', () => {
+        loadOrders(1);
+    });
+
+    loadOrders(1);
+</script>
+</body>
+</html>

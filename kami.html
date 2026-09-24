@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>闲管家 · 卡密管理</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 20px; }
+
+        .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .nav-tabs button { background: none; border: none; color: #666; font-size: 16px; font-weight: bold; padding: 10px 20px; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-tabs button.active { color: #007bff; border-bottom-color: #007bff; }
+
+        .top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; background: #eef4ff; padding: 15px; border-radius: 6px; }
+        .top-bar label { font-weight: bold; color: #0056b3; font-size: 14px; }
+        .top-bar input, .top-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        button:hover { background-color: #0056b3; }
+        .btn-edit { background-color: #ffc107; color: #333; }
+        .btn-edit:hover { background-color: #e0a800; }
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background-color: #c82333; }
+        .btn-stock { background-color: #17a2b8; }
+        .btn-stock:hover { background-color: #138496; }
+        .btn-info { background-color: #6f42c1; }
+        .btn-info:hover { background-color: #5a32a3; }
+        .btn-save { background-color: #28a745; font-size: 12px; padding: 5px 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+        th { background-color: #f8f9fa; white-space: nowrap; }
+        .status-msg { margin-top: 10px; color: #555; font-weight: bold; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 650px; max-height: 85vh; overflow-y: auto; }
+        .modal-content h2 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-group textarea { height: 180px; resize: vertical; }
+        .checkbox-group { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
+        .checkbox-group label { font-weight: normal; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-item { background: #f9f9f9; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff; }
+        .info-item .label { font-size: 12px; color: #888; }
+        .info-item .value { font-size: 16px; font-weight: bold; margin-top: 4px; color: #333; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>闲管家 · 卡密管理</h1>
+
+    <div class="nav-tabs">
+        <button id="tab-kind" class="active" onclick="switchTab('kind')">🎫 卡种</button>
+        <button id="tab-category" onclick="switchTab('category')">📂 卡密分类</button>
+    </div>
+
+    <!-- 卡种页面 -->
+    <div id="kind-page">
+        <div class="top-bar">
+            <label>卡种名称：</label>
+            <input type="text" id="kindNameFilter" placeholder="模糊搜索">
+            <label>卡种类型：</label>
+            <select id="kindTypeFilter">
+                <option value="">全部</option>
+                <option value="1">唯一卡</option>
+                <option value="2">图片</option>
+            </select>
+            <label>卡种分类：</label>
+            <input type="number" id="kindCategoryFilter" placeholder="分类ID" style="width: 100px;">
+            <button onclick="loadKinds(1)">搜索</button>
+            <button onclick="loadKinds(1)">刷新卡种列表</button>
+        </div>
+        <div id="kindStatusMsg" class="status-msg">正在加载卡种列表...</div>
+        <table>
+            <thead>
+                <tr><th>卡种ID</th><th>卡种名称</th><th>分类</th><th>库存</th><th>成本价</th><th>操作</th></tr>
+            </thead>
+            <tbody id="kindTableBody"></tbody>
+        </table>
+        <div style="margin-top: 15px; text-align: right;">
+            <span id="kindPageInfo" style="margin-right: 10px; font-size: 14px;"></span>
+            <button class="btn-save" id="kindPrevBtn" onclick="changeKindPage(-1)">上一页</button>
+            <button class="btn-save" id="kindNextBtn" onclick="changeKindPage(1)">下一页</button>
+        </div>
+    </div>
+
+    <!-- 卡密分类页面 -->
+    <div id="category-page" style="display: none;">
+        <div class="top-bar">
+            <button onclick="loadCategories()">刷新分类列表</button>
+            <button class="btn-save" onclick="openCategoryModal()">+ 新建分类</button>
+        </div>
+        <div id="categoryStatusMsg" class="status-msg">正在加载卡密分类...</div>
+        <table>
+            <thead>
+                <tr><th>分类ID</th><th>分类名称</th><th>备注</th><th>创建时间</th><th>操作</th></tr>
+            </thead>
+            <tbody id="categoryTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 卡密分类编辑弹窗 -->
+<div id="categoryModal" class="modal-overlay">
+    <div class="modal-content" style="width: 500px;">
+        <h2 id="categoryModalTitle">新建卡密分类</h2>
+        <input type="hidden" id="editCategoryId">
+        <div class="form-group"><label>分类名称 <span style="color: red;">*</span> (最多20字)</label><input type="text" id="editCategoryName" maxlength="20"></div>
+        <div class="form-group"><label>备注 <span style="color: red;">*</span> (最多50字)</label><textarea id="editCategoryRemark" maxlength="50"></textarea></div>
+        <div class="modal-footer">
+            <button style="background-color: #6c757d;" onclick="closeCategoryModal()">取消</button>
+            <button style="background-color: #28a745;" onclick="submitCategory()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 卡种编辑弹窗 -->
+<div id="kindModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>编辑卡种</h2>
+        <input type="hidden" id="editKindId">
+        <div class="form-row">
+            <div class="form-group"><label>卡种名称 <span style="color: red;">*</span></label><input type="text" id="editKindName" placeholder="最多60个字"></div>
+            <div class="form-group"><label>卡种别名 (可选)</label><input type="text" id="editKindAlias" placeholder="最多60个字"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>卡种分类 ID</label><input type="number" id="editKindCategory" placeholder="如: 1226819937484805"></div>
+            <div class="form-group"><label>成本单价 (元)</label><input type="number" step="0.01" id="editKindCost" placeholder="如: 121.00"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>卡号类型 <span style="color: red;">*</span></label>
+                <select id="editKindCardType"><option value="1">文本</option><option value="2">二维码</option><option value="3">条形码</option><option value="4">图片链接</option><option value="5">相册链接</option></select>
+            </div>
+            <div class="form-group"><label>密码类型</label>
+                <select id="editKindPwdType"><option value="1">文本</option><option value="2">二维码</option><option value="3">条形码</option></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>卡号前缀 (可选)</label><input type="text" id="editKindCardPrefix" placeholder="如: 卡号：1234"></div>
+            <div class="form-group"><label>密码前缀 (可选)</label><input type="text" id="editKindPwdPrefix" placeholder="如: 密码：1234"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>分隔符</label>
+                <select id="editKindSeparator"><option value="0">无</option><option value="1">逗号</option><option value="2">空格</option><option value="3">|</option><option value="4">换行</option></select>
+            </div>
+            <div class="form-group"><label>库存预警阈值</label><input type="number" id="editKindStockWarning"></div>
+            <div class="form-group"><label>排序值 (越大越靠前)</label><input type="number" id="editKindSort"></div>
+        </div>
+        <div class="modal-footer">
+            <button style="background-color: #6c757d;" onclick="closeKindModal()">取消</button>
+            <button style="background-color: #28a745;" onclick="submitKindEdit()">保存修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 卡种详情弹窗 -->
+<div id="kindInfoModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>📊 卡种详情</h2>
+        <input type="hidden" id="infoKindId">
+        <div id="kindInfoContent" class="info-grid"></div>
+        <div class="modal-footer">
+            <button style="background-color: #6c757d;" onclick="closeKindInfoModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 卡种添加卡密库存弹窗 -->
+<div id="stockModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>添加卡密库存</h2>
+        <input type="hidden" id="addStockKindId">
+        <div class="form-row">
+            <div class="form-group"><label>卡种名称</label><input type="text" id="addStockKindName" readonly style="background-color: #f0f0f0;"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>选项设置</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="addStockCover"> 覆盖已存在卡密</label>
+                    <label><input type="checkbox" id="addStockPriority" checked> 优先出售</label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>卡密内容 <span style="color: red;">*</span>（每行粘贴一条链接，无需填写卡号与成本价）</label>
+            <textarea id="addStockCards" placeholder="例如：&#10;https://gaoshou.pages.dev/index.html?oid=HMZUMFH105N4Q8N&#10;（只管粘贴链接，系统会自动过滤掉卡号）"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button style="background-color: #6c757d;" onclick="closeStockModal()">取消</button>
+            <button style="background-color: #28a745;" onclick="submitAddStock()">提交添加</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const WORKER_URL = "https://xian-guanjia-worker.1113630283.workers.dev";
+
+    let currentCategoryData = [];
+    let currentKindData = [];
+    let currentKindPage = 1;
+    const kindPageSize = 20;
+
+    // 标签切换
+    function switchTab(tabName) {
+        document.getElementById('tab-kind').classList.remove('active');
+        document.getElementById('tab-category').classList.remove('active');
+        document.getElementById('kind-page').style.display = 'none';
+        document.getElementById('category-page').style.display = 'none';
+
+        if (tabName === 'kind') {
+            document.getElementById('tab-kind').classList.add('active');
+            document.getElementById('kind-page').style.display = 'block';
+            loadKinds(1);
+        } else {
+            document.getElementById('tab-category').classList.add('active');
+            document.getElementById('category-page').style.display = 'block';
+            loadCategories();
+        }
+    }
+
+    // ================= 卡种逻辑 =================
+    async function loadKinds(pageNo = 1) {
+        currentKindPage = pageNo;
+        document.getElementById('kindStatusMsg').innerText = "正在加载卡种列表...";
+        document.getElementById('kindTableBody').innerHTML = "";
+        document.getElementById('kindPageInfo').innerText = `第 ${currentKindPage} 页`;
+
+        // 根据《卡种列表》文档组装搜索参数
+        const bodyParams = { page_no: currentKindPage, page_size: kindPageSize };
+        const nameFilter = document.getElementById('kindNameFilter').value.trim();
+        if (nameFilter) bodyParams.kind_name = nameFilter;
+        
+        const typeFilter = document.getElementById('kindTypeFilter').value;
+        if (typeFilter) bodyParams.kind_type = parseInt(typeFilter);
+
+        const catFilter = document.getElementById('kindCategoryFilter').value;
+        if (catFilter) bodyParams.kind_category = parseInt(catFilter);
+
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/list", body: bodyParams }) });
+            const result = await response.json();
+            if (result.code === 0) {
+                const kinds = result.data.list || [];
+                currentKindData = kinds;
+                document.getElementById('kindStatusMsg').innerText = `成功加载 ${kinds.length} 个卡种（共 ${result.data.count || kinds.length} 条）。`;
+                kinds.forEach(kind => {
+                    const tr = document.createElement('tr');
+                    const costYuan = kind.cost ? (parseFloat(kind.cost) / 100).toFixed(2) : '0.00'; // 文档提示cost是元，但某些字段可能需换算，这里保留元显示
+                    tr.innerHTML = `<td>${kind.kind_id}</td><td>${kind.kind_name}</td><td>${kind.kind_category_name || kind.kind_category || '-'}</td><td>${kind.stock}</td><td>${costYuan}</td>
+                        <td>
+                            <button class="btn-info" onclick="openKindInfoModal(${kind.kind_id})">详情</button>
+                            <button class="btn-stock" onclick="openAddStockModal(${kind.kind_id})">添加库存</button>
+                            <button class="btn-edit" onclick="editKind(${kind.kind_id})">编辑</button>
+                            <button class="btn-delete" onclick="deleteKind(${kind.kind_id})">删除</button>
+                        </td>`;
+                    document.getElementById('kindTableBody').appendChild(tr);
+                });
+                document.getElementById('kindPrevBtn').disabled = (currentKindPage <= 1);
+                document.getElementById('kindNextBtn').disabled = (kinds.length < kindPageSize);
+            } else { document.getElementById('kindStatusMsg').innerText = "加载失败：" + result.msg; }
+        } catch (error) { document.getElementById('kindStatusMsg').innerText = "请求出错：" + error.message; }
+    }
+
+    function changeKindPage(delta) {
+        const newPage = currentKindPage + delta;
+        if (newPage < 1) return;
+        loadKinds(newPage);
+    }
+
+    // ================= 卡种详情逻辑 =================
+    async function openKindInfoModal(kindId) {
+        document.getElementById('kindInfoContent').innerHTML = '正在加载...';
+        document.getElementById('kindInfoModal').style.display = 'flex';
+
+        try {
+            const response = await fetch(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/kami/kind/info", body: { kind_id: kindId } }) 
+            });
+            const result = await response.json();
+            
+            if (result.code === 0) {
+                const d = result.data;
+                document.getElementById('kindInfoContent').innerHTML = `
+                    <div class="info-item"><div class="label">卡种名称</div><div class="value">${d.kind_name}</div></div>
+                    <div class="info-item"><div class="label">卡种别名</div><div class="value">${d.kind_alias || '-'}</div></div>
+                    <div class="info-item"><div class="label">总库存（已售+未售）</div><div class="value" style="color: #0056b3;">${d.total_stock}</div></div>
+                    <div class="info-item"><div class="label">未售库存</div><div class="value" style="color: #28a745;">${d.stock}</div></div>
+                    <div class="info-item"><div class="label">已售数量</div><div class="value" style="color: #dc3545;">${d.sold}</div></div>
+                    <div class="info-item"><div class="label">平均成本单价</div><div class="value">${d.avg_cost} 元</div></div>
+                    <div class="info-item"><div class="label">未售总成本</div><div class="value">${d.total_cost} 元</div></div>
+                    <div class="info-item"><div class="label">库存预警阈值</div><div class="value">${d.stock_warning}</div></div>
+                    <div class="info-item"><div class="label">创建时间</div><div class="value" style="font-size: 14px;">${d.create_time}</div></div>
+                    <div class="info-item"><div class="label">修改时间</div><div class="value" style="font-size: 14px;">${d.modify_time}</div></div>
+                `;
+            } else {
+                document.getElementById('kindInfoContent').innerHTML = `<div class="info-item" style="grid-column: span 2; color: red;">获取详情失败：${result.msg}</div>`;
+            }
+        } catch (error) {
+            document.getElementById('kindInfoContent').innerHTML = `<div class="info-item" style="grid-column: span 2; color: red;">请求出错：${error.message}</div>`;
+        }
+    }
+
+    function closeKindInfoModal() { document.getElementById('kindInfoModal').style.display = 'none'; }
+
+    // ================= 卡种编辑逻辑 =================
+    function editKind(kindId) {
+        const kind = currentKindData.find(k => k.kind_id === kindId);
+        if (!kind) return alert("找不到该卡种数据");
+
+        document.getElementById('editKindId').value = kind.kind_id;
+        document.getElementById('editKindName').value = kind.kind_name || '';
+        document.getElementById('editKindAlias').value = kind.kind_alias || '';
+        document.getElementById('editKindCategory').value = kind.kind_category || '';
+        document.getElementById('editKindCardType').value = kind.card_type || 1;
+        document.getElementById('editKindPwdType').value = kind.pwd_type || 1;
+        document.getElementById('editKindCardPrefix').value = kind.card_prefix || '';
+        document.getElementById('editKindPwdPrefix').value = kind.pwd_prefix || '';
+        document.getElementById('editKindSeparator').value = kind.separator || 0;
+        document.getElementById('editKindStockWarning').value = kind.stock_warning || 0;
+        document.getElementById('editKindSort').value = kind.sort || 0;
+        document.getElementById('editKindCost').value = kind.cost ? (parseFloat(kind.cost) / 100).toFixed(2) : '0.00';
+
+        document.getElementById('kindModal').style.display = 'flex';
+    }
+
+    function closeKindModal() { document.getElementById('kindModal').style.display = 'none'; }
+
+    async function submitKindEdit() {
+        const kindId = document.getElementById('editKindId').value;
+        const kindName = document.getElementById('editKindName').value.trim();
+        const kindAlias = document.getElementById('editKindAlias').value.trim();
+        const kindCategory = document.getElementById('editKindCategory').value;
+        const cardType = document.getElementById('editKindCardType').value;
+        const pwdType = document.getElementById('editKindPwdType').value;
+        const cardPrefix = document.getElementById('editKindCardPrefix').value.trim();
+        const pwdPrefix = document.getElementById('editKindPwdPrefix').value.trim();
+        const separator = document.getElementById('editKindSeparator').value;
+        const stockWarning = document.getElementById('editKindStockWarning').value;
+        const sort = document.getElementById('editKindSort').value;
+        const costYuan = document.getElementById('editKindCost').value;
+
+        if (!kindName) return alert("请填写卡种名称！");
+
+        const bodyData = { kind_id: parseInt(kindId), kind_name: kindName, card_type: parseInt(cardType) };
+        if (kindAlias) bodyData.kind_alias = kindAlias;
+        if (kindCategory) bodyData.kind_category = parseInt(kindCategory);
+        if (pwdType) bodyData.pwd_type = parseInt(pwdType);
+        if (cardPrefix) bodyData.card_prefix = cardPrefix;
+        if (pwdPrefix) bodyData.pwd_prefix = pwdPrefix;
+        if (separator !== '') bodyData.separator = parseInt(separator);
+        if (stockWarning !== '') bodyData.stock_warning = parseInt(stockWarning);
+        if (sort !== '') bodyData.sort = parseInt(sort);
+        if (costYuan !== '') bodyData.cost = Math.round(parseFloat(costYuan) * 100);
+
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/edit", body: bodyData }) });
+            const result = await response.json();
+            if (result.code === 0) { alert("卡种修改成功！"); closeKindModal(); loadKinds(currentKindPage); }
+            else { alert("修改失败：" + result.msg); }
+        } catch (error) { alert("请求出错：" + error.message); }
+    }
+
+    // 💡 重点：删除卡种（按文档要求传数组）
+    async function deleteKind(kindId) {
+        if (!confirm(`⚠️ 警告：确定要删除卡种 ${kindId} 吗？\n\n这会将此卡种下的【所有卡密链接】一并删除，且不可恢复！`)) return;
+        try {
+            const response = await fetch(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                // 严格按照文档：kind_id 必须是数组
+                body: JSON.stringify({ path: "/api/open/kami/kind/delete", body: { kind_id: [kindId] } }) 
+            });
+            const result = await response.json();
+            if (result.code === 0) { alert("卡种删除成功！"); loadKinds(currentKindPage); } 
+            else { alert("删除失败：" + result.msg); }
+        } catch (error) { alert("请求出错：" + error.message); }
+    }
+
+    // ================= 卡种添加库存逻辑 =================
+    function openAddStockModal(kindId) {
+        const kind = currentKindData.find(k => k.kind_id === kindId);
+        if (!kind) return alert("找不到该卡种数据");
+
+        document.getElementById('addStockKindId').value = kind.kind_id;
+        document.getElementById('addStockKindName').value = kind.kind_name;
+        document.getElementById('addStockCards').value = '';
+        document.getElementById('addStockCover').checked = false;
+        document.getElementById('addStockPriority').checked = true;
+
+        document.getElementById('stockModal').style.display = 'flex';
+    }
+
+    function closeStockModal() { document.getElementById('stockModal').style.display = 'none'; }
+
+    async function submitAddStock() {
+        const kindId = document.getElementById('addStockKindId').value;
+        const isCover = document.getElementById('addStockCover').checked;
+        const isPriority = document.getElementById('addStockPriority').checked;
+        const cardsText = document.getElementById('addStockCards').value.trim();
+
+        if (!cardsText) return alert("请输入卡密内容");
+
+        const lines = cardsText.split('\n');
+        const cards = [];
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            cards.push({ card_no: "", card_pwd: line }); 
+        }
+
+        if (cards.length === 0) return alert("请输入有效的卡密内容");
+
+        const requestData = {
+            path: "/api/open/kami/storage/create",
+            body: {
+                kind_id: parseInt(kindId),
+                cost: 0,
+                is_cover: isCover,
+                is_repeat: true,
+                is_priority: isPriority,
+                cards: cards
+            }
+        };
+
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+            const result = await response.json();
+            if (result.code === 0) {
+                alert("添加卡密库存成功！");
+                closeStockModal();
+                loadKinds(currentKindPage);
+            } else {
+                alert("添加失败：" + result.msg);
+            }
+        } catch (error) {
+            alert("请求出错：" + error.message);
+        }
+    }
+
+    // ================= 卡密分类逻辑 =================
+    async function loadCategories() {
+        document.getElementById('categoryStatusMsg').innerText = "正在加载卡密分类...";
+        document.getElementById('categoryTableBody').innerHTML = "";
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/category/list", body: {} }) });
+            const result = await response.json();
+            if (result.code === 0) {
+                const categories = result.data.list || [];
+                currentCategoryData = categories;
+                document.getElementById('categoryStatusMsg').innerText = `成功加载 ${result.data.count || categories.length} 个分类。`;
+                categories.forEach(cat => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${cat.category_id}</td><td>${cat.category_name}</td><td>${cat.remark || '-'}</td><td>${cat.create_time || '-'}</td>
+                        <td><button class="btn-edit" onclick="editCategory(${cat.category_id})">编辑</button><button class="btn-delete" onclick="deleteCategory(${cat.category_id})">删除</button></td>`;
+                    document.getElementById('categoryTableBody').appendChild(tr);
+                });
+            } else { document.getElementById('categoryStatusMsg').innerText = "加载失败：" + result.msg; }
+        } catch (error) { document.getElementById('categoryStatusMsg').innerText = "请求出错：" + error.message; }
+    }
+
+    function openCategoryModal() {
+        document.getElementById('categoryModalTitle').innerText = "新建卡密分类";
+        document.getElementById('editCategoryId').value = '';
+        document.getElementById('editCategoryName').value = '';
+        document.getElementById('editCategoryRemark').value = '';
+        document.getElementById('categoryModal').style.display = 'flex';
+    }
+
+    function editCategory(id) {
+        const cat = currentCategoryData.find(c => c.category_id === id);
+        if (!cat) return alert("找不到该分类数据");
+        document.getElementById('categoryModalTitle').innerText = "编辑卡密分类";
+        document.getElementById('editCategoryId').value = cat.category_id;
+        document.getElementById('editCategoryName').value = cat.category_name;
+        document.getElementById('editCategoryRemark').value = cat.remark || '';
+        document.getElementById('categoryModal').style.display = 'flex';
+    }
+
+    function closeCategoryModal() { document.getElementById('categoryModal').style.display = 'none'; }
+
+    async function submitCategory() {
+        const id = document.getElementById('editCategoryId').value;
+        const name = document.getElementById('editCategoryName').value.trim();
+        const remark = document.getElementById('editCategoryRemark').value.trim();
+        if (!name || !remark) return alert("请填写完整信息");
+        
+        const isEdit = !!id;
+        const requestData = {
+            path: isEdit ? "/api/open/kami/category/edit" : "/api/open/kami/category/create",
+            body: isEdit ? { category_id: parseInt(id), category_name: name, remark: remark } : { category_name: name, remark: remark }
+        };
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+            const result = await response.json();
+            if (result.code === 0) { alert(isEdit ? "编辑成功！" : "创建成功！"); closeCategoryModal(); loadCategories(); }
+            else { alert("操作失败：" + result.msg); }
+        } catch (error) { alert("请求出错：" + error.message); }
+    }
+
+    async function deleteCategory(id) {
+        if (!confirm(`确定要删除分类 ${id} 吗？`)) return;
+        try {
+            const response = await fetch(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/kami/category/delete", body: { category_id: [id] } }) 
+            });
+            const result = await response.json();
+            if (result.code === 0) { alert("删除成功！"); loadCategories(); } 
+            else { alert("删除失败：" + result.msg); }
+        } catch (error) { alert("请求出错：" + error.message); }
+    }
+
+    // 页面默认加载卡种
+    loadKinds(1);
+</script>
+</body>
+</html>
