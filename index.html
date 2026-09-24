@@ -1,52 +1,200 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>闲管家手机助手</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
-    input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; font-size: 16px; }
-    button { background: #0070f3; color: white; border: none; border-radius: 8px; cursor: pointer; }
-    button:active { background: #005bb5; }
-    .result { margin-top: 16px; padding: 12px; background: #f5f5f5; border-radius: 8px; white-space: pre-wrap; word-break: break-all; font-size: 13px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>闲管家 · 库存管理助手</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .sku-row { background-color: #f9f9f9; }
+        .stock-input { width: 80px; padding: 5px; }
+        .save-btn { padding: 5px 10px; background-color: #28a745; font-size: 12px; }
+        .save-btn:hover { background-color: #218838; }
+        .status-msg { margin-top: 10px; color: green; font-weight: bold; }
+    </style>
 </head>
 <body>
-  <h2>闲管家 · 手机助手</h2>
 
-  <label>接口路径</label>
-  <input id="path" value="/api/open/product/stock/update" placeholder="/api/open/...">
+<div class="container">
+    <h1>闲管家 · 库存管理助手</h1>
+    <button onclick="loadProducts()">刷新商品列表</button>
+    <div id="statusMsg" class="status-msg">正在加载商品列表...</div>
 
-  <label>请求体（JSON）</label>
-  <textarea id="body" rows="6" placeholder='{"product_id":"...","stock":10}'></textarea>
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>商品ID (product_id)</th>
+                <th>商品标题 / 规格</th>
+                <th>当前库存</th>
+                <th>修改库存</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
 
-  <button onclick="send()">发送请求</button>
-  <div class="result" id="result"></div>
+<script>
+    // ================= 配置区域 =================
+    // 你的 Cloudflare Worker 线上地址
+    const WORKER_URL = "https://xian-guanjia-worker.1113630283.workers.dev";
+    // ============================================
 
-  <script>
-    const WORKER_URL = 'https://xian-guanjia-worker.1113630283.workers.dev';
+    const tableBody = document.getElementById('tableBody');
+    const statusMsg = document.getElementById('statusMsg');
 
-    async function send() {
-      const resultEl = document.getElementById('result');
-      resultEl.textContent = '请求中...';
-      try {
-        const bodyText = document.getElementById('body').value;
-        const body = bodyText ? JSON.parse(bodyText) : {};
-        const resp = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            path: document.getElementById('path').value,
-            body: body,
-          }),
-        });
-        const data = await resp.json();
-        resultEl.textContent = JSON.stringify(data, null, 2);
-      } catch (e) {
-        resultEl.textContent = '错误: ' + e.message;
-      }
+    // 1. 加载商品列表
+    async function loadProducts() {
+        statusMsg.innerText = "正在加载商品列表...";
+        tableBody.innerHTML = "";
+
+        const requestData = {
+            path: "/api/open/product/list",
+            body: { page: 1, page_size: 10 }
+        };
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            const result = await response.json();
+            
+            if (result.code === 0) {
+                statusMsg.innerText = "加载成功！点击下方商品的【展开规格】即可修改库存。";
+                renderProductList(result.data.list);
+            } else {
+                statusMsg.innerText = "加载失败：" + result.msg;
+            }
+        } catch (error) {
+            statusMsg.innerText = "请求出错：" + error.message;
+        }
     }
-  </script>
+
+    // 2. 渲染商品列表
+    function renderProductList(products) {
+        products.forEach(product => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${product.product_id}</td>
+                <td><b>${product.title || '无标题'}</b></td>
+                <td>-</td>
+                <td><button onclick="toggleSkuList(${product.product_id}, this)">展开规格</button></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // 3. 展开/收起 SKU 列表（核心修改部分）
+    async function toggleSkuList(productId, btn) {
+        const mainRow = btn.closest('tr');
+
+        // 判断当前状态：如果是已展开状态，则执行收起逻辑
+        if (btn.dataset.expanded === 'true') {
+            let nextRow = mainRow.nextElementSibling;
+            // 循环删除下方所有带 sku-row 类的行
+            while (nextRow && nextRow.classList.contains('sku-row')) {
+                let rowToDelete = nextRow;
+                nextRow = nextRow.nextElementSibling; // 先拿到下一个，再删除当前
+                rowToDelete.remove();
+            }
+            // 恢复按钮状态
+            btn.innerText = "展开规格";
+            btn.dataset.expanded = "false";
+            return; 
+        }
+
+        // 如果是收起状态，则执行展开逻辑
+        btn.innerText = "加载中...";
+        btn.disabled = true;
+
+        const requestData = {
+            path: "/api/open/product/detail",
+            body: { product_id: productId }
+        };
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            const result = await response.json();
+
+            if (result.code === 0 && result.data.sku_items) {
+                let lastInsertedRow = mainRow; // 记录上一个插入的行，用于按顺序插入
+
+                result.data.sku_items.forEach(sku => {
+                    const skuTr = document.createElement('tr');
+                    skuTr.className = 'sku-row';
+                    skuTr.innerHTML = `
+                        <td>└─ SKU_ID: ${sku.sku_id}</td>
+                        <td>${sku.sku_text}</td>
+                        <td>${sku.stock}</td>
+                        <td>
+                            <input type="number" class="stock-input" id="stock_${sku.sku_id}" value="${sku.stock}">
+                            <button class="save-btn" onclick="updateStock(${productId}, ${sku.sku_id})">保存</button>
+                        </td>
+                    `;
+                    // 在上一行的后面插入，保证顺序正确
+                    lastInsertedRow.parentNode.insertBefore(skuTr, lastInsertedRow.nextSibling);
+                    lastInsertedRow = skuTr; // 更新最后插入的行
+                });
+                
+                btn.innerText = "收起规格";
+                btn.disabled = false;
+                btn.dataset.expanded = "true"; // 标记为已展开
+            } else {
+                alert("获取规格失败：" + (result.msg || "未知错误"));
+                btn.innerText = "重试";
+                btn.disabled = false;
+            }
+        } catch (error) {
+            alert("网络错误：" + error.message);
+            btn.innerText = "重试";
+            btn.disabled = false;
+        }
+    }
+
+    // 4. 修改库存
+    async function updateStock(productId, skuId) {
+        const newStock = document.getElementById(`stock_${skuId}`).value;
+        if (newStock === '') return alert("请输入库存数量");
+
+        const requestData = {
+            path: "/api/open/product/edit/stock",
+            body: {
+                product_id: productId,
+                sku_items: [ { sku_id: skuId, stock: parseInt(newStock) } ]
+            }
+        };
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            const result = await response.json();
+
+            if (result.code === 0) {
+                alert("修改成功！");
+            } else {
+                alert("修改失败：" + result.msg);
+            }
+        } catch (error) {
+            alert("请求出错：" + error.message);
+        }
+    }
+
+    // 页面打开后自动执行加载
+    loadProducts();
+</script>
 </body>
 </html>
