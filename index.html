@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>闲管家 · 综合管理助手</title>
     <style>
-        /* 全局基础样式 */
         body { font-family: sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         h1 { color: #333; text-align: center; margin-bottom: 10px; }
@@ -37,6 +36,12 @@
         .input-box { width: 70px; padding: 5px; margin-right: 5px; }
         .status-msg { margin-top: 10px; color: #555; font-weight: bold; }
         
+        /* 💡 商品状态标签样式（大色块样式） */
+        .badge-on { background-color: #28a745; color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: inline-block; min-width: 60px; text-align: center; }    /* 大绿色 */
+        .badge-off { background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: inline-block; min-width: 60px; text-align: center; }   /* 大红色 */
+        .badge-sold { background-color: #6c757d; color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: inline-block; min-width: 60px; text-align: center; }  /* 大灰色 */
+        .badge-unknown { background-color: #ffc107; color: #333; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: inline-block; min-width: 60px; text-align: center; } /* 黄色未知 */
+
         /* 订单状态颜色 */
         .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .status-11 { background-color: #fff3cd; color: #856404; }
@@ -55,13 +60,13 @@
 <div class="container">
     <h1>闲管家 · 综合管理助手</h1>
 
-    <!-- 🟢 新增：独立页面的跳转入口 -->
+    <!-- 独立页面的跳转入口 -->
     <div class="entry-links">
         <a href="orders.html" class="entry-order">📋 打开独立订单页</a>
         <a href="kami.html" class="entry-kami">🎫 打开卡密管理页</a>
     </div>
 
-    <!-- 导航栏（当前页面的商品与订单标签） -->
+    <!-- 导航栏 -->
     <div class="nav-tabs">
         <button id="tab-product" class="active" onclick="switchTab('product')">📦 商品管理</button>
         <button id="tab-order" onclick="switchTab('order')">📋 订单管理 (本页)</button>
@@ -82,6 +87,7 @@
                 <tr>
                     <th>商品ID</th>
                     <th>商品标题</th>
+                    <th>状态</th>
                     <th>价格 (元)</th>
                     <th>库存</th>
                     <th>操作</th>
@@ -91,7 +97,7 @@
         </table>
     </div>
 
-    <!-- ==================== 订单管理页面（当前页内） ==================== -->
+    <!-- ==================== 订单管理页面 ==================== -->
     <div id="order-page" style="display: none;">
         <div class="top-bar">
             <label>📦 订单状态筛选：</label>
@@ -182,12 +188,28 @@
             if (result.code === 0) {
                 productStatusMsg.innerText = "加载成功！点击下方商品的【展开规格】即可修改价格和库存。";
                 result.data.list.forEach(product => {
+                    // 💡 精准解析状态
+                    let statusBadge = `<span class="badge-unknown">未知(${product.product_status || '无'})</span>`;
+                    
+                    if (product.product_status === 22) {
+                        statusBadge = `<span class="badge-on">✅ 已上架</span>`;
+                    } else if (product.product_status === 31) {
+                        statusBadge = `<span class="badge-off">⛔ 已下架</span>`;
+                    } else if (product.product_status === 23) {
+                        statusBadge = `<span class="badge-sold">🏷️ 已售出</span>`;
+                    }
+
+                    // 提取价格和库存（价格单位是分）
+                    const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
+                    const stock = product.stock !== undefined ? product.stock : '-';
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${product.product_id}</td>
                         <td><b>${product.title || '无标题'}</b></td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td>${statusBadge}</td>
+                        <td>${priceYuan}</td>
+                        <td>${stock}</td>
                         <td>
                             <button onclick="toggleSkuList(${product.product_id}, this)" data-expanded="false">展开规格</button>
                             <button class="btn-publish" onclick="publishProduct(${product.product_id}, this)">上架</button>
@@ -226,6 +248,7 @@
                     skuTr.innerHTML = `
                         <td>└─ SKU_ID: ${sku.sku_id}</td>
                         <td>${sku.sku_text}</td>
+                        <td>-</td>
                         <td><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"> 元</td>
                         <td><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"> 件</td>
                         <td><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})">保存修改</button></td>
@@ -251,25 +274,47 @@
         } catch (error) { alert("请求出错：" + error.message); }
     }
 
+    // 💡 上架商品
     async function publishProduct(productId, btn) {
         const userName = userNameInput.value.trim();
         if (!userName) return alert("请先在上方填写你的闲鱼会员名！");
-        if (!confirm(`确定要将商品 ${productId} 上架到店铺【${userName}】吗？`)) return;
+        if (!confirm(`确定要将商品 ${productId} 上架到店铺【${userName}】吗？\n\n⚠️温馨提示：如果填写的“会员名”不是闲管家后台绑定的真实账号，会报“查询闲鱼店铺信息失败”！`)) return;
+
         btn.innerText = "上架中..."; btn.disabled = true;
+        
+        const requestData = {
+            path: "/api/open/product/publish", 
+            body: { 
+                product_id: parseInt(productId), 
+                user_name: [userName] 
+            } 
+        };
+
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/publish", body: { product_id: productId, user_name: [userName] } }) });
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
             const result = await response.json();
-            if (result.code === 0) alert("上架指令发送成功！"); else alert("上架失败：" + result.msg);
-        } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "上架"; btn.disabled = false; }
+            if (result.code === 0) { 
+                alert("上架指令发送成功！\n\n⚠️注意：闲管家是异步同步到闲鱼App的，请稍等1-5分钟后再刷新列表查看状态。"); 
+                loadProducts(); 
+            } else { 
+                alert("上架失败：" + result.msg); 
+            }
+        } catch (error) { alert("请求出错：" + error.message); } 
+        finally { btn.innerText = "上架"; btn.disabled = false; }
     }
 
     async function downShelfProduct(productId, btn) {
         if (!confirm(`确定要将商品 ${productId} 下架吗？`)) return;
         btn.innerText = "下架中..."; btn.disabled = true;
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: productId } }) });
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: parseInt(productId) } }) });
             const result = await response.json();
-            if (result.code === 0) alert("下架指令发送成功！"); else alert("下架失败：" + result.msg);
+            if (result.code === 0) { 
+                alert("下架指令发送成功！\n\n⚠️注意：闲管家是异步同步到闲鱼App的，请稍等1-5分钟后再刷新列表查看状态。"); 
+                loadProducts(); 
+            } else { 
+                alert("下架失败：" + result.msg); 
+            }
         } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "下架"; btn.disabled = false; }
     }
 
