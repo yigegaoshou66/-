@@ -13,13 +13,44 @@
             background-attachment: fixed;
             margin: 0; color: #1c1c1e;
         }
+
+        /* ================= 🔒 密码验证层 ================= */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 24px; padding: 30px 20px;
+            width: 85%; max-width: 350px; text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .login-box h2 { margin-top: 0; color: #1c1c1e; font-size: 22px; margin-bottom: 20px; }
+        .login-box input {
+            width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
+            font-size: 16px; outline: none; text-align: center; letter-spacing: 2px; margin-bottom: 15px;
+            background: #fff;
+        }
+        .login-box button {
+            width: 100%; padding: 14px; font-size: 16px; border-radius: 12px; margin-bottom: 10px;
+            background: #007bff; color: white; border: none; font-weight: bold;
+        }
+        .login-box .error-msg { color: #dc3545; font-size: 13px; margin: 0; font-weight: bold; }
+
+        /* ================= 主界面容器 ================= */
         .container { 
             max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.6); 
             backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 20px; 
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); padding: 15px;
+            display: none; /* 默认隐藏，密码正确后显示 */
         }
-        h1 { color: #1c1c1e; text-align: center; margin-bottom: 15px; font-size: 20px; font-weight: 800; }
+        h1 { color: #1c1c1e; text-align: center; margin-bottom: 10px; font-size: 20px; font-weight: 800; }
+
+        /* 退出按钮 */
+        .logout-btn { text-align: right; margin-bottom: 5px; }
+        .logout-btn button { width: auto; padding: 6px 12px; font-size: 12px; background: #6c757d; margin-bottom: 0; }
 
         /* 入口按钮 */
         .entry-links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
@@ -79,7 +110,19 @@
 </head>
 <body>
 
-<div class="container">
+<!-- 🔒 密码验证层 -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+        <h2>🔒 系统访问验证</h2>
+        <input type="password" id="pwdInput" placeholder="请输入访问密码" onkeydown="if(event.key==='Enter') checkPwd()">
+        <button onclick="checkPwd()">进入系统</button>
+        <p id="pwdError" class="error-msg"></p>
+    </div>
+</div>
+
+<!-- 主界面 -->
+<div class="container" id="mainContainer">
+    <div class="logout-btn"><button onclick="logout()">退出登录</button></div>
     <h1>闲管家 · 综合管理助手</h1>
 
     <div class="entry-links">
@@ -136,6 +179,39 @@
 </div>
 
 <script>
+    // ================= 🔒 密码验证逻辑 =================
+    const APP_PASSWORD = "shinia299."; // 注意末尾有个点
+
+    function checkPwd() {
+        const inputPwd = document.getElementById('pwdInput').value;
+        if (inputPwd === APP_PASSWORD) {
+            // 密码正确：记录到本地，隐藏登录层，显示主界面
+            localStorage.setItem('saved_pwd', APP_PASSWORD);
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            loadProducts(); // 验证通过后才加载数据
+        } else {
+            document.getElementById('pwdError').innerText = "密码错误，请重试！";
+            document.getElementById('pwdInput').value = ""; // 清空输入框
+        }
+    }
+
+    function logout() {
+        if (!confirm("确定要退出登录吗？（下次打开需重新输入密码）")) return;
+        localStorage.removeItem('saved_pwd'); // 清除本地记录
+        location.reload(); // 刷新页面
+    }
+
+    // 页面打开时自动检查是否有记住的密码
+    window.onload = function() {
+        if (localStorage.getItem('saved_pwd') === APP_PASSWORD) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            loadProducts();
+        }
+    };
+
+    // ================= 原有逻辑 =================
     const WORKER_URL = "https://xian-guanjia-worker.1113630283.workers.dev";
     const productTableBody = document.getElementById('productTableBody');
     const productStatusMsg = document.getElementById('productStatusMsg');
@@ -168,11 +244,11 @@
             if (result.code === 0) {
                 productStatusMsg.innerText = "加载成功！点击【展开规格】修改价格和库存。";
                 
-                // 🟢 新增排序逻辑：将已上架（product_status === 22）的商品置顶
+                // 排序逻辑：已上架置顶
                 result.data.list.sort((a, b) => {
                     const aWeight = (a.product_status === 22) ? 0 : 1;
                     const bWeight = (b.product_status === 22) ? 0 : 1;
-                    return aWeight - bWeight; // 权重越小越靠前，已上架=0排在最前，其他=1排在后面
+                    return aWeight - bWeight; 
                 });
 
                 result.data.list.forEach(product => {
@@ -298,7 +374,7 @@
                             <td data-label="订单号">${order.order_no}</td>
                             <td data-label="买家">${order.buyer_nick}</td>
                             <td data-label="商品">${goods.title || '未知'}<br><small style="color:#666;">${goods.sku_text || ''}</small></td>
-                            <td data-label="金额"><b>${priceInYuan} 元</b></td>
+                            <td data-label="金额"><b>${priceYuan} 元</b></td>
                             <td data-label="状态"><span class="status-badge status-${order.order_status}">${statusText}</span></td>
                             <td data-label="下单时间">${timeStr}</td>
                             <td data-label="操作" style="justify-content: flex-start;">
@@ -320,7 +396,6 @@
         loadOrders(newPage);
     }
     orderStatusFilter.addEventListener('change', () => { loadOrders(1); });
-    loadProducts();
 </script>
 </body>
 </html>
