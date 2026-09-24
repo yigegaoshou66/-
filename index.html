@@ -1,86 +1,69 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>闲管家手机助手</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; background: #f9f9f9; }
-        input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
-        button { background: #0070f3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:active { background: #005bb5; }
-        button:disabled { background: #999; cursor: not-allowed; }
-        .result { margin-top: 16px; padding: 12px; background: #fff; border-radius: 8px; white-space: pre-wrap; word-break: break-all; font-size: 13px; border: 1px solid #ddd; }
-        .error-text { color: #d32f2f; }
-    </style>
-</head>
-<body>
-    <h2>闲管家 · 手机助手</h2>
-    
-    <label>接口路径</label>
-    <input id="path" value="/api/open/shop/query" placeholder="/api/open/...">
-    
-    <label>请求体（JSON）</label>
-    <textarea id="body" rows="6" placeholder='留空则默认发送 {}，也可填入 {"product_id":"...","stock":10}'></textarea>
-    
-    <button id="sendBtn" onclick="send()">发送请求</button>
-    <div class="result" id="result"></div>
+export default {
+  async fetch(request, env) {
+    // 允许跨域预检请求
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
 
-    <script>
-        // ⚠️ 这里填你部署出来的真实 Worker 地址
-        const WORKER_URL = 'https://xian-guanjia-worker.1113630283.workers.dev'; 
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405 });
+    }
 
-        async function send() {
-            const resultEl = document.getElementById('result');
-            const sendBtn = document.getElementById('sendBtn');
-            
-            resultEl.className = ''; // 重置样式
-            resultEl.textContent = '请求中...';
-            sendBtn.disabled = true; // 防止重复点击
-            sendBtn.textContent = '发送中...';
+    try {
+      const { path, body } = await request.json();
+      const bodyString = JSON.stringify(body || {});
 
-            // 1. 获取并清理输入框内容（去除首尾空白符和换行符）
-            const bodyText = document.getElementById('body').value.trim(); 
-            let body = {};
+      // 1. 计算 body 的 MD5
+      const bodyMd5 = await md5(bodyString);
+      
+      // 2. 生成时间戳（秒）
+      const timestamp = Math.floor(Date.now() / 1000).toString();
 
-            // 2. 尝试解析 JSON，增加防呆提示
-            if (bodyText) {
-                try {
-                    body = JSON.parse(bodyText);
-                } catch (e) {
-                    resultEl.className = 'error-text';
-                    resultEl.textContent = '❌ 请求体 JSON 格式有误！\n\n请长按输入框全选删除，确保没有隐藏的空格或换行，或者直接留空发送 {}。';
-                    sendBtn.disabled = false;
-                    sendBtn.textContent = '发送请求';
-                    return; 
-                }
-            }
+      // 3. ⚠️ 修正后的签名算法：严格按照 AppKey + BodyMd5 + Timestamp + AppSecret 顺序拼接！
+      const signString = `${env.APP_KEY}${bodyMd5}${timestamp}${env.APP_SECRET}`;
+      const sign = await md5(signString);
 
-            // 3. 发送请求
-            try {
-                const resp = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        path: document.getElementById('path').value.trim(), 
-                        body: body 
-                    }),
-                });
-                
-                if (!resp.ok) {
-                    throw new Error(`HTTP 错误: ${resp.status}`);
-                }
+      // 4. 构建请求 URL
+      const apiUrl = `https://open.goofish.pro${path}?appid=${env.APP_KEY}&timestamp=${timestamp}&sign=${sign}`;
+      
+      console.log("正在请求闲管家:", apiUrl);
 
-                const data = await resp.json();
-                resultEl.textContent = JSON.stringify(data, null, 2);
-            } catch (e) {
-                resultEl.className = 'error-text';
-                resultEl.textContent = '网络错误: ' + e.message;
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = '发送请求';
-            }
-        }
-    </script>
-</body>
-</html>
+      // 5. 转发请求
+      const resp = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyString,
+      });
+
+      // 6. 安全返回文本（防止因为返回HTML导致整个Worker崩溃）
+      const responseText = await resp.text();
+      return new Response(responseText, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    } catch (error) {
+      console.error("Worker 发生错误:", error);
+      return new Response(
+        JSON.stringify({ error: "Worker 内部错误", message: error.message }), 
+        { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+  },
+};
+
+async function md5(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('MD5', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
