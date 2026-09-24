@@ -14,10 +14,20 @@
         .nav-tabs button { flex: 1; background: none; border: none; color: #555; font-size: 14px; font-weight: bold; padding: 10px; border-radius: 10px; }
         .nav-tabs button.active { color: #007bff; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-        .top-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.4); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.6); }
-        .top-bar label { font-weight: bold; color: #333; font-size: 13px; }
-        .top-bar input, .top-bar select { padding: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); border-radius: 10px; font-size: 16px; outline: none; width: 100%; }
+        /* ================= 📱 手机端默认样式（顶部栏折叠 + 卡片紧凑优化） ================= */
+        .top-bar { display: block; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.4); margin-bottom: 15px; }
         
+        /* 折叠头部 */
+        .mobile-filter-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #333; font-size: 14px; cursor: pointer; padding: 4px 0; }
+        .mobile-filter-header .filter-icon { font-size: 12px; color: #888; transition: transform 0.2s; }
+        
+        /* 折叠内容 */
+        .filter-content { display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .filter-content.active { display: flex; }
+        .filter-content label { display: block; font-weight: bold; color: #333; font-size: 13px; }
+        .filter-content input, .filter-content select { padding: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); border-radius: 10px; font-size: 16px; outline: none; width: 100%; }
+        .filter-content button { margin-bottom: 0; }
+
         button { padding: 12px 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; background: #007bff; box-shadow: 0 4px 12px rgba(0,122,255,0.2); transition: 0.2s; width: 100%; margin-bottom: 10px; }
         button:active { transform: scale(0.98); }
         .btn-edit { background: #ffc107; color: #333; }
@@ -26,14 +36,33 @@
         .btn-info { background: #6f42c1; }
         .btn-save { background: #28a745; padding: 10px 12px; font-size: 13px; width: auto; margin-bottom: 0; }
 
-        /* 表格卡片化 */
+        /* 手机端卡片极致紧凑 */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
-        tr { display: block; background: rgba(255,255,255,0.8); border-radius: 16px; margin-bottom: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.9); }
-        td { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px dashed rgba(0,0,0,0.05); font-size: 13px; text-align: right; color: #1c1c1e; }
-        td:last-child { border-bottom: none; padding-bottom: 0; }
-        td::before { content: attr(data-label); font-weight: bold; color: #666; text-align: left; margin-right: 10px; flex-shrink: 0; }
+        
+        tr { display: block; background: #fff; border-radius: 12px; margin-bottom: 8px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
+        td { display: block; padding: 2px 0; border-bottom: none; font-size: 12px; text-align: left; color: #1c1c1e; }
+        td::before { display: none; } /* 手机端隐藏默认标签 */
+
+        /* 第一行：名称大字 */
+        td[data-label="名称"] { font-size: 15px; font-weight: bold; margin-bottom: 2px; color: #1c1c1e; }
+        
+        /* 第二行：分类和ID */
+        td[data-label="分类"] { font-size: 12px; color: #888; display: inline-block; margin-right: 10px; }
+        td[data-label="分类"]::before { content: "分类: "; color: #888; }
+        td[data-label="卡种ID"] { font-size: 11px; color: #aaa; display: block; margin-bottom: 4px; }
+        td[data-label="卡种ID"]::before { content: "ID: "; color: #aaa; }
+
+        /* 第三行：库存和成本横向并排 */
+        td[data-label="库存"] { display: inline-block; font-size: 13px; color: #28a745; font-weight: bold; margin-right: 15px; }
+        td[data-label="库存"]::before { content: "库存: "; color: #999; font-weight: normal; }
+        td[data-label="成本"] { display: inline-block; font-size: 13px; color: #dc3545; font-weight: bold; }
+        td[data-label="成本"]::before { content: "成本: "; color: #999; font-weight: normal; }
+
+        /* 第四行：操作按钮组 */
+        td[data-label="操作"] { display: flex; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.05); justify-content: flex-start; gap: 6px; flex-wrap: wrap; }
+        td[data-label="操作"] button { padding: 6px 10px; font-size: 12px; margin: 0; box-shadow: none; border-radius: 6px; width: auto; }
 
         .status-msg { margin-top: 10px; color: #333; font-weight: bold; font-size: 13px; }
 
@@ -60,26 +89,50 @@
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .page-btn { background: #6c757d; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
 
-        /* ================= 💻 电脑端专属优化 ================= */
+        /* ================= 💻 电脑端专属优化（彻底还原标准表格） ================= */
         @media (min-width: 768px) {
-            /* 顶部工具栏 */
-            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; }
-            .top-bar label { white-space: nowrap; }
-            .top-bar input, .top-bar select { flex: 1; min-width: 120px; width: auto; }
-            .top-bar button { width: auto; margin-bottom: 0; }
+            /* 隐藏折叠头，展示原有工具栏 */
+            .mobile-filter-header { display: none !important; }
+            .filter-content { display: flex !important; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 0; width: 100%; }
+            .filter-content label { display: block !important; white-space: nowrap; margin-bottom: 0; font-size: 13px; }
+            .filter-content input, .filter-content select { flex: 1; min-width: 120px; width: auto !important; margin-bottom: 0; }
+            .filter-content button { width: auto !important; margin-bottom: 0; padding: 10px 18px; }
+
+            /* 强制恢复经典表格布局，使用 !important 洗掉所有手机端干扰 */
+            .table-wrapper { display: block !important; overflow-x: auto; }
+            table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-collapse: collapse; }
+            thead { display: table-header-group !important; background: rgba(0,0,0,0.03); }
+            thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
+            thead th { display: table-cell !important; padding: 12px !important; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
             
-            /* 表格还原 */
-            .table-wrapper { overflow-x: auto; }
-            table { display: table; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-            thead { display: table-header-group; background: rgba(0,0,0,0.03); }
-            thead tr { display: table-row; background: none; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; }
-            thead th { display: table-cell; padding: 12px; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
-            tbody tr { display: table-row; background: transparent; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
-            tbody tr:hover { background: rgba(255, 255, 255, 0.5); }
-            tbody td { display: table-cell; padding: 12px; text-align: left; border: none; vertical-align: middle; }
-            tbody td::before { display: none; }
-            td[data-label="操作"] { display: table-cell; }
-            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0; }
+            tbody { display: table-row-group !important; }
+            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
+            tbody tr:hover { background: rgba(255, 255, 255, 0.5) !important; }
+            
+            /* 强制所有单元格恢复表格显示，清除 flex 和 inline-block */
+            tbody td { 
+                display: table-cell !important; 
+                padding: 12px !important; 
+                text-align: left !important; 
+                border: none !important; 
+                vertical-align: middle !important; 
+                font-size: 13px !important; 
+                color: #1c1c1e !important;
+            }
+            
+            /* 隐藏手机端伪元素标签 */
+            tbody td::before { display: none !important; }
+            
+            /* 恢复操作列按钮为标准内联块 */
+            tbody td[data-label="操作"] { display: table-cell !important; }
+            tbody td[data-label="操作"] button { 
+                display: inline-block !important; 
+                width: auto !important; 
+                margin: 0 5px 5px 0 !important; 
+                padding: 6px 12px !important; 
+                font-size: 12px !important;
+                box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2) !important;
+            }
 
             /* 弹窗居中 */
             .modal-overlay { align-items: center; }
@@ -103,14 +156,22 @@
     <!-- 卡种页面 -->
     <div id="kind-page">
         <div class="top-bar">
-            <label>卡种名称：</label>
-            <input type="text" id="kindNameFilter" placeholder="模糊搜索">
-            <label>类型：</label>
-            <select id="kindTypeFilter"><option value="">全部</option><option value="1">唯一卡</option><option value="2">图片</option></select>
-            <label>分类ID：</label>
-            <input type="number" id="kindCategoryFilter" placeholder="ID">
-            <button onclick="loadKinds(1)">搜索</button>
-            <button onclick="loadKinds(1)">刷新</button>
+            <!-- 手机端折叠开关 -->
+            <div class="mobile-filter-header" onclick="toggleMobileFilter()">
+                <span>🔍 搜索与筛选</span>
+                <span id="filterToggleIcon" class="filter-icon">▼</span>
+            </div>
+            <!-- 筛选内容区 -->
+            <div class="filter-content" id="filterContent">
+                <label>卡种名称：</label>
+                <input type="text" id="kindNameFilter" placeholder="模糊搜索">
+                <label>类型：</label>
+                <select id="kindTypeFilter"><option value="">全部</option><option value="1">唯一卡</option><option value="2">图片</option></select>
+                <label>分类ID：</label>
+                <input type="number" id="kindCategoryFilter" placeholder="ID">
+                <button onclick="loadKinds(1)">搜索</button>
+                <button onclick="loadKinds(1)">刷新</button>
+            </div>
         </div>
         <div id="kindStatusMsg" class="status-msg">正在加载卡种列表...</div>
         <div class="table-wrapper">
@@ -131,8 +192,14 @@
     <!-- 卡密分类页面 -->
     <div id="category-page" style="display: none;">
         <div class="top-bar">
-            <button onclick="loadCategories()">刷新分类列表</button>
-            <button class="btn-save" onclick="openCategoryModal()">+ 新建分类</button>
+            <div class="mobile-filter-header" onclick="toggleMobileFilter()">
+                <span>🔍 分类操作</span>
+                <span id="filterToggleIcon2" class="filter-icon">▼</span>
+            </div>
+            <div class="filter-content" id="filterContentCategory">
+                <button onclick="loadCategories()">刷新分类列表</button>
+                <button class="btn-save" onclick="openCategoryModal()">+ 新建分类</button>
+            </div>
         </div>
         <div id="categoryStatusMsg" class="status-msg">正在加载卡密分类...</div>
         <div class="table-wrapper">
@@ -225,6 +292,30 @@
     let currentKindData = [];
     let currentKindPage = 1;
     const kindPageSize = 20;
+
+    // 手机端顶部栏折叠控制
+    function toggleMobileFilter() {
+        const content = document.getElementById('filterContent');
+        const icon = document.getElementById('filterToggleIcon');
+        if (content.classList.contains('active')) {
+            content.classList.remove('active');
+            icon.innerText = '▼';
+        } else {
+            content.classList.add('active');
+            icon.innerText = '▲';
+        }
+    }
+    function toggleMobileFilterCategory() {
+        const content = document.getElementById('filterContentCategory');
+        const icon = document.getElementById('filterToggleIcon2');
+        if (content.classList.contains('active')) {
+            content.classList.remove('active');
+            icon.innerText = '▼';
+        } else {
+            content.classList.add('active');
+            icon.innerText = '▲';
+        }
+    }
 
     function switchTab(tabName) {
         document.getElementById('tab-kind').classList.remove('active');
