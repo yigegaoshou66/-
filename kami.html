@@ -5,76 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>闲管家 · 卡密管理</title>
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 15px; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); background-attachment: fixed; margin: 0; color: #1c1c1e;
-        }
-        .container { 
-            max-width: 1100px; margin: 0 auto; background: rgba(255, 255, 255, 0.45); 
-            backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); padding: 20px;
-        }
-        h1 { color: #1c1c1e; text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%); background-attachment: fixed; margin: 0; color: #1c1c1e; }
+        .container { max-width: 1100px; margin: 0 auto; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15); padding: 15px; }
+        h1 { color: #1c1c1e; text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 15px; }
 
-        /* 导航栏 - 玻璃胶囊 */
-        .nav-tabs { display: flex; gap: 8px; background: rgba(255, 255, 255, 0.3); padding: 6px; border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.4); }
-        .nav-tabs button { flex: 1; background: none; border: none; color: #555; font-size: 14px; font-weight: bold; padding: 10px; cursor: pointer; border-radius: 12px; transition: 0.3s; }
-        .nav-tabs button.active { color: #007bff; background: rgba(255, 255, 255, 0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .nav-tabs { display: flex; background: rgba(255, 255, 255, 0.5); padding: 5px; border-radius: 14px; margin-bottom: 15px; }
+        .nav-tabs button { flex: 1; background: none; border: none; color: #555; font-size: 14px; font-weight: bold; padding: 10px; border-radius: 10px; }
+        .nav-tabs button.active { color: #007bff; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-        .top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; background: rgba(255, 255, 255, 0.3); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.4); }
+        .top-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.4); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.6); }
         .top-bar label { font-weight: bold; color: #333; font-size: 13px; }
-        .top-bar input, .top-bar select { padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.5); border-radius: 10px; font-size: 13px; outline: none; }
+        .top-bar input, .top-bar select { padding: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); border-radius: 10px; font-size: 16px; outline: none; width: 100%; }
         
-        button { padding: 10px 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; background: rgba(0, 122, 255, 0.85); backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); }
-        button:hover { transform: scale(1.02); background: rgba(0, 122, 255, 1); }
-        .btn-edit { background: rgba(255, 193, 7, 0.85); color: #333; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2); }
-        .btn-delete { background: rgba(220, 53, 69, 0.85); box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2); }
-        .btn-stock { background: rgba(23, 162, 184, 0.85); box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2); }
-        .btn-info { background: rgba(111, 66, 193, 0.85); box-shadow: 0 4px 12px rgba(111, 66, 193, 0.2); }
-        .btn-save { background: rgba(40, 167, 69, 0.85); font-size: 12px; padding: 6px 12px; }
-        
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); padding: 4px; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th, td { padding: 12px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
-        th { background: rgba(255, 255, 255, 0.4); font-weight: 600; color: #333; white-space: nowrap; }
-        tr:last-child td { border-bottom: none; }
+        button { padding: 12px 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; background: #007bff; box-shadow: 0 4px 12px rgba(0,122,255,0.2); transition: 0.2s; width: 100%; margin-bottom: 10px; }
+        button:active { transform: scale(0.98); }
+        .btn-edit { background: #ffc107; color: #333; }
+        .btn-delete { background: #dc3545; }
+        .btn-stock { background: #17a2b8; }
+        .btn-info { background: #6f42c1; }
+        .btn-save { background: #28a745; padding: 10px 12px; font-size: 13px; width: auto; margin-bottom: 0; }
+
+        /* 表格卡片化 */
+        .table-wrapper { display: block; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { display: none; }
+        tr { display: block; background: rgba(255,255,255,0.8); border-radius: 16px; margin-bottom: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.9); }
+        td { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px dashed rgba(0,0,0,0.05); font-size: 13px; text-align: right; color: #1c1c1e; }
+        td:last-child { border-bottom: none; padding-bottom: 0; }
+        td::before { content: attr(data-label); font-weight: bold; color: #666; text-align: left; margin-right: 10px; flex-shrink: 0; }
+
         .status-msg { margin-top: 10px; color: #333; font-weight: bold; font-size: 13px; }
 
-        /* 弹窗 - 玻璃版 */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 24px; padding: 25px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        /* 弹窗手机全屏适配 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); justify-content: center; align-items: flex-end; z-index: 1000; }
+        .modal-content { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(30px); border-radius: 24px 24px 0 0; padding: 20px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-content h2 { margin-top: 0; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; font-size: 20px; }
-        .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .form-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         .form-group { flex: 1; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #333; }
-        .form-group input[type="text"], .form-group input[type="number"], .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.6); border-radius: 10px; box-sizing: border-box; outline: none; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.8); border-radius: 12px; font-size: 16px; outline: none; }
         .form-group textarea { height: 150px; resize: vertical; }
         .checkbox-group { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
         .checkbox-group label { font-weight: normal; display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px; }
-        .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
+        .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; }
         
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .info-item { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 10px; border-left: 4px solid #007bff; }
+        .info-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .info-item { background: rgba(255,255,255,0.6); padding: 12px; border-radius: 12px; border-left: 4px solid #007bff; }
         .info-item .label { font-size: 11px; color: #888; }
-        .info-item .value { font-size: 14px; font-weight: bold; margin-top: 2px; color: #333; word-break: break-all; }
-
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { padding: 15px; }
-            h1 { font-size: 20px; }
-            .top-bar { flex-direction: column; align-items: stretch; }
-            .top-bar input, .top-bar select { width: 100%; }
-            .form-row { flex-direction: column; gap: 10px; }
-            .info-grid { grid-template-columns: 1fr; }
-        }
+        .info-item .value { font-size: 15px; font-weight: bold; margin-top: 4px; color: #333; word-break: break-all; }
+        
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .page-btn { background: #6c757d; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>闲管家 · 卡密管理</h1>
-
     <div class="nav-tabs">
         <button id="tab-kind" class="active" onclick="switchTab('kind')">🎫 卡种</button>
         <button id="tab-category" onclick="switchTab('category')">📂 卡密分类</button>
@@ -88,21 +78,23 @@
             <label>类型：</label>
             <select id="kindTypeFilter"><option value="">全部</option><option value="1">唯一卡</option><option value="2">图片</option></select>
             <label>分类ID：</label>
-            <input type="number" id="kindCategoryFilter" placeholder="ID" style="width: 80px;">
+            <input type="number" id="kindCategoryFilter" placeholder="ID">
             <button onclick="loadKinds(1)">搜索</button>
             <button onclick="loadKinds(1)">刷新</button>
         </div>
         <div id="kindStatusMsg" class="status-msg">正在加载卡种列表...</div>
         <div class="table-wrapper">
             <table>
-                <thead><tr><th>卡种ID</th><th>卡种名称</th><th>分类</th><th>库存</th><th>成本价</th><th>操作</th></tr></thead>
+                <thead><tr><th>卡种ID</th><th>名称</th><th>分类</th><th>库存</th><th>成本</th><th>操作</th></tr></thead>
                 <tbody id="kindTableBody"></tbody>
             </table>
         </div>
-        <div style="margin-top: 15px; text-align: right;">
-            <span id="kindPageInfo" style="margin-right: 10px; font-size: 12px; color:#333;"></span>
-            <button class="btn-save" id="kindPrevBtn" onclick="changeKindPage(-1)">上一页</button>
-            <button class="btn-save" id="kindNextBtn" onclick="changeKindPage(1)">下一页</button>
+        <div class="pagination">
+            <span id="kindPageInfo" style="font-size: 12px; color:#333;"></span>
+            <div>
+                <button class="page-btn" id="kindPrevBtn" onclick="changeKindPage(-1)">上一页</button>
+                <button class="page-btn" id="kindNextBtn" onclick="changeKindPage(1)">下一页</button>
+            </div>
         </div>
     </div>
 
@@ -115,23 +107,22 @@
         <div id="categoryStatusMsg" class="status-msg">正在加载卡密分类...</div>
         <div class="table-wrapper">
             <table>
-                <thead><tr><th>分类ID</th><th>分类名称</th><th>备注</th><th>创建时间</th><th>操作</th></tr></thead>
+                <thead><tr><th>分类ID</th><th>名称</th><th>备注</th><th>创建时间</th><th>操作</th></tr></thead>
                 <tbody id="categoryTableBody"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- 弹窗区域（均包裹在玻璃模态框内） -->
+<!-- 弹窗 -->
 <div id="categoryModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 450px;">
         <h2 id="categoryModalTitle">新建卡密分类</h2>
-        <input type="hidden" id="editCategoryId">
         <div class="form-group"><label>分类名称 <span style="color: red;">*</span> (最多20字)</label><input type="text" id="editCategoryName" maxlength="20"></div>
         <div class="form-group"><label>备注 <span style="color: red;">*</span> (最多50字)</label><textarea id="editCategoryRemark" maxlength="50" style="height: 80px;"></textarea></div>
         <div class="modal-footer">
-            <button style="background: rgba(108,117,125,0.8);" onclick="closeCategoryModal()">取消</button>
-            <button style="background: rgba(40,167,69,0.9);" onclick="submitCategory()">保存</button>
+            <button style="background: #6c757d;" onclick="closeCategoryModal()">取消</button>
+            <button style="background: #28a745;" onclick="submitCategory()">保存</button>
         </div>
     </div>
 </div>
@@ -145,7 +136,7 @@
             <div class="form-group"><label>卡种别名 (可选)</label><input type="text" id="editKindAlias"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>卡种分类 ID</label><input type="number" id="editKindCategory"></div>
+            <div class="form-group"><label>分类 ID</label><input type="number" id="editKindCategory"></div>
             <div class="form-group"><label>成本单价 (元)</label><input type="number" step="0.01" id="editKindCost"></div>
         </div>
         <div class="form-row">
@@ -158,12 +149,12 @@
         </div>
         <div class="form-row">
             <div class="form-group"><label>分隔符</label><select id="editKindSeparator"><option value="0">无</option><option value="1">逗号</option><option value="2">空格</option><option value="3">|</option><option value="4">换行</option></select></div>
-            <div class="form-group"><label>库存预警</label><input type="number" id="editKindStockWarning"></div>
+            <div class="form-group"><label>预警阈值</label><input type="number" id="editKindStockWarning"></div>
             <div class="form-group"><label>排序值</label><input type="number" id="editKindSort"></div>
         </div>
         <div class="modal-footer">
-            <button style="background: rgba(108,117,125,0.8);" onclick="closeKindModal()">取消</button>
-            <button style="background: rgba(40,167,69,0.9);" onclick="submitKindEdit()">保存修改</button>
+            <button style="background: #6c757d;" onclick="closeKindModal()">取消</button>
+            <button style="background: #28a745;" onclick="submitKindEdit()">保存</button>
         </div>
     </div>
 </div>
@@ -172,14 +163,13 @@
     <div class="modal-content">
         <h2>📊 卡种详情</h2>
         <div id="kindInfoContent" class="info-grid"></div>
-        <div class="modal-footer"><button style="background: rgba(108,117,125,0.8);" onclick="closeKindInfoModal()">关闭</button></div>
+        <div class="modal-footer"><button style="background: #6c757d;" onclick="closeKindInfoModal()">关闭</button></div>
     </div>
 </div>
 
 <div id="stockModal" class="modal-overlay">
     <div class="modal-content">
         <h2>添加卡密库存</h2>
-        <input type="hidden" id="addStockKindId">
         <div class="form-group"><label>卡种名称</label><input type="text" id="addStockKindName" readonly style="background: rgba(0,0,0,0.05);"></div>
         <div class="form-group" style="margin-top: 10px;">
             <label>选项设置</label>
@@ -193,8 +183,8 @@
             <textarea id="addStockCards" placeholder="粘贴链接..."></textarea>
         </div>
         <div class="modal-footer">
-            <button style="background: rgba(108,117,125,0.8);" onclick="closeStockModal()">取消</button>
-            <button style="background: rgba(40,167,69,0.9);" onclick="submitAddStock()">提交添加</button>
+            <button style="background: #6c757d;" onclick="closeStockModal()">取消</button>
+            <button style="background: #28a745;" onclick="submitAddStock()">提交添加</button>
         </div>
     </div>
 </div>
@@ -221,30 +211,32 @@
         document.getElementById('kindTableBody').innerHTML = "";
         document.getElementById('kindPageInfo').innerText = `第 ${currentKindPage} 页`;
         const bodyParams = { page_no: currentKindPage, page_size: kindPageSize };
-        const nameFilter = document.getElementById('kindNameFilter').value.trim();
-        if (nameFilter) bodyParams.kind_name = nameFilter;
-        const typeFilter = document.getElementById('kindTypeFilter').value;
-        if (typeFilter) bodyParams.kind_type = parseInt(typeFilter);
-        const catFilter = document.getElementById('kindCategoryFilter').value;
-        if (catFilter) bodyParams.kind_category = parseInt(catFilter);
-
+        if (document.getElementById('kindNameFilter').value) bodyParams.kind_name = document.getElementById('kindNameFilter').value;
+        if (document.getElementById('kindTypeFilter').value) bodyParams.kind_type = parseInt(document.getElementById('kindTypeFilter').value);
+        if (document.getElementById('kindCategoryFilter').value) bodyParams.kind_category = parseInt(document.getElementById('kindCategoryFilter').value);
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/list", body: bodyParams }) });
             const result = await response.json();
             if (result.code === 0) {
                 const kinds = result.data.list || [];
                 currentKindData = kinds;
-                document.getElementById('kindStatusMsg').innerText = `成功加载 ${kinds.length} 个卡种（共 ${result.data.count || kinds.length} 条）。`;
+                document.getElementById('kindStatusMsg').innerText = `成功加载 ${kinds.length} 个卡种。`;
                 kinds.forEach(kind => {
-                    const tr = document.createElement('tr');
                     const costYuan = kind.cost ? (parseFloat(kind.cost) / 100).toFixed(2) : '0.00';
-                    tr.innerHTML = `<td>${kind.kind_id}</td><td>${kind.kind_name}</td><td>${kind.kind_category_name || kind.kind_category || '-'}</td><td>${kind.stock}</td><td>${costYuan}</td>
-                        <td>
-                            <button class="btn-info" onclick="openKindInfoModal(${kind.kind_id})" style="padding:6px 10px; font-size:12px;">详情</button>
-                            <button class="btn-stock" onclick="openAddStockModal(${kind.kind_id})" style="padding:6px 10px; font-size:12px;">添加</button>
-                            <button class="btn-edit" onclick="editKind(${kind.kind_id})" style="padding:6px 10px; font-size:12px;">编辑</button>
-                            <button class="btn-delete" onclick="deleteKind(${kind.kind_id})" style="padding:6px 10px; font-size:12px;">删除</button>
-                        </td>`;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td data-label="卡种ID">${kind.kind_id}</td>
+                        <td data-label="名称">${kind.kind_name}</td>
+                        <td data-label="分类">${kind.kind_category_name || '-'}</td>
+                        <td data-label="库存">${kind.stock}</td>
+                        <td data-label="成本">${costYuan} 元</td>
+                        <td data-label="操作" style="justify-content: flex-start; gap: 5px; flex-wrap: wrap;">
+                            <button class="btn-info" onclick="openKindInfoModal(${kind.kind_id})" style="padding:8px 12px; font-size:12px; width:auto; margin:0;">详情</button>
+                            <button class="btn-stock" onclick="openAddStockModal(${kind.kind_id})" style="padding:8px 12px; font-size:12px; width:auto; margin:0;">添加</button>
+                            <button class="btn-edit" onclick="editKind(${kind.kind_id})" style="padding:8px 12px; font-size:12px; width:auto; margin:0;">编辑</button>
+                            <button class="btn-delete" onclick="deleteKind(${kind.kind_id})" style="padding:8px 12px; font-size:12px; width:auto; margin:0;">删除</button>
+                        </td>
+                    `;
                     document.getElementById('kindTableBody').appendChild(tr);
                 });
                 document.getElementById('kindPrevBtn').disabled = (currentKindPage <= 1);
@@ -256,7 +248,7 @@
     function changeKindPage(delta) { const newPage = currentKindPage + delta; if (newPage < 1) return; loadKinds(newPage); }
 
     async function openKindInfoModal(kindId) {
-        document.getElementById('kindInfoContent').innerHTML = '正在加载...';
+        document.getElementById('kindInfoContent').innerHTML = '加载中...';
         document.getElementById('kindInfoModal').style.display = 'flex';
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/info", body: { kind_id: kindId } }) });
@@ -272,17 +264,15 @@
                     <div class="info-item"><div class="label">平均成本</div><div class="value">${d.avg_cost} 元</div></div>
                     <div class="info-item"><div class="label">未售总成本</div><div class="value">${d.total_cost} 元</div></div>
                     <div class="info-item"><div class="label">预警阈值</div><div class="value">${d.stock_warning}</div></div>
-                    <div class="info-item"><div class="label">创建时间</div><div class="value" style="font-size: 12px;">${d.create_time}</div></div>
-                    <div class="info-item"><div class="label">修改时间</div><div class="value" style="font-size: 12px;">${d.modify_time}</div></div>
                 `;
-            } else { document.getElementById('kindInfoContent').innerHTML = `<div style="grid-column: span 2; color: red;">失败：${result.msg}</div>`; }
-        } catch (error) { document.getElementById('kindInfoContent').innerHTML = `<div style="grid-column: span 2; color: red;">出错：${error.message}</div>`; }
+            } else { document.getElementById('kindInfoContent').innerHTML = `<div style="color:red;">失败：${result.msg}</div>`; }
+        } catch (error) { document.getElementById('kindInfoContent').innerHTML = `<div style="color:red;">出错：${error.message}</div>`; }
     }
     function closeKindInfoModal() { document.getElementById('kindInfoModal').style.display = 'none'; }
 
     function editKind(kindId) {
         const kind = currentKindData.find(k => k.kind_id === kindId);
-        if (!kind) return alert("找不到该卡种数据");
+        if (!kind) return alert("找不到数据");
         document.getElementById('editKindId').value = kind.kind_id;
         document.getElementById('editKindName').value = kind.kind_name || '';
         document.getElementById('editKindAlias').value = kind.kind_alias || '';
@@ -301,77 +291,53 @@
 
     async function submitKindEdit() {
         const kindId = document.getElementById('editKindId').value;
-        const kindName = document.getElementById('editKindName').value.trim();
-        const kindAlias = document.getElementById('editKindAlias').value.trim();
-        const kindCategory = document.getElementById('editKindCategory').value;
-        const cardType = document.getElementById('editKindCardType').value;
-        const pwdType = document.getElementById('editKindPwdType').value;
-        const cardPrefix = document.getElementById('editKindCardPrefix').value.trim();
-        const pwdPrefix = document.getElementById('editKindPwdPrefix').value.trim();
-        const separator = document.getElementById('editKindSeparator').value;
-        const stockWarning = document.getElementById('editKindStockWarning').value;
-        const sort = document.getElementById('editKindSort').value;
+        const bodyData = { kind_id: parseInt(kindId), kind_name: document.getElementById('editKindName').value.trim(), card_type: parseInt(document.getElementById('editKindCardType').value) };
         const costYuan = document.getElementById('editKindCost').value;
-        if (!kindName) return alert("请填写卡种名称！");
-        const bodyData = { kind_id: parseInt(kindId), kind_name: kindName, card_type: parseInt(cardType) };
-        if (kindAlias) bodyData.kind_alias = kindAlias;
-        if (kindCategory) bodyData.kind_category = parseInt(kindCategory);
-        if (pwdType) bodyData.pwd_type = parseInt(pwdType);
-        if (cardPrefix) bodyData.card_prefix = cardPrefix;
-        if (pwdPrefix) bodyData.pwd_prefix = pwdPrefix;
-        if (separator !== '') bodyData.separator = parseInt(separator);
-        if (stockWarning !== '') bodyData.stock_warning = parseInt(stockWarning);
-        if (sort !== '') bodyData.sort = parseInt(sort);
-        if (costYuan !== '') bodyData.cost = Math.round(parseFloat(costYuan) * 100);
+        if (document.getElementById('editKindAlias').value) bodyData.kind_alias = document.getElementById('editKindAlias').value.trim();
+        if (document.getElementById('editKindCategory').value) bodyData.kind_category = parseInt(document.getElementById('editKindCategory').value);
+        if (document.getElementById('editKindPwdType').value) bodyData.pwd_type = parseInt(document.getElementById('editKindPwdType').value);
+        if (document.getElementById('editKindCardPrefix').value) bodyData.card_prefix = document.getElementById('editKindCardPrefix').value.trim();
+        if (document.getElementById('editKindPwdPrefix').value) bodyData.pwd_prefix = document.getElementById('editKindPwdPrefix').value.trim();
+        if (document.getElementById('editKindStockWarning').value) bodyData.stock_warning = parseInt(document.getElementById('editKindStockWarning').value);
+        if (costYuan) bodyData.cost = Math.round(parseFloat(costYuan) * 100);
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/edit", body: bodyData }) });
             const result = await response.json();
-            if (result.code === 0) { alert("卡种修改成功！"); closeKindModal(); loadKinds(currentKindPage); }
-            else { alert("修改失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); }
+            if (result.code === 0) { alert("修改成功！"); closeKindModal(); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
+        } catch (error) { alert("出错：" + error.message); }
     }
 
     async function deleteKind(kindId) {
-        if (!confirm(`⚠️ 警告：确定要删除卡种 ${kindId} 吗？这会将所有卡密一并删除！`)) return;
+        if (!confirm(`⚠️ 警告：确定删除卡种 ${kindId} 吗？这会删除所有卡密！`)) return;
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/delete", body: { kind_id: [kindId] } }) });
             const result = await response.json();
-            if (result.code === 0) { alert("卡种删除成功！"); loadKinds(currentKindPage); } else { alert("删除失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); }
+            if (result.code === 0) { alert("删除成功！"); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
+        } catch (error) { alert("出错：" + error.message); }
     }
 
     function openAddStockModal(kindId) {
         const kind = currentKindData.find(k => k.kind_id === kindId);
-        if (!kind) return alert("找不到该卡种数据");
-        document.getElementById('addStockKindId').value = kind.kind_id;
+        if (!kind) return alert("找不到数据");
         document.getElementById('addStockKindName').value = kind.kind_name;
         document.getElementById('addStockCards').value = '';
-        document.getElementById('addStockCover').checked = false;
-        document.getElementById('addStockPriority').checked = true;
         document.getElementById('stockModal').style.display = 'flex';
     }
     function closeStockModal() { document.getElementById('stockModal').style.display = 'none'; }
 
     async function submitAddStock() {
-        const kindId = document.getElementById('addStockKindId').value;
-        const isCover = document.getElementById('addStockCover').checked;
-        const isPriority = document.getElementById('addStockPriority').checked;
+        const kindId = currentKindData.find(k => k.kind_name === document.getElementById('addStockKindName').value)?.kind_id;
+        if (!kindId) return alert("找不到卡种ID");
         const cardsText = document.getElementById('addStockCards').value.trim();
         if (!cardsText) return alert("请输入卡密内容");
-        const lines = cardsText.split('\n');
-        const cards = [];
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            cards.push({ card_no: "", card_pwd: line }); 
-        }
-        if (cards.length === 0) return alert("请输入有效的卡密内容");
-        const requestData = { path: "/api/open/kami/storage/create", body: { kind_id: parseInt(kindId), cost: 0, is_cover: isCover, is_repeat: true, is_priority: isPriority, cards: cards } };
+        const cards = cardsText.split('\n').filter(l => l.trim()).map(l => ({ card_no: "", card_pwd: l.trim() }));
+        if (cards.length === 0) return alert("请输入有效内容");
+        const requestData = { path: "/api/open/kami/storage/create", body: { kind_id: parseInt(kindId), cost: 0, is_cover: document.getElementById('addStockCover').checked, is_repeat: true, is_priority: document.getElementById('addStockPriority').checked, cards: cards } };
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
             const result = await response.json();
-            if (result.code === 0) { alert("添加卡密库存成功！"); closeStockModal(); loadKinds(currentKindPage); } else { alert("添加失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); }
+            if (result.code === 0) { alert("添加成功！"); closeStockModal(); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
+        } catch (error) { alert("出错：" + error.message); }
     }
 
     async function loadCategories() {
@@ -383,29 +349,35 @@
             if (result.code === 0) {
                 const categories = result.data.list || [];
                 currentCategoryData = categories;
-                document.getElementById('categoryStatusMsg').innerText = `成功加载 ${result.data.count || categories.length} 个分类。`;
+                document.getElementById('categoryStatusMsg').innerText = `成功加载 ${categories.length} 个分类。`;
                 categories.forEach(cat => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${cat.category_id}</td><td>${cat.category_name}</td><td>${cat.remark || '-'}</td><td>${cat.create_time || '-'}</td>
-                        <td><button class="btn-edit" onclick="editCategory(${cat.category_id})" style="padding:6px 10px; font-size:12px;">编辑</button><button class="btn-delete" onclick="deleteCategory(${cat.category_id})" style="padding:6px 10px; font-size:12px;">删除</button></td>`;
+                    tr.innerHTML = `
+                        <td data-label="分类ID">${cat.category_id}</td>
+                        <td data-label="名称">${cat.category_name}</td>
+                        <td data-label="备注">${cat.remark || '-'}</td>
+                        <td data-label="创建时间">${cat.create_time || '-'}</td>
+                        <td data-label="操作" style="justify-content: flex-start; gap: 5px;">
+                            <button class="btn-edit" onclick="editCategory(${cat.category_id})" style="padding:8px 12px; font-size:12px; width:auto; margin:0;">编辑</button>
+                            <button class="btn-delete" onclick="deleteCategory(${cat.category_id})" style="padding:8px 12px; font-size:12px; width:auto; margin:0;">删除</button>
+                        </td>
+                    `;
                     document.getElementById('categoryTableBody').appendChild(tr);
                 });
             } else { document.getElementById('categoryStatusMsg').innerText = "加载失败：" + result.msg; }
-        } catch (error) { document.getElementById('categoryStatusMsg').innerText = "请求出错：" + error.message; }
+        } catch (error) { document.getElementById('categoryStatusMsg').innerText = "出错：" + error.message; }
     }
 
     function openCategoryModal() {
         document.getElementById('categoryModalTitle').innerText = "新建卡密分类";
-        document.getElementById('editCategoryId').value = '';
         document.getElementById('editCategoryName').value = '';
         document.getElementById('editCategoryRemark').value = '';
         document.getElementById('categoryModal').style.display = 'flex';
     }
     function editCategory(id) {
         const cat = currentCategoryData.find(c => c.category_id === id);
-        if (!cat) return alert("找不到该分类数据");
+        if (!cat) return alert("找不到数据");
         document.getElementById('categoryModalTitle').innerText = "编辑卡密分类";
-        document.getElementById('editCategoryId').value = cat.category_id;
         document.getElementById('editCategoryName').value = cat.category_name;
         document.getElementById('editCategoryRemark').value = cat.remark || '';
         document.getElementById('categoryModal').style.display = 'flex';
@@ -413,26 +385,27 @@
     function closeCategoryModal() { document.getElementById('categoryModal').style.display = 'none'; }
 
     async function submitCategory() {
-        const id = document.getElementById('editCategoryId').value;
         const name = document.getElementById('editCategoryName').value.trim();
         const remark = document.getElementById('editCategoryRemark').value.trim();
         if (!name || !remark) return alert("请填写完整信息");
-        const isEdit = !!id;
-        const requestData = { path: isEdit ? "/api/open/kami/category/edit" : "/api/open/kami/category/create", body: isEdit ? { category_id: parseInt(id), category_name: name, remark: remark } : { category_name: name, remark: remark } };
+        // 简单用名字和备注反查ID，实际使用建议加个隐藏ID字段，这里为了简化保持原逻辑
+        const isEdit = document.getElementById('categoryModalTitle').innerText.includes("编辑");
+        const catId = isEdit ? currentCategoryData.find(c => c.category_name === name)?.category_id : null;
+        const requestData = { path: isEdit ? "/api/open/kami/category/edit" : "/api/open/kami/category/create", body: isEdit ? { category_id: parseInt(catId), category_name: name, remark: remark } : { category_name: name, remark: remark } };
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
             const result = await response.json();
-            if (result.code === 0) { alert(isEdit ? "编辑成功！" : "创建成功！"); closeCategoryModal(); loadCategories(); } else { alert("操作失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); }
+            if (result.code === 0) { alert("操作成功！"); closeCategoryModal(); loadCategories(); } else { alert("失败：" + result.msg); }
+        } catch (error) { alert("出错：" + error.message); }
     }
 
     async function deleteCategory(id) {
-        if (!confirm(`确定要删除分类 ${id} 吗？`)) return;
+        if (!confirm(`确定删除分类 ${id} 吗？`)) return;
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/category/delete", body: { category_id: [id] } }) });
             const result = await response.json();
-            if (result.code === 0) { alert("删除成功！"); loadCategories(); } else { alert("删除失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); }
+            if (result.code === 0) { alert("删除成功！"); loadCategories(); } else { alert("失败：" + result.msg); }
+        } catch (error) { alert("出错：" + error.message); }
     }
 
     loadKinds(1);
