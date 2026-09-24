@@ -6,56 +6,130 @@
     <title>闲管家 · 订单管理助手</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%); background-attachment: fixed; margin: 0; color: #1c1c1e; }
-        .container { max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15); padding: 15px; }
-        h1 { color: #1c1c1e; text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 15px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 8px; 
+            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+            background-attachment: fixed; margin: 0; color: #1c1c1e;
+        }
+        .container { 
+            max-width: 1200px; margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; 
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15); padding: 10px; 
+        }
+        h1 { color: #1c1c1e; text-align: center; font-size: 18px; font-weight: 800; margin-bottom: 12px; }
         
-        .top-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.4); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.6); }
-        .top-bar label { font-weight: bold; color: #333; font-size: 13px; }
-        .top-bar select { padding: 10px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); border-radius: 10px; font-size: 16px; outline: none; width: 100%; }
+        /* 每日统计区域 */
+        .stats-area { 
+            background: rgba(255, 255, 255, 0.9); border: 1px solid #e0e0e0;
+            border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; 
+            font-size: 13px; font-weight: bold; color: #333; line-height: 1.8; 
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center; 
+        }
+        .stats-area .title { color: #007bff; margin-right: 4px; }
+        .stats-area .item { background: #e9ecef; padding: 3px 8px; border-radius: 6px; color: #495057; font-size: 12px; }
+        .stats-area .item span { color: #dc3545; font-weight: 800; }
         
-        button { padding: 12px 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; background: #007bff; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); transition: 0.2s; width: 100%; margin-bottom: 10px; }
+        .top-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.5); padding: 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.6); }
+        .top-bar label { font-weight: bold; color: #333; font-size: 13px; white-space: nowrap; }
+        
+        /* 日期选择器和下拉框通用样式 */
+        .top-bar input[type="date"], .top-bar select { 
+            padding: 8px 12px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); 
+            border-radius: 8px; font-size: 14px; outline: none; width: 100%; color: #333;
+        }
+        .top-bar input[type="date"] { -webkit-appearance: none; } /* 修复iOS日期框高度 */
+        
+        button { padding: 10px 14px; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; background: #007bff; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); transition: 0.2s; width: 100%; margin-bottom: 8px; }
         button:active { transform: scale(0.98); }
         button:disabled { background-color: #ccc; box-shadow: none; }
-        .page-btn { background: #6c757d; padding: 10px 12px; font-size: 13px; width: auto; margin-bottom: 0; }
+        .page-btn { background: #6c757d; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
+        .btn-clear { background: #dc3545; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
 
-        /* 表格卡片化 */
+        /* ================= 📱 手机端卡片化布局（紧凑） ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
-        tr { display: block; background: rgba(255, 255, 255, 0.8); border-radius: 16px; margin-bottom: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.9); }
-        td { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px dashed rgba(0,0,0,0.05); font-size: 13px; text-align: right; color: #1c1c1e; }
-        td:last-child { border-bottom: none; padding-bottom: 0; }
-        td::before { content: attr(data-label); font-weight: bold; color: #666; text-align: left; margin-right: 10px; flex-shrink: 0; }
-
-        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        
+        tr { 
+            display: flex; flex-wrap: wrap; 
+            background: #fff; border-radius: 12px; 
+            margin-bottom: 8px; padding: 12px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); 
+        }
+        
+        td { 
+            display: flex; align-items: center; 
+            padding: 2px 0; border: none; 
+            font-size: 12px; text-align: left; color: #1c1c1e; 
+            flex: 0 0 auto; margin-right: 12px; 
+        }
+        td::before { content: attr(data-label); font-weight: normal; color: #888; margin-right: 4px; flex-shrink: 0; }
+        
+        td[data-label="订单号"], td[data-label="商品"], td[data-label="操作"] { 
+            flex: 0 0 100%; width: 100%; margin-right: 0;
+        }
+        
+        td[data-label="订单号"] { font-size: 10px; color: #aaa; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
+        td[data-label="订单号"]::before { font-size: 10px; }
+        
+        td[data-label="商品"] { font-size: 13px; font-weight: bold; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px dashed #eee; }
+        td[data-label="商品"]::before { display: none; }
+        
+        td[data-label="买家"], td[data-label="金额"], td[data-label="状态"], td[data-label="时间"] { width: calc(50% - 6px); margin-right: 0; }
+        
+        td[data-label="操作"] { 
+            margin-top: 8px; padding-top: 8px; 
+            border-top: 1px dashed #e5e5e5; 
+            justify-content: flex-start; gap: 6px; flex-wrap: wrap;
+        }
+        td[data-label="操作"]::before { display: none; }
+        td[data-label="操作"] button { padding: 6px 10px; font-size: 12px; margin: 0; box-shadow: none; border-radius: 6px; width: auto; }
+        
+        .status-badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
         .status-11 { background: #fff3cd; color: #856404; }
         .status-12 { background: #cce5ff; color: #004085; }
         .status-21 { background: #d4edda; color: #155724; }
         .status-22 { background: #d1ecf1; color: #0c5460; }
         .status-23, .status-24 { background: #f8d7da; color: #721c24; }
-        .status-msg { margin-top: 10px; color: #333; font-weight: bold; font-size: 13px; }
-        .item-info { font-size: 11px; color: #666; margin-top: 2px; }
-        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+
+        .status-msg { margin-top: 8px; color: #333; font-weight: bold; font-size: 12px; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 
         /* ================= 💻 电脑端专属优化 ================= */
         @media (min-width: 768px) {
-            .top-bar { flex-direction: row; align-items: center; }
-            .top-bar label { white-space: nowrap; }
-            .top-bar select { flex: 1; width: auto; }
-            .top-bar button { width: auto; margin-bottom: 0; }
-            
+            body { padding: 12px; }
+            .container { padding: 15px; border-radius: 20px; }
+            h1 { font-size: 20px; margin-bottom: 15px; }
+
+            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 12px; }
+            .top-bar label { display: block; }
+            .top-bar input[type="date"], .top-bar select { flex: 1; min-width: 120px; width: auto; padding: 10px; font-size: 16px; }
+            .top-bar button { width: auto; margin-bottom: 0; padding: 12px 18px; font-size: 14px; }
+
             .table-wrapper { overflow-x: auto; }
-            table { display: table; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-            thead { display: table-header-group; background: rgba(0,0,0,0.03); }
-            thead tr { display: table-row; background: none; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; }
-            thead th { display: table-cell; padding: 12px; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
-            tbody tr { display: table-row; background: transparent; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
-            tbody tr:hover { background: rgba(255, 255, 255, 0.5); }
-            tbody td { display: table-cell; padding: 12px; text-align: left; border: none; vertical-align: middle; }
-            tbody td::before { display: none; }
-            td[data-label="操作"] { display: table-cell; }
-            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0; }
+            table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-collapse: collapse; }
+            thead { display: table-header-group !important; background: rgba(0,0,0,0.03); }
+            thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
+            thead th { display: table-cell !important; padding: 12px !important; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            
+            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
+            tbody tr:hover { background: rgba(255, 255, 255, 0.5) !important; }
+            tbody td { display: table-cell !important; padding: 12px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 13px; }
+            tbody td::before { display: none !important; }
+            
+            tbody td[data-label="订单号"], tbody td[data-label="商品"], tbody td[data-label="操作"] {
+                width: auto !important; margin: 0 !important; border: none !important; padding: 12px !important;
+            }
+            tbody td[data-label="订单号"] { font-size: 13px !important; color: #1c1c1e !important; border-bottom: none !important; }
+            tbody td[data-label="商品"] { border-bottom: none !important; font-weight: normal !important; }
+            
+            td[data-label="操作"] { display: table-cell !important; }
+            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0 !important; padding: 6px 10px !important; font-size: 12px !important; }
+            
+            .stats-area { font-size: 14px; padding: 15px; }
+            .stats-area .item { font-size: 13px; padding: 5px 10px; }
         }
     </style>
 </head>
@@ -63,19 +137,36 @@
 
 <div class="container">
     <h1>闲管家 · 订单管理助手</h1>
+    
+    <!-- 每日订单统计区域 -->
+    <div id="dailyStats" class="stats-area">
+        <span class="title">📅 订单统计：</span>
+        <span style="color:#999; font-weight:normal; font-size:12px;">请先选择日期并查询</span>
+    </div>
+
     <div class="top-bar">
+        <label>📅 选择日期：</label>
+        <input type="date" id="dateFilter">
+        
         <label>📦 状态筛选：</label>
         <select id="statusFilter">
-            <option value="">全部订单</option><option value="11">待付款</option><option value="12">待发货</option><option value="21">已发货</option><option value="22">已完成</option><option value="23">已退款</option><option value="24">已关闭</option>
+            <option value="">全部订单</option>
+            <option value="11">待付款</option><option value="12">待发货</option><option value="21">已发货</option><option value="22">已完成</option><option value="23">已退款</option><option value="24">已关闭</option>
         </select>
-        <button onclick="loadOrders(1)">刷新订单</button>
+        
+        <button onclick="loadOrders(1)">🔍 查询</button>
+        <button class="btn-clear" onclick="clearDate()">清除日期</button>
     </div>
 
     <div id="statusMsg" class="status-msg">正在加载订单列表...</div>
 
     <div class="table-wrapper">
         <table id="orderTable">
-            <thead><tr><th>订单号</th><th>买家</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>订单号</th><th>买家</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th>
+                </tr>
+            </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
@@ -96,57 +187,142 @@
     const tableBody = document.getElementById('tableBody');
     const statusMsg = document.getElementById('statusMsg');
     const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
     const pageInfo = document.getElementById('pageInfo');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const dailyStats = document.getElementById('dailyStats');
     const statusMap = { 11: "待付款", 12: "待发货", 21: "已发货", 22: "已完成", 23: "已退款", 24: "已关闭" };
+
+    // 清除日期筛选
+    function clearDate() {
+        dateFilter.value = '';
+        loadOrders(1);
+    }
 
     async function loadOrders(pageNo = 1) {
         currentPage = pageNo;
         statusMsg.innerText = "正在加载订单列表...";
         tableBody.innerHTML = "";
         pageInfo.innerText = `第 ${currentPage} 页`;
+        
         const bodyParams = { page_no: currentPage, page_size: pageSize };
         if (statusFilter.value) bodyParams.order_status = parseInt(statusFilter.value);
+        
+        // 🚀 关键：如果有选择日期，把时间戳传给后端
+        if (dateFilter.value) {
+            // 构造当天的 00:00:00 和 23:59:59 的时间戳（秒）
+            const startOfDay = new Date(dateFilter.value + 'T00:00:00');
+            const endOfDay = new Date(dateFilter.value + 'T23:59:59');
+            bodyParams.start_time = Math.floor(startOfDay.getTime() / 1000);
+            bodyParams.end_time = Math.floor(endOfDay.getTime() / 1000);
+            
+            // 提示用户正在按日期查询
+            statusMsg.innerText = `正在查询 ${dateFilter.value} 的订单...`;
+        }
 
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/order/list", body: bodyParams }) });
             const result = await response.json();
+            
             if (result.code === 0) {
-                const orders = result.data.list || [];
-                if (orders.length === 0) statusMsg.innerText = "暂无订单数据。";
-                else {
-                    statusMsg.innerText = `成功加载 ${orders.length} 条订单。`;
-                    orders.forEach(order => {
-                        const goods = order.goods || {};
-                        const priceInYuan = (order.total_amount / 100).toFixed(2); 
+                let orders = result.data.list || [];
+                
+                // 如果选择了日期，前端做一次兜底过滤（防止后端忽略了时间参数）
+                if (dateFilter.value) {
+                    orders = orders.filter(order => {
                         const timeStamp = order.create_time || order.order_time;
-                        const timeStr = timeStamp ? new Date(timeStamp * 1000).toLocaleString('zh-CN') : '未知时间';
-                        
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td data-label="订单号">${order.order_no}</td>
-                            <td data-label="买家">${order.buyer_nick}</td>
-                            <td data-label="商品">${goods.title || '未知'}<br><small style="color:#666;">${goods.sku_text || ''}</small></td>
-                            <td data-label="金额"><b>${priceInYuan} 元</b></td>
-                            <td data-label="状态"><span class="status-badge status-${order.order_status}">${statusMap[order.order_status] || '未知'}</span></td>
-                            <td data-label="时间">${timeStr}</td>
-                            <td data-label="操作" style="justify-content: flex-start;">
-                                <button class="page-btn" style="background: #ffc107; color:#333; padding:6px 10px; font-size:12px; width:auto;" onclick="alert('改价开发中')">改价</button>
-                                <button class="page-btn" style="background: #28a745; color:#fff; padding:6px 10px; font-size:12px; width:auto;" onclick="alert('发货开发中')">发货</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(tr);
+                        if (!timeStamp) return false;
+                        const d = new Date(timeStamp * 1000);
+                        const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                        return dateStr === dateFilter.value;
                     });
+                    statusMsg.innerText = `成功加载 ${orders.length} 条 ${dateFilter.value} 的订单。`;
+                } else {
+                    statusMsg.innerText = `成功加载 ${orders.length} 条订单。`;
                 }
+
+                if (orders.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999; padding:20px;">暂无订单数据</td></tr>`;
+                } else {
+                    renderOrders(orders);
+                }
+                
+                // 统计逻辑
+                calculateDailyStats(orders);
+
                 prevBtn.disabled = (currentPage <= 1);
                 nextBtn.disabled = (orders.length < pageSize); 
             } else statusMsg.innerText = "加载失败：" + result.msg;
         } catch (error) { statusMsg.innerText = "请求出错：" + error.message; }
     }
 
-    function changePage(delta) { const newPage = currentPage + delta; if (newPage < 1) return; loadOrders(newPage); }
+    function renderOrders(orders) {
+        orders.forEach(order => {
+            const goods = order.goods || {};
+            const priceInYuan = (order.total_amount / 100).toFixed(2); 
+            const timeStamp = order.create_time || order.order_time;
+            const timeStr = timeStamp ? new Date(timeStamp * 1000).toLocaleString('zh-CN') : '未知时间';
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="订单号">${order.order_no}</td>
+                <td data-label="买家">${order.buyer_nick}</td>
+                <td data-label="商品">${goods.title || '未知'}<br><small style="color:#666;">${goods.sku_text || ''}</small></td>
+                <td data-label="金额"><b>${priceInYuan} 元</b></td>
+                <td data-label="状态"><span class="status-badge status-${order.order_status}">${statusMap[order.order_status] || '未知'}</span></td>
+                <td data-label="时间">${timeStr}</td>
+                <td data-label="操作" style="justify-content: flex-start;">
+                    <button class="page-btn" style="background: #ffc107; color:#333;" onclick="alert('改价开发中')">改价</button>
+                    <button class="page-btn" style="background: #28a745; color:#fff;" onclick="alert('发货开发中')">发货</button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // 统计当前展示的订单
+    function calculateDailyStats(orders) {
+        const statsMap = {};
+        orders.forEach(order => {
+            const timeStamp = order.create_time || order.order_time;
+            if (!timeStamp) return;
+            const date = new Date(timeStamp * 1000);
+            const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+            statsMap[dateStr] = (statsMap[dateStr] || 0) + 1;
+        });
+
+        const sortedDates = Object.keys(statsMap).sort((a, b) => b.localeCompare(a));
+        if (sortedDates.length === 0) {
+            dailyStats.innerHTML = '<span class="title">📅 订单统计：</span><span style="color:#999;">暂无有效数据</span>';
+            return;
+        }
+
+        let html = '';
+        if (dateFilter.value) {
+            // 如果选择了日期，直接显示该日期的统计
+            html = `<span class="title">📅 ${dateFilter.value} 统计：</span><span class="item">当天共 <span>${orders.length}单</span></span>`;
+            html += `<span style="color:#888; font-size:11px; width:100%;">（仅统计当前加载的数据）</span>`;
+        } else {
+            // 未选择日期时，展示当前页各日期的统计
+            html = '<span class="title">📅 本页日期分布：</span>';
+            sortedDates.forEach(date => {
+                html += `<span class="item">${date}: <span>${statsMap[date]}单</span></span>`;
+            });
+        }
+        dailyStats.innerHTML = html;
+    }
+
+    function changePage(delta) { 
+        const newPage = currentPage + delta; 
+        if (newPage < 1) return; 
+        loadOrders(newPage); 
+    }
+    
+    // 下拉框改变时重新加载
     statusFilter.addEventListener('change', () => { loadOrders(1); });
+    
+    // 初始化
     loadOrders(1);
 </script>
 </body>
