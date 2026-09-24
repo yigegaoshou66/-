@@ -60,7 +60,7 @@
         .entry-kami { background: linear-gradient(135deg, #6f42c1, #462688); }
 
         .top-bar { display: flex; flex-direction: row; align-items: center; gap: 8px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.5); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.6); }
-        .top-bar label { display: none; } /* 手机端隐藏标签 */
+        .top-bar label { display: none; }
         .top-bar input { padding: 8px 12px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); border-radius: 8px; font-size: 14px; outline: none; width: 100%; }
         
         button { 
@@ -70,9 +70,10 @@
         button:active { transform: scale(0.98); }
         .btn-publish { background: #17a2b8; }
         .btn-down { background: #dc3545; }
+        .btn-edit { background: #ffc107; color: #333; }
         .btn-save { background: #28a745; padding: 6px 10px; font-size: 12px; width: auto; margin-bottom: 0; }
         
-        /* ================= 📱 手机端卡片化布局（紧凑） ================= */
+        /* ================= 📱 手机端卡片化布局 ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
@@ -144,7 +145,27 @@
 
         .status-msg { margin-top: 8px; color: #333; font-weight: bold; font-size: 12px; }
 
-        /* ================= 💻 电脑端专属优化（彻底还原表格） ================= */
+        /* ================= 📝 编辑弹窗样式 ================= */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); justify-content: center; align-items: flex-end; z-index: 1000; }
+        .modal-content { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(30px); border-radius: 24px 24px 0 0; padding: 20px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-content h2 { margin-top: 0; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; font-size: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #333; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.8); border-radius: 12px; font-size: 16px; outline: none; }
+        .form-group textarea { height: 120px; resize: vertical; }
+        .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; }
+
+        /* SKU 编辑区 */
+        .sku-edit-section { margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px; }
+        .sku-edit-section h3 { font-size: 15px; margin-bottom: 10px; color: #007bff; }
+        .sku-edit-item { background: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid #17a2b8; }
+        .sku-edit-item .sku-title { font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #333; }
+        .sku-edit-item .sku-inputs { display: flex; gap: 10px; }
+        .sku-edit-item .sku-inputs input { flex: 1; padding: 8px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; }
+
+        /* ================= 💻 电脑端专属优化 ================= */
         @media (min-width: 768px) {
             body { padding: 12px; }
             .container { padding: 15px; border-radius: 20px; }
@@ -158,7 +179,6 @@
             .top-bar input { flex: 1; min-width: 150px; width: auto; padding: 10px; font-size: 16px; border-radius: 10px; }
             .top-bar button { width: auto; margin-bottom: 0; padding: 12px 18px; font-size: 14px; }
             
-            /* 强制清理手机端所有 Flex 属性，回归经典 Table */
             .table-wrapper { overflow-x: auto; }
             table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-collapse: collapse; }
             thead { display: table-header-group !important; background: rgba(0,0,0,0.03); }
@@ -170,13 +190,11 @@
             tbody td { display: table-cell !important; padding: 12px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 13px; }
             tbody td::before { display: none !important; }
             
-            /* 强制清理特殊单元格在手机端的设定 */
             tbody td[data-label="标题"], tbody td[data-label="商品ID"], tbody td[data-label="操作"] {
                 width: auto !important; margin: 0 !important; border: none !important; padding: 12px !important;
             }
             tbody td[data-label="标题"] { font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
             
-            /* 操作栏按钮自适应 */
             td[data-label="操作"] { display: table-cell !important; }
             td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0 !important; padding: 6px 10px !important; font-size: 12px !important; }
 
@@ -216,6 +234,11 @@
                 padding: 12px !important; 
                 border-top: none !important; 
             }
+
+            /* 电脑端弹窗居中 */
+            .modal-overlay { align-items: center; }
+            .modal-content { border-radius: 24px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh; animation: fadeIn 0.2s; }
+            @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         }
     </style>
 </head>
@@ -259,6 +282,41 @@
     </div>
 </div>
 
+<!-- 📝 编辑商品弹窗 -->
+<div id="editProductModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>✏️ 编辑商品信息</h2>
+        <input type="hidden" id="editProductId">
+        <div class="form-group">
+            <label>商品标题 <span style="color: red;">*</span></label>
+            <input type="text" id="editTitle" placeholder="请输入商品标题">
+        </div>
+        <div class="form-group">
+            <label>商品价格 (元) <span style="color: red;">*</span></label>
+            <input type="number" step="0.01" id="editPrice" placeholder="例如：99.90">
+        </div>
+        <div class="form-group">
+            <label>商品总库存 <span style="color: red;">*</span></label>
+            <input type="number" id="editStock" placeholder="请输入总库存数量">
+        </div>
+        <div class="form-group">
+            <label>商品描述 <span style="color: red;">*</span></label>
+            <textarea id="editContent" placeholder="请输入商品描述，支持换行..."></textarea>
+        </div>
+
+        <!-- SKU 编辑区域（动态生成） -->
+        <div id="editSkuContainer" class="sku-edit-section" style="display: none;">
+            <h3>📦 多规格 SKU 列表（可单独修改价格和库存）</h3>
+            <div id="skuListWrapper"></div>
+        </div>
+
+        <div class="modal-footer">
+            <button style="background: #6c757d;" onclick="closeEditProductModal()">取消</button>
+            <button style="background: #28a745;" onclick="submitEditProduct()">保存修改</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // ================= 🔒 密码验证逻辑 =================
     const APP_PASSWORD = "shinia299."; // 注意末尾有个点
@@ -295,6 +353,7 @@
     const productTableBody = document.getElementById('productTableBody');
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameInput = document.getElementById('userNameInput');
+    let currentProductData = []; 
 
     async function loadProducts() {
         productStatusMsg.innerText = "正在加载商品列表...";
@@ -303,15 +362,17 @@
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } }) });
             const result = await response.json();
             if (result.code === 0) {
-                productStatusMsg.innerText = "加载成功！点击【展开规格】修改价格和库存。";
+                productStatusMsg.innerText = "加载成功！点击【编辑】可修改商品信息和SKU。";
                 
-                result.data.list.sort((a, b) => {
+                currentProductData = result.data.list || []; 
+
+                currentProductData.sort((a, b) => {
                     const aWeight = (a.product_status === 22) ? 0 : 1;
                     const bWeight = (b.product_status === 22) ? 0 : 1;
                     return aWeight - bWeight; 
                 });
 
-                result.data.list.forEach(product => {
+                currentProductData.forEach(product => {
                     let statusBadge = `<span class="badge-unknown">未知(${product.product_status || '无'})</span>`;
                     if (product.product_status === 22) statusBadge = `<span class="badge-on">✅ 已上架</span>`;
                     else if (product.product_status === 31) statusBadge = `<span class="badge-off">⛔ 已下架</span>`;
@@ -327,6 +388,7 @@
                         <td data-label="价格">${priceYuan} 元</td>
                         <td data-label="库存">${stock}</td>
                         <td data-label="操作" style="justify-content: flex-start; gap: 5px;">
+                            <button class="btn-edit" onclick="openEditProductModal(${product.product_id})" style="padding:6px 10px; font-size:12px; width:auto;">编辑</button>
                             <button onclick="toggleSkuList(${product.product_id}, this)" data-expanded="false" style="padding:6px 10px; font-size:12px; width:auto;">展开规格</button>
                             <button class="btn-publish" onclick="publishProduct(${product.product_id}, this)" style="padding:6px 10px; font-size:12px; width:auto;">上架</button>
                             <button class="btn-down" onclick="downShelfProduct(${product.product_id}, this)" style="padding:6px 10px; font-size:12px; width:auto;">下架</button>
@@ -337,6 +399,146 @@
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
         } catch (error) { productStatusMsg.innerText = "请求出错：" + error.message; }
     }
+
+    // ================= 📝 编辑商品逻辑（含SKU） =================
+
+    // 打开编辑弹窗
+    async function openEditProductModal(productId) {
+        const userName = userNameInput.value.trim();
+        if (!userName) return alert("请先填写顶部的【闲鱼会员名】，否则无法编辑！");
+
+        const product = currentProductData.find(p => p.product_id === productId);
+        document.getElementById('editProductId').value = productId;
+        document.getElementById('editTitle').value = product ? (product.title || '') : '';
+        document.getElementById('editPrice').value = product && product.price ? (product.price / 100).toFixed(2) : '';
+        document.getElementById('editStock').value = product && product.stock !== undefined ? product.stock : '';
+        document.getElementById('editContent').value = ''; 
+
+        // 隐藏并清空 SKU 区域
+        document.getElementById('editSkuContainer').style.display = 'none';
+        document.getElementById('skuListWrapper').innerHTML = '正在加载规格信息...';
+
+        // 显示弹窗
+        document.getElementById('editProductModal').style.display = 'flex';
+
+        // 调用详情接口获取完整信息（描述 + SKU 列表）
+        try {
+            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
+            const result = await response.json();
+            if (result.code === 0 && result.data) {
+                // 回显商品描述
+                let content = result.data.content; 
+                if (!content && result.data.publish_shop && result.data.publish_shop.length > 0) {
+                    content = result.data.publish_shop[0].content; 
+                }
+                if (content) document.getElementById('editContent').value = content;
+
+                // 渲染 SKU 列表
+                if (result.data.sku_items && result.data.sku_items.length > 0) {
+                    document.getElementById('editSkuContainer').style.display = 'block';
+                    let skuHtml = '';
+                    result.data.sku_items.forEach(sku => {
+                        const priceYuan = (sku.price / 100).toFixed(2);
+                        skuHtml += `
+                            <div class="sku-edit-item" data-sku-text="${sku.sku_text}">
+                                <div class="sku-title">🏷️ ${sku.sku_text}</div>
+                                <div class="sku-inputs">
+                                    <input type="number" step="0.01" class="sku-price-input" data-sku-id="${sku.sku_id}" value="${priceYuan}" placeholder="价格(元)">
+                                    <input type="number" class="sku-stock-input" data-sku-id="${sku.sku_id}" value="${sku.stock}" placeholder="库存">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('skuListWrapper').innerHTML = skuHtml;
+                } else {
+                    document.getElementById('editSkuContainer').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.log("获取商品详情失败：", error);
+            document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败</span>';
+        }
+    }
+
+    // 关闭编辑弹窗
+    function closeEditProductModal() {
+        document.getElementById('editProductModal').style.display = 'none';
+    }
+
+    // 提交编辑（包含商品信息和 SKU）
+    async function submitEditProduct() {
+        const productId = parseInt(document.getElementById('editProductId').value);
+        const title = document.getElementById('editTitle').value.trim();
+        const priceYuan = document.getElementById('editPrice').value;
+        const stock = parseInt(document.getElementById('editStock').value);
+        const content = document.getElementById('editContent').value.trim();
+        const userName = userNameInput.value.trim();
+
+        if (!title || !priceYuan || isNaN(stock) || !content) {
+            return alert("请完整填写所有必填项！");
+        }
+        if (!userName) return alert("请先填写顶部的【闲鱼会员名】！");
+
+        const priceFen = Math.round(parseFloat(priceYuan) * 100); 
+
+        // 收集 SKU 数据
+        const skuItems = [];
+        const skuContainer = document.getElementById('skuListWrapper');
+        if (document.getElementById('editSkuContainer').style.display !== 'none') {
+            const skuItemsDom = skuContainer.querySelectorAll('.sku-edit-item');
+            skuItemsDom.forEach(item => {
+                const skuText = item.getAttribute('data-sku-text');
+                const skuPrice = Math.round(parseFloat(item.querySelector('.sku-price-input').value) * 100);
+                const skuStock = parseInt(item.querySelector('.sku-stock-input').value);
+                skuItems.push({
+                    sku_text: skuText,
+                    price: skuPrice,
+                    stock: skuStock
+                });
+            });
+        }
+
+        // 构造请求体
+        const requestBody = {
+            product_id: productId,
+            price: priceFen,
+            stock: stock,
+            publish_shop: [
+                {
+                    user_name: userName,
+                    title: title,
+                    content: content
+                }
+            ]
+        };
+
+        // 如果有 SKU，附加到请求体
+        if (skuItems.length > 0) {
+            requestBody.sku_items = skuItems;
+        }
+
+        try {
+            // 统一使用 /api/open/product/edit 接口
+            const response = await fetch(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
+            });
+            const result = await response.json();
+            
+            if (result.code === 0) {
+                alert("商品和 SKU 修改成功！");
+                closeEditProductModal();
+                loadProducts(); 
+            } else {
+                alert("修改失败：" + result.msg);
+            }
+        } catch (error) {
+            alert("请求出错：" + error.message);
+        }
+    }
+
+    // ================= 原有逻辑继续 =================
 
     async function toggleSkuList(productId, btn) {
         const mainRow = btn.closest('tr');
@@ -359,9 +561,10 @@
                     const skuTr = document.createElement('tr');
                     skuTr.className = 'sku-row';
                     const priceInYuan = (sku.price / 100).toFixed(2); 
+                    // 注意：这里我们存了 data-sku-text，以便修正后的 updateSkuData 使用
                     skuTr.innerHTML = `
                         <td data-label="SKU_ID">└─ ${sku.sku_id}</td>
-                        <td data-label="规格">${sku.sku_text}</td>
+                        <td data-label="规格" data-sku-text="${sku.sku_text}">${sku.sku_text}</td>
                         <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"> 元</td>
                         <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"> 件</td>
                         <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})">保存</button></td>
@@ -374,17 +577,43 @@
         } catch (error) { alert("网络错误：" + error.message); btn.innerText = "重试"; btn.disabled = false; }
     }
 
+    // 🚀 修正后的表格内 SKU 保存逻辑
     async function updateSkuData(productId, skuId) {
-        const newStockStr = document.getElementById(`stock_${skuId}`).value;
-        const newPriceYuanStr = document.getElementById(`price_${skuId}`).value;
+        const stockInput = document.getElementById(`stock_${skuId}`);
+        const priceInput = document.getElementById(`price_${skuId}`);
+        const newStockStr = stockInput.value;
+        const newPriceYuanStr = priceInput.value;
         if (newStockStr === '' || newPriceYuanStr === '') return alert("请输入价格和库存");
+        
         const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100);
         const newStock = parseInt(newStockStr);
+        
+        // 获取 sku_text 信息（必须传，否则接口会报错）
+        const skuText = priceInput.closest('tr').querySelector('td[data-label="规格"]').getAttribute('data-sku-text');
+        if (!skuText) return alert("无法获取SKU规格信息，请刷新重试");
+
+        // 统一走 /api/open/product/edit 接口
+        const requestBody = {
+            product_id: productId,
+            sku_items: [{
+                sku_text: skuText,
+                price: newPriceFen,
+                stock: newStock
+            }]
+        };
+
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/edit/stock", body: { product_id: productId, sku_items: [ { sku_id: skuId, stock: newStock, price: newPriceFen } ] } }) });
+            const response = await fetch(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
+            });
             const result = await response.json();
-            if (result.code === 0) alert("修改成功！"); else alert("修改失败：" + result.msg);
-        } catch (error) { alert("请求出错：" + error.message); }
+            if (result.code === 0) alert("SKU 修改成功！"); 
+            else alert("修改失败：" + result.msg);
+        } catch (error) {
+            alert("请求出错：" + error.message);
+        }
     }
 
     async function publishProduct(productId, btn) {
