@@ -10,6 +10,37 @@
         .container { max-width: 1100px; margin: 0 auto; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15); padding: 15px; }
         h1 { color: #1c1c1e; text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 15px; }
 
+        /* ================= 📌 页面标题栏与返回按钮 ================= */
+        .page-header {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .page-header h1 {
+            margin: 0; /* 清除原有margin，避免错位 */
+        }
+        .back-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.8);
+            color: #007bff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .back-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
         .nav-tabs { display: flex; background: rgba(255, 255, 255, 0.5); padding: 5px; border-radius: 14px; margin-bottom: 15px; }
         .nav-tabs button { flex: 1; background: none; border: none; color: #555; font-size: 14px; font-weight: bold; padding: 10px; border-radius: 10px; }
         .nav-tabs button.active { color: #007bff; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
@@ -147,7 +178,12 @@
 <body>
 
 <div class="container">
-    <h1>闲管家 · 卡密管理</h1>
+    <!-- 📌 添加了返回首页按钮 -->
+    <div class="page-header">
+        <a href="index.html" class="back-btn">⬅ 返回</a>
+        <h1>闲管家 · 卡密管理</h1>
+    </div>
+
     <div class="nav-tabs">
         <button id="tab-kind" class="active" onclick="switchTab('kind')">🎫 卡种</button>
         <button id="tab-category" onclick="switchTab('category')">📂 卡密分类</button>
@@ -192,7 +228,7 @@
     <!-- 卡密分类页面 -->
     <div id="category-page" style="display: none;">
         <div class="top-bar">
-            <div class="mobile-filter-header" onclick="toggleMobileFilter()">
+            <div class="mobile-filter-header" onclick="toggleMobileFilterCategory()">
                 <span>🔍 分类操作</span>
                 <span id="filterToggleIcon2" class="filter-icon">▼</span>
             </div>
