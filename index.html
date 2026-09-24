@@ -21,7 +21,7 @@
         }
         h1 { color: #1c1c1e; text-align: center; margin-bottom: 15px; font-size: 20px; font-weight: 800; }
 
-        /* 入口按钮：加宽、加大触控区域 */
+        /* 入口按钮 */
         .entry-links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         .entry-links a { 
             text-align: center; text-decoration: none; padding: 14px; border-radius: 14px; 
@@ -37,7 +37,6 @@
 
         .top-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.4); padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.6); }
         .top-bar label { font-weight: bold; color: #333; font-size: 13px; }
-        /* 16px 字号防 iOS 自动放大 */
         .top-bar input, .top-bar select { padding: 10px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); border-radius: 10px; font-size: 16px; outline: none; width: 100%; }
         
         button { 
@@ -52,11 +51,10 @@
         /* 表格卡片化布局 */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
-        thead { display: none; } /* 手机端隐藏表头 */
+        thead { display: none; }
         tr { display: block; background: rgba(255, 255, 255, 0.8); border-radius: 16px; margin-bottom: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.9); }
         td { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px dashed rgba(0,0,0,0.05); font-size: 13px; text-align: right; color: #1c1c1e; }
         td:last-child { border-bottom: none; padding-bottom: 0; }
-        /* 使用 data-label 显示列名 */
         td::before { content: attr(data-label); font-weight: bold; color: #666; text-align: left; margin-right: 10px; flex-shrink: 0; }
         
         .input-box { width: 80px; padding: 6px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; text-align: center; }
@@ -168,7 +166,15 @@
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } }) });
             const result = await response.json();
             if (result.code === 0) {
-                productStatusMsg.innerText = "加载成功！";
+                productStatusMsg.innerText = "加载成功！点击【展开规格】修改价格和库存。";
+                
+                // 🟢 新增排序逻辑：将已上架（product_status === 22）的商品置顶
+                result.data.list.sort((a, b) => {
+                    const aWeight = (a.product_status === 22) ? 0 : 1;
+                    const bWeight = (b.product_status === 22) ? 0 : 1;
+                    return aWeight - bWeight; // 权重越小越靠前，已上架=0排在最前，其他=1排在后面
+                });
+
                 result.data.list.forEach(product => {
                     let statusBadge = `<span class="badge-unknown">未知(${product.product_status || '无'})</span>`;
                     if (product.product_status === 22) statusBadge = `<span class="badge-on">✅ 已上架</span>`;
@@ -177,7 +183,6 @@
                     const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
                     const stock = product.stock !== undefined ? product.stock : '-';
                     
-                    // 使用 data-label 属性来实现手机端卡片式显示
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td data-label="商品ID">${product.product_id}</td>
