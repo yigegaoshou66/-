@@ -151,10 +151,10 @@
         .modal-content { 
             background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(30px); 
             border-radius: 20px 20px 0 0; 
-            padding: 15px 15px calc(15px + env(safe-area-inset-bottom)) 15px; /* 底部安全区适配 */
+            padding: 15px 15px calc(15px + env(safe-area-inset-bottom)) 15px;
             width: 100%; max-height: 90vh; 
             overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; /* iOS 滑动更顺滑 */
+            -webkit-overflow-scrolling: touch;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; 
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -166,7 +166,7 @@
         .form-group input, .form-group textarea { 
             width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); 
             background: rgba(255,255,255,0.8); border-radius: 10px; 
-            font-size: 16px; /* 16px 防止 iOS 键盘弹起时自动放大页面 */
+            font-size: 16px;
             outline: none; box-sizing: border-box; 
         }
         .form-group textarea { height: 100px; resize: vertical; }
@@ -180,11 +180,10 @@
         .sku-edit-item { background: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 3px solid #17a2b8; }
         .sku-edit-item .sku-title { font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #333; }
         
-        /* 关键修复：输入框并排布局，防止撑破屏幕 */
         .sku-edit-item .sku-inputs { display: flex; gap: 8px; flex-wrap: wrap; }
         .sku-edit-item .sku-inputs input { 
             flex: 1; 
-            min-width: 0; /* 防止内容溢出撑破 flex 容器 */
+            min-width: 0;
             width: 50%; 
             padding: 8px; 
             font-size: 16px; 
@@ -268,10 +267,10 @@
             .modal-content { 
                 border-radius: 24px; width: 90%; max-width: 600px; 
                 margin: auto; max-height: 85vh; animation: fadeIn 0.2s; 
-                padding: 20px; /* 电脑端恢复内边距 */
+                padding: 20px;
             }
             @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-            .sku-edit-item .sku-inputs input { font-size: 15px; } /* 电脑端字体可以稍微缩小一点 */
+            .sku-edit-item .sku-inputs input { font-size: 15px; }
         }
     </style>
 </head>
@@ -551,7 +550,6 @@
         }
 
         try {
-            // 统一使用 /api/open/product/edit 接口
             const response = await fetch(WORKER_URL, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
@@ -609,6 +607,7 @@
         } catch (error) { alert("网络错误：" + error.message); btn.innerText = "重试"; btn.disabled = false; }
     }
 
+    // 🚀 修复后的表格内 SKU 保存逻辑
     async function updateSkuData(productId, skuId) {
         const stockInput = document.getElementById(`stock_${skuId}`);
         const priceInput = document.getElementById(`price_${skuId}`);
@@ -618,30 +617,58 @@
         
         const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100);
         const newStock = parseInt(newStockStr);
-        
-        const skuText = priceInput.closest('tr').querySelector('td[data-label="规格"]').getAttribute('data-sku-text');
-        if (!skuText) return alert("无法获取SKU规格信息，请刷新重试");
 
-        const requestBody = {
-            product_id: productId,
-            sku_items: [{
-                sku_text: skuText,
-                price: newPriceFen,
-                stock: newStock
-            }]
-        };
+        const saveBtn = stockInput.closest('tr').querySelector('.btn-save');
+        if(saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
 
         try {
+            // 1. 先获取该商品最新的全部 SKU 信息
+            const detailResponse = await fetch(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
+            });
+            const detailResult = await detailResponse.json();
+            
+            if (detailResult.code !== 0 || !detailResult.data.sku_items) {
+                throw new Error("获取原规格失败，无法保存");
+            }
+
+            // 2. 遍历全部 SKU，找到当前修改的这一个，替换价格和库存
+            const updatedSkuItems = detailResult.data.sku_items.map(sku => {
+                if (sku.sku_id === skuId) {
+                    return { ...sku, price: newPriceFen, stock: newStock };
+                }
+                return sku;
+            });
+
+            // 3. 构造请求体（必须把所有的 SKU 都带上，否则官方接口会报错）
+            const requestBody = {
+                product_id: productId,
+                sku_items: updatedSkuItems.map(sku => ({
+                    sku_text: sku.sku_text,
+                    price: sku.price,
+                    stock: sku.stock
+                }))
+            };
+
+            // 4. 提交更新
             const response = await fetch(WORKER_URL, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
             });
             const result = await response.json();
-            if (result.code === 0) alert("SKU 修改成功！"); 
-            else alert("修改失败：" + result.msg);
+            
+            if (result.code === 0) {
+                alert("SKU 修改成功！"); 
+            } else {
+                alert("修改失败：" + result.msg);
+            }
         } catch (error) {
             alert("请求出错：" + error.message);
+        } finally {
+            if(saveBtn) { saveBtn.disabled = false; saveBtn.innerText = "保存"; }
         }
     }
 
