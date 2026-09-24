@@ -59,6 +59,36 @@
         
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .page-btn { background: #6c757d; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
+
+        /* ================= 💻 电脑端专属优化 ================= */
+        @media (min-width: 768px) {
+            /* 顶部工具栏 */
+            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; }
+            .top-bar label { white-space: nowrap; }
+            .top-bar input, .top-bar select { flex: 1; min-width: 120px; width: auto; }
+            .top-bar button { width: auto; margin-bottom: 0; }
+            
+            /* 表格还原 */
+            .table-wrapper { overflow-x: auto; }
+            table { display: table; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+            thead { display: table-header-group; background: rgba(0,0,0,0.03); }
+            thead tr { display: table-row; background: none; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; }
+            thead th { display: table-cell; padding: 12px; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            tbody tr { display: table-row; background: transparent; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+            tbody tr:hover { background: rgba(255, 255, 255, 0.5); }
+            tbody td { display: table-cell; padding: 12px; text-align: left; border: none; vertical-align: middle; }
+            tbody td::before { display: none; }
+            td[data-label="操作"] { display: table-cell; }
+            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0; }
+
+            /* 弹窗居中 */
+            .modal-overlay { align-items: center; }
+            .modal-content { border-radius: 24px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh; animation: fadeIn 0.2s; }
+            @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+            
+            /* 表单横向排列 */
+            .form-row { flex-direction: row; }
+        }
     </style>
 </head>
 <body>
@@ -388,7 +418,6 @@
         const name = document.getElementById('editCategoryName').value.trim();
         const remark = document.getElementById('editCategoryRemark').value.trim();
         if (!name || !remark) return alert("请填写完整信息");
-        // 简单用名字和备注反查ID，实际使用建议加个隐藏ID字段，这里为了简化保持原逻辑
         const isEdit = document.getElementById('categoryModalTitle').innerText.includes("编辑");
         const catId = isEdit ? currentCategoryData.find(c => c.category_name === name)?.category_id : null;
         const requestData = { path: isEdit ? "/api/open/kami/category/edit" : "/api/open/kami/category/create", body: isEdit ? { category_id: parseInt(catId), category_name: name, remark: remark } : { category_name: name, remark: remark } };

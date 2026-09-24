@@ -37,6 +37,26 @@
         .status-msg { margin-top: 10px; color: #333; font-weight: bold; font-size: 13px; }
         .item-info { font-size: 11px; color: #666; margin-top: 2px; }
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+
+        /* ================= 💻 电脑端专属优化 ================= */
+        @media (min-width: 768px) {
+            .top-bar { flex-direction: row; align-items: center; }
+            .top-bar label { white-space: nowrap; }
+            .top-bar select { flex: 1; width: auto; }
+            .top-bar button { width: auto; margin-bottom: 0; }
+            
+            .table-wrapper { overflow-x: auto; }
+            table { display: table; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+            thead { display: table-header-group; background: rgba(0,0,0,0.03); }
+            thead tr { display: table-row; background: none; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; }
+            thead th { display: table-cell; padding: 12px; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            tbody tr { display: table-row; background: transparent; border: none; box-shadow: none; margin: 0; padding: 0; border-radius: 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+            tbody tr:hover { background: rgba(255, 255, 255, 0.5); }
+            tbody td { display: table-cell; padding: 12px; text-align: left; border: none; vertical-align: middle; }
+            tbody td::before { display: none; }
+            td[data-label="操作"] { display: table-cell; }
+            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0; }
+        }
     </style>
 </head>
 <body>
