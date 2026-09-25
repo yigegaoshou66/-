@@ -228,15 +228,54 @@
         }
         td::before { content: attr(data-label); font-weight: 500; color: var(--text-secondary); margin-right: 4px; flex-shrink: 0; }
         
-        td[data-label="标题"], td[data-label="商品ID"], td[data-label="状态 / 操作"] { 
+        td[data-label="标题"], td[data-label="状态 / 操作"] { 
             flex: 0 0 100%; width: 100%; margin-right: 0;
         }
         
-        td[data-label="标题"] { font-size: 16px; font-weight: 700; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); line-height: 1.35; }
+        td[data-label="标题"] { 
+            padding-bottom: 8px; margin-bottom: 6px; 
+            border-bottom: 1px solid rgba(60,60,67,0.08); 
+            display: block; 
+        }
         td[data-label="标题"]::before { display: none; }
-        td[data-label="商品ID"] { font-size: 11px; color: var(--text-tertiary); padding-bottom: 6px; font-family: monospace; }
-        td[data-label="商品ID"]::before { font-size: 11px; }
         
+        .product-title-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
+        }
+        .product-thumb {
+            width: 64px; 
+            height: 64px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #f0f0f0;
+            flex-shrink: 0;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .product-meta {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-title-text {
+            font-size: 15px; 
+            font-weight: 700; 
+            line-height: 1.35; 
+            margin-bottom: 4px;
+            display: -webkit-box; 
+            -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden;
+        }
+        .product-id-text {
+            font-size: 11px; 
+            color: var(--text-tertiary); 
+            font-family: monospace;
+        }
+
         td[data-label="价格"]::before { content: "价:"; color: var(--text-secondary); }
         td[data-label="库存"]::before { content: "库:"; color: var(--text-secondary); }
         
@@ -439,8 +478,10 @@
             }
             tbody td::before { display: none !important; }
             
-            tbody td[data-label="标题"] { min-width: 200px; font-weight: 600; font-size: 15px; border-bottom: none !important; padding-bottom: 18px !important; margin-bottom: 0 !important; }
-            tbody td[data-label="商品ID"] { font-size: 12px; color: var(--text-tertiary); font-family: monospace; }
+            tbody td[data-label="标题"] { min-width: 200px; border-bottom: none !important; padding-bottom: 18px !important; margin-bottom: 0 !important; }
+            .product-thumb { width: 50px; height: 50px; border-radius: 8px; }
+            .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: unset; }
+            
             tbody td[data-label="价格"], tbody td[data-label="库存"] { white-space: nowrap; font-weight: 600; }
             tbody td[data-label="状态 / 操作"] { white-space: nowrap; border-top: none !important; margin-top: 0 !important; padding-top: 18px !important; }
             tbody td[data-label="状态 / 操作"] button { display: inline-block !important; width: auto !important; margin: 0 8px 0 0 !important; padding: 8px 18px !important; font-size: 13px !important; }
@@ -493,7 +534,7 @@
 
         <div class="table-wrapper">
             <table id="productTable">
-                <thead><tr><th>商品ID</th><th>标题</th><th>价格(元)</th><th>库存</th><th>状态 / 操作</th></tr></thead>
+                <thead><tr><th>商品ID</th><th>商品信息</th><th>价格(元)</th><th>库存</th><th>状态 / 操作</th></tr></thead>
                 <tbody id="productTableBody"></tbody>
             </table>
         </div>
@@ -539,14 +580,13 @@
     
     // ⚡ 核心优化：前端内存缓存
     let currentProductData = []; 
-    const productDetailCache = {}; // 存储商品详情 (content + sku_items)
+    const productDetailCache = {}; // 存储商品详情 (content + sku_items + images)
     const skuCache = {}; // 仅存储 SKU 数据，便于快速展开
 
     // 专门处理请求超时 + 并发控制的 fetch
     const MAX_CONCURRENT = 3;
     let activeRequests = 0;
     
-    // isBackground = true 表示后台静默预加载，不占用用户主动请求的并发名额，超时时间更长
     async function fetchWithControl(url, options, timeout = 8000, isBackground = false) {
         if (!isBackground && activeRequests >= MAX_CONCURRENT) {
             throw new Error('当前请求过多，请稍后重试（正在处理其他操作）');
@@ -650,27 +690,66 @@
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameDisplay = document.getElementById('userNameDisplay');
 
-    // 辅助渲染单个商品行的方法（方便保存后局部更新）
+    // 辅助渲染单个商品行的方法
     function renderProductRow(product, isUpdate = false) {
         const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
         const stock = product.stock !== undefined ? product.stock : '-';
         
+        // 🖼️ 提取图片逻辑（优先从详情缓存里拿，因为在列表接口里通常没有图片）
+        let imgUrl = '';
+        if (productDetailCache[product.product_id]) {
+            const detailData = productDetailCache[product.product_id];
+            if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images && detailData.publish_shop[0].images.length > 0) {
+                imgUrl = detailData.publish_shop[0].images[0];
+            }
+        }
+        if (!imgUrl) {
+            if (product.images && product.images.length > 0) imgUrl = product.images[0];
+            else if (product.image) imgUrl = product.image;
+            else if (product.publish_shop && product.publish_shop[0] && product.publish_shop[0].images) imgUrl = product.publish_shop[0].images[0];
+        }
+        
+        // 处理相对路径，自动拼上阿里 CDN 前缀（如果是本地打开，路径就是相对的）
+        if (imgUrl && !imgUrl.startsWith('http')) {
+            imgUrl = 'https://img.alicdn.com/' + imgUrl;
+        }
+
+        // 状态按钮渲染（根据 API 文档状态码）
         let statusActionBtn = '';
         if (product.product_status === 22) {
             statusActionBtn = `<button class="status-btn status-btn-on" onclick="downShelfProduct(${product.product_id}, this)" title="点击下架">✅ 已上架</button>`;
-        } else if (product.product_status === 31) {
-            statusActionBtn = `<button class="status-btn status-btn-off" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">⛔ 已下架</button>`;
+        } else if (product.product_status === 31 || product.product_status === 33 || product.product_status === 36) {
+            let statusText = product.product_status === 31 ? '已下架' : (product.product_status === 33 ? '售出下架' : '自动下架');
+            statusActionBtn = `<button class="status-btn status-btn-off" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">⛔ ${statusText}</button>`;
         } else if (product.product_status === 23) {
             statusActionBtn = `<button class="status-btn status-btn-sold" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">🏷️ 已售出</button>`;
+        } else if (product.product_status === 21) {
+            statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击上架">📝 待发布</button>`;
         } else {
-            statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击上架">❓ 未知(${product.product_status || '无'})</button>`;
+            statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击尝试重新上架">❓ 状态异常(${product.product_status || '无'})</button>`;
+        }
+
+        // 组装图片HTML
+        let imgHtml = '';
+        if (imgUrl) {
+            imgHtml = `<img src="${imgUrl}" class="product-thumb" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">`;
+        } else {
+            // 无图时显示灰色占位符
+            imgHtml = `<div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; color:#aaa; border:1px solid #ddd;">无图</div>`;
         }
 
         const tr = document.createElement('tr');
         tr.dataset.productId = product.product_id;
         tr.innerHTML = `
-            <td data-label="商品ID">${product.product_id}</td>
-            <td data-label="标题"><b>${product.title || '无标题'}</b></td>
+            <td data-label="标题">
+                <div class="product-title-wrapper">
+                    ${imgHtml}
+                    <div class="product-meta">
+                        <b class="product-title-text">${product.title || '无标题'}</b>
+                        <span class="product-id-text">ID: ${product.product_id}</span>
+                    </div>
+                </div>
+            </td>
             <td data-label="价格">${priceYuan} 元</td>
             <td data-label="库存">${stock}</td>
             <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 8px;">
@@ -683,7 +762,7 @@
         if (isUpdate) {
             const oldTr = productTableBody.querySelector(`tr[data-product-id="${product.product_id}"]`);
             if (oldTr) {
-                oldTr.replaceWith(tr); // 局部替换，不重新加载整个列表
+                oldTr.replaceWith(tr);
             }
         } else {
             productTableBody.appendChild(tr);
@@ -717,7 +796,7 @@
 
                 currentProductData.forEach(product => renderProductRow(product));
                 
-                // ⚡ 关键优化：列表渲染完成后，立刻在后台静默预加载【已上架】商品的详情
+                // ⚡ 关键优化：列表渲染完成后，立刻在后台静默预加载所有商品的详情（包括下架的）
                 prefetchProductDetails(currentProductData);
                 
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
@@ -729,34 +808,38 @@
         }
     }
 
-    // ⚡ 后台静默预加载逻辑（优化版：只预加载已上架商品）
+    // ⚡ 后台静默预加载（全量预加载，确保下架商品也能显示主图）
     async function prefetchProductDetails(products) {
-        // 1. 只筛选出【已上架】的商品（product_status === 22）进行预加载
-        const onlineProducts = products.filter(p => p.product_status === 22);
-        
-        if (onlineProducts.length === 0) {
-            console.log("当前没有已上架商品，跳过预加载。");
+        if (products.length === 0) {
+            console.log("当前没有商品，跳过预加载。");
             return;
         }
         
-        console.log(`开始后台静默预加载已上架商品详情，共计 ${onlineProducts.length} 个...`);
-        const prefetchLimit = 3; // 每批请求3个，避免瞬间并发过高
+        // 为了让已上架的商品优先展示图片，先按状态排个序（已上架优先）
+        const sortedProducts = [...products].sort((a, b) => {
+            const aWeight = (a.product_status === 22) ? 0 : 1;
+            const bWeight = (b.product_status === 22) ? 0 : 1;
+            return aWeight - bWeight;
+        });
         
-        // 2. 将已上架的商品列表分批
+        console.log(`开始后台静默预加载所有商品详情，共计 ${sortedProducts.length} 个...`);
+        const prefetchLimit = 3;
+        
         const chunks = [];
-        for (let i = 0; i < onlineProducts.length; i += prefetchLimit) {
-            chunks.push(onlineProducts.slice(i, i + prefetchLimit));
+        for (let i = 0; i < sortedProducts.length; i += prefetchLimit) {
+            chunks.push(sortedProducts.slice(i, i + prefetchLimit));
         }
 
         for (let chunk of chunks) {
             await Promise.all(chunk.map(async (product) => {
+                // 避免重复请求已经在缓存里的
                 if (!productDetailCache[product.product_id]) {
                     try {
                         const response = await fetchWithControl(WORKER_URL, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: product.product_id } })
-                        }, 10000, true); // 后台静默模式，不占用用户主动请求额度
+                        }, 10000, true);
                         
                         const result = await response.json();
                         if (result.code === 0 && result.data) {
@@ -764,16 +847,21 @@
                             if (result.data.sku_items) {
                                 skuCache[product.product_id] = result.data.sku_items;
                             }
+                            // ⚡ 预加载成功，立刻重新渲染那一行，把图片展示出来！
+                            const productForRow = currentProductData.find(p => p.product_id === product.product_id);
+                            if (productForRow) {
+                                renderProductRow(productForRow, true);
+                            }
                         }
                     } catch (e) {
                         console.log(`静默预加载商品 ${product.product_id} 失败:`, e);
                     }
                 }
             }));
-            // 每批之间延迟 100ms，让请求曲线更平滑
+            // 每批延迟 100ms
             await new Promise(r => setTimeout(r, 100));
         }
-        console.log("已上架商品静默预加载完成！");
+        console.log("所有商品静默预加载完成！");
     }
 
     // 辅助渲染详情数据到弹窗的方法
@@ -805,7 +893,6 @@
         }
     }
 
-    // 点击编辑
     async function openEditProductModal(productId, btn) {
         const userName = userNameDisplay.textContent.trim();
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
@@ -824,14 +911,12 @@
         editFormDirty = false;
         document.getElementById('editProductModal').style.display = 'flex';
 
-        // 如果本地缓存有详情，直接渲染，不走网络请求
         if (productDetailCache[productId]) {
             renderDetailToModal(productDetailCache[productId]);
             restoreButton(btn);
             return;
         }
 
-        // 没有缓存才走网络请求（理论上预加载完成后，这里几乎不会触发）
         try {
             const response = await fetchWithControl(WORKER_URL, { 
                 method: 'POST', 
@@ -908,7 +993,6 @@
                 alert("商品和 SKU 修改成功！");
                 closeEditProductModal();
                 
-                // ⚡ 核心优化：保存成功后，只在本地更新数据，不重新请求整个列表
                 const product = currentProductData.find(p => p.product_id === productId);
                 if (product) {
                     product.title = title;
@@ -920,7 +1004,7 @@
                         productDetailCache[productId].sku_items = skuItems;
                         skuCache[productId] = skuItems;
                     }
-                    renderProductRow(product, true); // 局部重绘这行
+                    renderProductRow(product, true);
                 }
             } else {
                 alert("修改失败：" + result.msg);
@@ -932,7 +1016,6 @@
         }
     }
 
-    // 点击展开规格
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
 
@@ -966,7 +1049,6 @@
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
-        // ⚡ 1. 优先从缓存渲染，瞬间完成
         if (skuCache[productId]) {
             renderSkuRows(mainRow, skuCache[productId], productId);
             btn.innerText = "收起规格";
@@ -975,7 +1057,6 @@
             return;
         }
 
-        // 2. 没有缓存，显示加载，去请求（理论上预加载完成后，这里几乎不会触发）
         btn.innerText = "加载中...";
         btn.disabled = true;
         btn.classList.add('btn-loading');
@@ -1009,7 +1090,6 @@
         }
     }
 
-    // 辅助渲染 SKU 行的方法
     function renderSkuRows(mainRow, skuItems, productId) {
         const fragment = document.createDocumentFragment();
         skuItems.forEach(sku => {
@@ -1028,7 +1108,6 @@
         mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
     }
 
-    // 保存单个 SKU
     async function updateSkuData(productId, skuId, saveBtn) {
         const stockInput = document.getElementById(`stock_${skuId}`);
         const priceInput = document.getElementById(`price_${skuId}`);
