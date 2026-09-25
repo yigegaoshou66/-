@@ -203,13 +203,20 @@
         .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
-        /* 👇 全局防重复点击与强反馈 */
-        button:disabled { opacity: 0.6; cursor: not-allowed !important; transform: none !important; }
-        .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+        /* ================= 🛡️ 全局按钮强反馈与防重复点击（新增） ================= */
+        @media (max-width: 768px) {
+            button:active {
+                transform: scale(0.9) !important;
+                opacity: 0.7 !important;
+                transition: transform 0.1s, opacity 0.1s;
+            }
+        }
+        button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
+        .btn-loading { pointer-events: none; opacity: 0.8; }
         .btn-loading::after {
-            content: ""; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%;
-            margin: -8px 0 0 -8px; border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite;
+            content: ""; display: inline-block; width: 14px; height: 14px;
+            margin-left: 6px; vertical-align: middle; border: 2px solid currentColor;
+            border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -329,7 +336,7 @@
     </div>
 </div>
 
-<!-- 弹窗区域 -->
+<!-- 👇 弹窗区域，添加 data-dirty 标记方便统一管理 -->
 <div id="categoryModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 450px;">
         <h2 id="categoryModalTitle">新建卡密分类</h2>
@@ -405,46 +412,55 @@
 </div>
 
 <script>
-    // ================= 🛡️ 全局防重复点击与强反馈 =================
+    // ================= 🛡️ 全局按钮强反馈与防重复点击（新增） =================
     let isRequesting = false;
+
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
+
         if (isRequesting) {
             e.stopImmediatePropagation();
             e.preventDefault();
+            const originalText = btn.innerText;
+            btn.innerText = '处理中...';
+            btn.style.opacity = '0.5';
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.opacity = '1';
+            }, 500);
             return;
         }
-        if (!btn.disabled) {
-            btn.disabled = true;
-            btn.classList.add('btn-loading');
-            setTimeout(() => {
-                if (!isRequesting) {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
-                }
-            }, 600);
-        }
+
+        btn.dataset.originalText = btn.innerText;
+        btn.innerText = '等待中...';
+        btn.disabled = true;
+        btn.classList.add('btn-loading');
+
+        setTimeout(() => {
+            if (!isRequesting && btn.classList.contains('btn-loading')) {
+                restoreButton(btn);
+            }
+        }, 500);
     }, true);
+
+    function restoreButton(btn) {
+        if (btn.classList.contains('btn-loading')) {
+            btn.disabled = false;
+            btn.innerText = btn.dataset.originalText || '刷新';
+            btn.classList.remove('btn-loading');
+            delete btn.dataset.originalText;
+        }
+    }
 
     if (!window._originalFetch) {
         window._originalFetch = window.fetch;
         window.fetch = function(...args) {
             isRequesting = true;
-            const timer = setTimeout(() => {
-                isRequesting = false;
-                document.querySelectorAll('button').forEach(btn => {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
-                });
-            }, 15000);
-
             return window._originalFetch.apply(this, args).finally(() => {
-                clearTimeout(timer);
                 isRequesting = false;
-                document.querySelectorAll('button').forEach(btn => {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
+                document.querySelectorAll('button.btn-loading').forEach(btn => {
+                    restoreButton(btn);
                 });
             });
         };

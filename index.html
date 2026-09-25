@@ -229,13 +229,20 @@
         }
         .sku-edit-item .sku-inputs input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
-        /* 👇 全局防重复点击与强反馈 */
-        button:disabled { opacity: 0.6; cursor: not-allowed !important; transform: none !important; }
-        .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+        /* ================= 🛡️ 全局按钮强反馈与防重复点击（新增） ================= */
+        @media (max-width: 768px) {
+            button:active {
+                transform: scale(0.9) !important;
+                opacity: 0.7 !important;
+                transition: transform 0.1s, opacity 0.1s;
+            }
+        }
+        button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
+        .btn-loading { pointer-events: none; opacity: 0.8; }
         .btn-loading::after {
-            content: ""; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%;
-            margin: -8px 0 0 -8px; border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite;
+            content: ""; display: inline-block; width: 14px; height: 14px;
+            margin-left: 6px; vertical-align: middle; border: 2px solid currentColor;
+            border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -397,46 +404,60 @@
 </div>
 
 <script>
-    // ================= 🛡️ 全局防重复点击与强反馈 =================
+    // ================= 🛡️ 全局按钮强反馈与防重复点击（新增） =================
     let isRequesting = false;
+
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
+
+        // 1. 如果正在请求中，阻止点击，并给出“处理中”反馈
         if (isRequesting) {
             e.stopImmediatePropagation();
             e.preventDefault();
+            const originalText = btn.innerText;
+            btn.innerText = '处理中...';
+            btn.style.opacity = '0.5';
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.opacity = '1';
+            }, 500);
             return;
         }
-        if (!btn.disabled) {
-            btn.disabled = true;
-            btn.classList.add('btn-loading');
-            setTimeout(() => {
-                if (!isRequesting) {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
-                }
-            }, 600);
-        }
+
+        // 2. 正常点击：立即显示“等待中...”并禁用按钮，提供强反馈
+        btn.dataset.originalText = btn.innerText;
+        btn.innerText = '等待中...';
+        btn.disabled = true;
+        btn.classList.add('btn-loading');
+
+        // 3. 安全网：如果 500ms 内没有 fetch 触发（比如点击只是打开弹窗），自动恢复按钮状态
+        setTimeout(() => {
+            if (!isRequesting && btn.classList.contains('btn-loading')) {
+                restoreButton(btn);
+            }
+        }, 500);
     }, true);
 
+    function restoreButton(btn) {
+        if (btn.classList.contains('btn-loading')) {
+            btn.disabled = false;
+            btn.innerText = btn.dataset.originalText || '刷新';
+            btn.classList.remove('btn-loading');
+            delete btn.dataset.originalText;
+        }
+    }
+
+    // 4. 劫持 fetch，全局管理请求状态
     if (!window._originalFetch) {
         window._originalFetch = window.fetch;
         window.fetch = function(...args) {
             isRequesting = true;
-            const timer = setTimeout(() => {
-                isRequesting = false;
-                document.querySelectorAll('button').forEach(btn => {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
-                });
-            }, 15000);
-
             return window._originalFetch.apply(this, args).finally(() => {
-                clearTimeout(timer);
                 isRequesting = false;
-                document.querySelectorAll('button').forEach(btn => {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
+                // 请求结束后，恢复所有处于加载状态的按钮
+                document.querySelectorAll('button.btn-loading').forEach(btn => {
+                    restoreButton(btn);
                 });
             });
         };
