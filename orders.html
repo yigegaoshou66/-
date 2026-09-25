@@ -5,30 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>闲管家 · 订单管理助手</title>
     <style>
+        :root {
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+            --ios-gray: #8E8E93;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 8px; 
-            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
-            background-attachment: fixed; margin: 0; color: #1c1c1e;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; 
+            padding: 12px; 
+            background: linear-gradient(135deg, #E3F2FD 0%, #FCE4EC 100%);
+            background-attachment: fixed; 
+            margin: 0; 
+            color: #1c1c1e; 
+            -webkit-font-smoothing: antialiased;
         }
+
         .container { 
-            max-width: 1200px; margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; 
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15); padding: 10px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(25px) saturate(180%); 
+            -webkit-backdrop-filter: blur(25px) saturate(180%); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 24px; 
+            box-shadow: var(--glass-shadow); 
+            padding: 16px; 
         }
-        h1 { color: #1c1c1e; text-align: center; font-size: 18px; font-weight: 800; margin-bottom: 12px; }
+
+        .page-header { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; }
+        .page-header h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
+        .back-btn { 
+            position: absolute; left: 0; top: 50%; transform: translateY(-50%); 
+            text-decoration: none; background: rgba(255, 255, 255, 0.8); color: var(--ios-blue); 
+            padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.2s; white-space: nowrap; 
+        }
+        .back-btn:active { transform: translateY(-50%) scale(0.92); }
+
+        .top-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; background: rgba(255, 255, 255, 0.5); padding: 12px 14px; border-radius: 16px; border: 1px solid var(--glass-border); }
+        .top-bar label { font-weight: 600; color: #555; font-size: 13px; display: none; }
+        .top-bar select { 
+            padding: 12px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255, 255, 255, 0.9); 
+            border-radius: 12px; font-size: 16px; outline: none; width: 100%; transition: all 0.2s;
+        }
+        .top-bar select:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         
-        /* 顶部工具栏 */
-        .top-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.5); padding: 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.6); }
-        .top-bar label { font-weight: bold; color: #333; font-size: 13px; display: none; } /* 手机端隐藏标签 */
-        .top-bar select { padding: 8px 12px; border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.9); border-radius: 8px; font-size: 14px; outline: none; width: 100%; }
+        button { 
+            padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; 
+            font-size: 14px; font-weight: 600; background: var(--ios-blue); 
+            box-shadow: 0 4px 12px rgba(0,122,255,0.2); 
+            transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s; 
+            width: 100%; margin-bottom: 10px; 
+        }
+        button:active { 
+            transform: scale(0.92); 
+            opacity: 0.85;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            filter: brightness(0.9);
+        }
+        button:disabled { background-color: #ccc; box-shadow: none; opacity: 0.6; }
         
-        button { padding: 10px 14px; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; background: #007bff; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); transition: 0.2s; width: 100%; margin-bottom: 8px; }
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #ccc; box-shadow: none; }
-        .page-btn { background: #6c757d; padding: 8px 12px; font-size: 12px; width: auto; margin-bottom: 0; }
+        .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
+        .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
         /* ================= 📱 手机端卡片化布局（紧凑） ================= */
         .table-wrapper { display: block; }
@@ -37,89 +83,128 @@
         
         tr { 
             display: flex; flex-wrap: wrap; 
-            background: #fff; border-radius: 12px; 
-            margin-bottom: 8px; padding: 12px; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); 
+            background: #fff; border-radius: 16px; 
+            margin-bottom: 10px; padding: 14px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); 
+            transition: transform 0.2s;
         }
+        tr:active { transform: scale(0.99); }
         
         td { 
             display: flex; align-items: center; 
-            padding: 2px 0; border: none; 
-            font-size: 12px; text-align: left; color: #1c1c1e; 
+            padding: 0; border: none; 
+            font-size: 13px; text-align: left; color: #1c1c1e; 
             flex: 0 0 auto; margin-right: 12px; 
         }
-        td::before { content: attr(data-label); font-weight: normal; color: #888; margin-right: 4px; flex-shrink: 0; }
+        td::before { content: attr(data-label); font-weight: 500; color: var(--ios-gray); margin-right: 4px; flex-shrink: 0; }
         
         td[data-label="订单号"], td[data-label="商品"], td[data-label="操作"] { 
             flex: 0 0 100%; width: 100%; margin-right: 0;
         }
         
-        td[data-label="订单号"] { font-size: 10px; color: #aaa; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
-        td[data-label="订单号"]::before { font-size: 10px; }
+        td[data-label="订单号"] { font-size: 11px; color: var(--ios-gray); padding-bottom: 4px; border-bottom: 1px solid #F2F2F7; margin-bottom: 4px; }
+        td[data-label="订单号"]::before { font-size: 11px; }
         
-        td[data-label="商品"] { font-size: 13px; font-weight: bold; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px dashed #eee; }
+        td[data-label="商品"] { font-size: 16px; font-weight: 700; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid #F2F2F7; }
         td[data-label="商品"]::before { display: none; }
         
         td[data-label="买家"], td[data-label="金额"], td[data-label="状态"], td[data-label="时间"] { width: calc(50% - 6px); margin-right: 0; }
         
         td[data-label="操作"] { 
-            margin-top: 8px; padding-top: 8px; 
-            border-top: 1px dashed #e5e5e5; 
-            justify-content: flex-start; gap: 6px; flex-wrap: wrap;
+            margin-top: 10px; padding-top: 10px; 
+            border-top: 1px solid #F2F2F7; 
+            justify-content: flex-start; gap: 8px; flex-wrap: wrap;
         }
         td[data-label="操作"]::before { display: none; }
-        td[data-label="操作"] button { padding: 6px 10px; font-size: 12px; margin: 0; box-shadow: none; border-radius: 6px; width: auto; }
+        td[data-label="操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
         
-        .status-badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .status-11 { background: #fff3cd; color: #856404; }
         .status-12 { background: #cce5ff; color: #004085; }
         .status-21 { background: #d4edda; color: #155724; }
         .status-22 { background: #d1ecf1; color: #0c5460; }
         .status-23, .status-24 { background: #f8d7da; color: #721c24; }
 
-        .status-msg { margin-top: 8px; color: #333; font-weight: bold; font-size: 12px; }
-        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+        .status-msg { margin-top: 10px; color: #555; font-weight: 600; font-size: 13px; text-align: center; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 
-        /* ================= 💻 电脑端专属优化（彻底还原标准表格） ================= */
+        /* 👇 全局防重复点击与强反馈 */
+        button:disabled { opacity: 0.6; cursor: not-allowed !important; transform: none !important; }
+        .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+        .btn-loading::after {
+            content: ""; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%;
+            margin: -8px 0 0 -8px; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ================= 💻 电脑端专属优化（彻底重写，修复布局错乱） ================= */
         @media (min-width: 768px) {
-            body { padding: 12px; }
-            .container { padding: 15px; border-radius: 20px; }
-            h1 { font-size: 20px; margin-bottom: 15px; }
+            body { padding: 20px; background: #F4F6F9; }
+            .container { 
+                padding: 24px; border-radius: 16px; 
+                background: #fff; border: 1px solid #E5E7EB; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.03); backdrop-filter: none; 
+            }
+            .page-header h1 { font-size: 22px; }
 
-            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 12px; }
-            .top-bar label { display: block; white-space: nowrap; }
-            .top-bar select { flex: 1; min-width: 150px; width: auto; padding: 10px; font-size: 16px; }
-            .top-bar button { width: auto; margin-bottom: 0; padding: 12px 18px; font-size: 14px; }
+            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 16px; background: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 24px; }
+            .top-bar label { display: block; white-space: nowrap; font-size: 14px; color: #374151; }
+            .top-bar select { flex: 1; min-width: 200px; width: auto; padding: 10px 16px; font-size: 15px; border: 1px solid #D1D5DB; border-radius: 8px; }
+            .top-bar button { width: auto; margin-bottom: 0; padding: 10px 24px; font-size: 14px; }
 
-            .table-wrapper { overflow-x: auto; }
-            table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.8); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-collapse: collapse; }
-            thead { display: table-header-group !important; background: rgba(0,0,0,0.03); }
+            .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #E5E7EB; }
+            table { display: table !important; width: 100%; background: #fff; border-collapse: collapse; }
+            thead { display: table-header-group !important; background: #F9FAFB; }
             thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
-            thead th { display: table-cell !important; padding: 12px !important; text-align: left; font-weight: bold; color: #333; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            thead th { display: table-cell !important; padding: 16px !important; text-align: left; font-weight: 600; color: #4B5563; border-bottom: 1px solid #E5E7EB; white-space: nowrap; font-size: 14px; }
             
-            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
-            tbody tr:hover { background: rgba(255, 255, 255, 0.5) !important; }
-            tbody td { display: table-cell !important; padding: 12px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 13px; }
+            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid #F3F4F6 !important; transition: background 0.2s; }
+            tbody tr:hover { background: #F9FAFB !important; }
+            tbody td { 
+                display: table-cell !important; 
+                padding: 16px !important; 
+                text-align: left; 
+                border: none !important; 
+                vertical-align: middle; 
+                flex: none !important; 
+                width: auto !important; 
+                margin: 0 !important; 
+                font-size: 14px; 
+                color: #1F2937 !important; 
+            }
             tbody td::before { display: none !important; }
             
-            tbody td[data-label="订单号"], tbody td[data-label="商品"], tbody td[data-label="操作"] {
-                width: auto !important; margin: 0 !important; border: none !important; padding: 12px !important;
-            }
-            tbody td[data-label="订单号"] { font-size: 13px !important; color: #1c1c1e !important; border-bottom: none !important; }
-            tbody td[data-label="商品"] { border-bottom: none !important; font-weight: normal !important; }
+            tbody td[data-label="订单号"] { font-family: monospace; color: #6B7280 !important; font-size: 13px !important; white-space: nowrap; }
+            tbody td[data-label="买家"] { white-space: nowrap; }
+            tbody td[data-label="商品"] { min-width: 250px; white-space: normal; line-height: 1.5; }
+            tbody td[data-label="金额"] { white-space: nowrap; font-weight: 600; }
+            tbody td[data-label="状态"] { white-space: nowrap; }
+            tbody td[data-label="时间"] { white-space: nowrap; color: #6B7280 !important; font-size: 13px !important; }
             
-            td[data-label="操作"] { display: table-cell !important; }
-            td[data-label="操作"] button { width: auto; margin: 0 5px 5px 0 !important; padding: 6px 10px !important; font-size: 12px !important; }
+            tbody td[data-label="操作"] { white-space: nowrap; min-width: 130px; }
+            tbody td[data-label="操作"] button { 
+                display: inline-block !important; 
+                width: auto !important; 
+                margin: 0 8px 0 0 !important; 
+                padding: 6px 14px !important; 
+                font-size: 13px !important; 
+                border-radius: 6px !important;
+                box-shadow: none !important;
+            }
+            tbody td[data-label="操作"] button:last-child { margin-right: 0 !important; }
+            
+            .page-btn { padding: 8px 18px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="page-header">
-    <a href="index.html" class="back-btn">⬅ 返回</a>
-    <h1>闲管家 · 订单管理助手</h1>
-</div>
+    <div class="page-header">
+        <a href="index.html" class="back-btn">⬅ 返回</a>
+        <h1>闲管家 · 订单管理助手</h1>
+    </div>
     
     <div class="top-bar">
         <label>📦 状态筛选：</label>
@@ -144,7 +229,7 @@
     </div>
 
     <div class="pagination">
-        <span id="pageInfo" style="font-size: 12px; color:#333;"></span>
+        <span id="pageInfo" style="font-size: 13px; color:#555; font-weight: 500;"></span>
         <div>
             <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
             <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
@@ -153,6 +238,51 @@
 </div>
 
 <script>
+    // ================= 🛡️ 全局防重复点击与强反馈 =================
+    let isRequesting = false;
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        if (isRequesting) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return;
+        }
+        if (!btn.disabled) {
+            btn.disabled = true;
+            btn.classList.add('btn-loading');
+            setTimeout(() => {
+                if (!isRequesting) {
+                    btn.disabled = false;
+                    btn.classList.remove('btn-loading');
+                }
+            }, 600);
+        }
+    }, true);
+
+    if (!window._originalFetch) {
+        window._originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            isRequesting = true;
+            const timer = setTimeout(() => {
+                isRequesting = false;
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('btn-loading');
+                });
+            }, 15000);
+
+            return window._originalFetch.apply(this, args).finally(() => {
+                clearTimeout(timer);
+                isRequesting = false;
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('btn-loading');
+                });
+            });
+        };
+    }
+
     const WORKER_URL = "https://api.1113630283.online";
     let currentPage = 1;
     const pageSize = 20; // 固定每页 20 条
@@ -180,7 +310,7 @@
                 const orders = result.data.list || [];
                 if (orders.length === 0) {
                     statusMsg.innerText = "暂无订单数据。";
-                    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999; padding:20px;">暂无订单数据</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999; padding:40px;">暂无订单数据</td></tr>`;
                 } else {
                     statusMsg.innerText = `成功加载 ${orders.length} 条订单。`;
                     renderOrders(orders);
@@ -202,13 +332,13 @@
             tr.innerHTML = `
                 <td data-label="订单号">${order.order_no}</td>
                 <td data-label="买家">${order.buyer_nick}</td>
-                <td data-label="商品">${goods.title || '未知'}<br><small style="color:#666;">${goods.sku_text || ''}</small></td>
+                <td data-label="商品">${goods.title || '未知'}<br><small style="color:var(--ios-gray);">${goods.sku_text || ''}</small></td>
                 <td data-label="金额"><b>${priceInYuan} 元</b></td>
                 <td data-label="状态"><span class="status-badge status-${order.order_status}">${statusMap[order.order_status] || '未知'}</span></td>
                 <td data-label="时间">${timeStr}</td>
                 <td data-label="操作" style="justify-content: flex-start;">
-                    <button class="page-btn" style="background: #ffc107; color:#333;" onclick="alert('改价开发中')">改价</button>
-                    <button class="page-btn" style="background: #28a745; color:#fff;" onclick="alert('发货开发中')">发货</button>
+                    <button class="page-btn" style="background: var(--ios-orange); color:#fff;" onclick="alert('改价开发中')">改价</button>
+                    <button class="page-btn" style="background: var(--ios-green); color:#fff;" onclick="alert('发货开发中')">发货</button>
                 </td>
             `;
             tableBody.appendChild(tr);
@@ -221,10 +351,7 @@
         loadOrders(newPage); 
     }
     
-    // 下拉框改变时重新加载
     statusFilter.addEventListener('change', () => { loadOrders(1); });
-    
-    // 初始化加载第一页
     loadOrders(1);
 </script>
 </body>
