@@ -143,8 +143,6 @@
         .filter-content input, .filter-content select { padding: 12px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.9); border-radius: 14px; font-size: 16px; outline: none; width: 100%; }
         .filter-content input:focus, .filter-content select:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
-        /* 这里移除了之前强行给 filter-content 按钮加灰色的代码，恢复默认蓝色样式 */
-        
         button { 
             padding: 10px 16px; color: white; border: none; border-radius: 100px; cursor: pointer; 
             font-size: 14px; font-weight: 600; 
@@ -161,7 +159,6 @@
         .btn-info { background: var(--ios-gray); box-shadow: 0 4px 12px rgba(142, 142, 147, 0.2); }
         .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2); }
 
-        /* 优化按钮禁用/加载状态：使用灰色背景+深灰字，防止看不清 */
         button:disabled { 
             background-color: #E5E5EA !important; 
             color: #8E8E93 !important; 
@@ -332,19 +329,19 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="index.html" class="back-btn">⬅ 返回</a>
+        <a href="index.html" class="back-btn">返回</a>
         <h1>闲管家 · 卡密管理</h1>
     </div>
 
     <div class="nav-tabs">
-        <button id="tab-kind" class="active" onclick="switchTab('kind')">🎫 卡种</button>
-        <button id="tab-category" onclick="switchTab('category')">📂 卡密分类</button>
+        <button id="tab-kind" class="active" onclick="switchTab('kind')">卡种</button>
+        <button id="tab-category" onclick="switchTab('category')">卡密分类</button>
     </div>
 
     <div id="kind-page">
         <div class="top-bar">
             <div class="mobile-filter-header" onclick="toggleMobileFilter()">
-                <span>🔍 搜索与筛选</span>
+                <span>搜索与筛选</span>
                 <span id="filterToggleIcon" class="filter-icon">▼</span>
             </div>
             <div class="filter-content" id="filterContent">
@@ -355,10 +352,7 @@
                 <label>分类ID：</label>
                 <input type="number" id="kindCategoryFilter" placeholder="ID">
                 
-                <!-- 搜索按钮：初始为禁用状态(灰色)，有输入后自动变蓝 -->
                 <button id="kindSearchBtn" onclick="loadKinds(1)" disabled>搜索</button>
-                
-                <!-- 刷新按钮：始终保持蓝色 -->
                 <button onclick="loadKinds(1)">刷新</button>
             </div>
         </div>
@@ -381,11 +375,10 @@
     <div id="category-page" style="display: none;">
         <div class="top-bar">
             <div class="mobile-filter-header" onclick="toggleMobileFilterCategory()">
-                <span>🔍 分类操作</span>
+                <span>分类操作</span>
                 <span id="filterToggleIcon2" class="filter-icon">▼</span>
             </div>
             <div class="filter-content" id="filterContentCategory">
-                <!-- 刷新分类按钮：保持蓝色 -->
                 <button onclick="loadCategories()">刷新分类列表</button>
                 <button class="btn-save" onclick="openCategoryModal()">+ 新建分类</button>
             </div>
@@ -446,7 +439,7 @@
 
 <div id="kindInfoModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>📊 卡种详情</h2>
+        <h2>卡种详情</h2>
         <div id="kindInfoContent" class="info-grid"></div>
         <div class="modal-footer"><button style="background: var(--ios-gray);" onclick="closeKindInfoModal()">关闭</button></div>
     </div>
@@ -531,7 +524,6 @@
         }
     }
 
-    // ============ 新增：动态控制搜索按钮状态 ============
     function initSearchBtnState() {
         const nameInput = document.getElementById('kindNameFilter');
         const typeSelect = document.getElementById('kindTypeFilter');
@@ -539,25 +531,21 @@
         const searchBtn = document.getElementById('kindSearchBtn');
 
         function updateState() {
-            // 判断是否有任意一个筛选条件不为空
             const hasValue = nameInput.value.trim() !== '' || typeSelect.value !== '' || categoryInput.value.trim() !== '';
             if (hasValue) {
-                searchBtn.disabled = false; // 变蓝，可点击
+                searchBtn.disabled = false; 
             } else {
-                searchBtn.disabled = true;  // 变灰，不可点击
+                searchBtn.disabled = true;  
             }
         }
 
-        // 监听输入和选择事件
         nameInput.addEventListener('input', updateState);
         typeSelect.addEventListener('change', updateState);
         categoryInput.addEventListener('input', updateState);
         
-        updateState(); // 初始化状态
+        updateState(); 
     }
-    // 执行初始化
     initSearchBtnState();
-    // ====================================================
 
     let currentCategoryData = [];
     let currentKindData = [];
@@ -739,7 +727,7 @@
     }
 
     async function deleteKind(kindId) {
-        if (!confirm(`⚠️ 警告：确定删除卡种 ${kindId} 吗？这会删除所有卡密！`)) return;
+        if (!confirm(`警告：确定删除卡种 ${kindId} 吗？这会删除所有卡密！`)) return;
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/delete", body: { kind_id: [kindId] } }) });
             const result = await response.json();

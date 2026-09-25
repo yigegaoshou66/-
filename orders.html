@@ -94,7 +94,6 @@
             -webkit-backdrop-filter: blur(30px) saturate(180%);
             border-radius: 22px; border: 1px solid var(--glass-border);
             box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
-            /* 修复：提升层级 */
             position: relative;
             z-index: 100;
         }
@@ -145,7 +144,7 @@
             border-radius: 14px;
             border: 1px solid var(--glass-border);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            z-index: 999; /* 提升至最高 */
+            z-index: 999;
             max-height: 250px;
             overflow-y: auto;
             display: none;
@@ -208,7 +207,7 @@
                 inset 0 1px 0 var(--glass-highlight),
                 0 6px 20px rgba(0,0,0,0.06);
             position: relative;
-            z-index: 1; /* 低于顶部 */
+            z-index: 1;
             overflow: hidden;
         }
         tr::before {
@@ -376,12 +375,12 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="index.html" class="back-btn">⬅ 返回</a>
+        <a href="index.html" class="back-btn">返回</a>
         <h1>闲管家 · 订单管理助手</h1>
     </div>
     
     <div class="top-bar">
-        <label>📦 状态筛选：</label>
+        <label>状态筛选：</label>
         <div class="custom-select-wrapper" id="orderStatusWrapper">
             <div class="custom-select-trigger" id="orderStatusTrigger" data-value="">全部订单</div>
             <div class="custom-options" id="orderStatusOptions">

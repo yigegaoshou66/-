@@ -96,13 +96,11 @@
             border: 1px solid var(--glass-border);
             box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
             flex-wrap: wrap;
-            /* 修复：提升层级，防止下拉菜单被卡片遮挡 */
             position: relative;
             z-index: 100;
         }
         .top-bar label { display: none; }
 
-        /* 自定义下拉菜单样式 */
         .custom-select-wrapper {
             position: relative;
             flex: 1;
@@ -148,7 +146,7 @@
             border-radius: 14px;
             border: 1px solid var(--glass-border);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            z-index: 999; /* 确保下拉选项最高层级 */
+            z-index: 999;
             max-height: 250px;
             overflow-y: auto;
             display: none;
@@ -210,7 +208,7 @@
             border: 1px solid var(--glass-border);
             box-shadow: inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,0.06); 
             position: relative;
-            z-index: 1; /* 卡片层级低于 top-bar 的 100 */
+            z-index: 1;
             overflow: hidden;
         }
         tr::before {
@@ -369,12 +367,12 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="index.html" class="back-btn">⬅ 返回</a>
+        <a href="index.html" class="back-btn">返回</a>
         <h1>闲管家 · 售后管理</h1>
     </div>
 
     <div class="top-bar">
-        <label>📦 筛选：</label>
+        <label>筛选：</label>
         <div class="custom-select-wrapper">
             <div class="custom-select-trigger" id="refundStatusTrigger" data-value="">全部退款状态</div>
             <div class="custom-options" id="refundStatusOptions">
@@ -398,7 +396,7 @@
             </div>
         </div>
         
-        <button onclick="loadRefunds(1)">🔍 查询</button>
+        <button onclick="loadRefunds(1)">查询</button>
         <button onclick="loadRefunds(1)">刷新</button>
     </div>
 
@@ -426,7 +424,7 @@
 
 <div id="detailModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>📊 售后单详情</h2>
+        <h2>售后单详情</h2>
         <div id="detailContent" class="info-grid"></div>
         <div class="modal-footer">
             <button style="background: var(--ios-gray);" onclick="closeDetailModal()">关闭</button>
@@ -436,7 +434,7 @@
 
 <div id="agreeModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>✅ 同意退款</h2>
+        <h2>同意退款</h2>
         <input type="hidden" id="agreeOrderNo">
         <div class="form-group" id="returnAddressForm" style="display: none;">
             <label>退货地址信息</label>
@@ -460,7 +458,7 @@
 
 <div id="refuseModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>⛔ 拒绝退款</h2>
+        <h2>拒绝退款</h2>
         <input type="hidden" id="refuseOrderNo">
         <div class="form-group">
             <label>拒绝原因 <span style="color: red;">*</span></label>
