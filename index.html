@@ -65,8 +65,22 @@
         }
         h1 { color: #1c1c1e; text-align: center; margin-bottom: 16px; font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
 
-        /* 退出登录按钮 */
-        .logout-btn { text-align: right; margin-bottom: 10px; }
+        /* 👇 头像 + 退出登录 同一行 */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .shop-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            background: #f0f0f0;
+        }
         .logout-btn button { 
             width: auto; padding: 8px 14px; font-size: 13px; background: rgba(255,255,255,0.8); color: var(--ios-red); 
             border: 1px solid rgba(255,59,48,0.2); box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 0; 
@@ -88,7 +102,7 @@
         .store-label { font-size: 13px; color: var(--ios-gray); font-weight: 500; }
         .store-name { font-size: 15px; font-weight: 700; color: var(--ios-blue); }
 
-        /* 快捷入口按钮（三行并排且缩小） */
+        /* 快捷入口按钮（三个并排） */
         .entry-links { display: flex; flex-direction: row; gap: 8px; margin-bottom: 16px; }
         .entry-links a { 
             flex: 1;
@@ -100,7 +114,7 @@
         .entry-after { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .entry-kami { background: linear-gradient(135deg, #6f42c1, #462688); }
 
-        /* 顶部工具栏（只剩刷新按钮） */
+        /* 顶部工具栏 */
         .top-bar { margin-bottom: 16px; }
         .top-bar button { width: 100%; margin-bottom: 0; }
         
@@ -397,7 +411,11 @@
 
 <!-- 主界面 -->
 <div class="container" id="mainContainer">
-    <div class="logout-btn"><button onclick="logout()">退出登录</button></div>
+    <!-- 👇 头像 + 退出登录 同一行 -->
+    <div class="top-header">
+        <img src="https://github.com/yigegaoshou66/-/blob/main/1583f6acbab97019466b38dc1e49c9c4.jpg?raw=true" alt="店铺头像" class="shop-avatar" onerror="this.src='https://via.placeholder.com/40x40/CCCCCC/ffffff?text=头像'">
+        <div class="logout-btn"><button onclick="logout()">退出登录</button></div>
+    </div>
 
     <!-- 店铺名称区域（固定置顶，预留扩展） -->
     <div class="store-bar">
@@ -463,10 +481,46 @@
 </div>
 
 <script>
-    // ================= 🛡️ 全局强反馈与防重复点击 =================
+    // ================= 配置 =================
+    const WORKER_URL = "https://api.1113630283.online";
+
+    // ================= 🛡️ 全局 fetch 拦截器：自动带 token =================
     let isRequesting = false;
     let isNavigating = false;
 
+    if (!window._originalFetch) {
+        window._originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            // /auth 请求不需要 token
+            if (typeof url === 'string' && url.includes('/auth')) {
+                return window._originalFetch(url, options);
+            }
+            // 其他请求自动携带 token
+            const token = localStorage.getItem('saved_token');
+            if (token) {
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            isRequesting = true;
+            return window._originalFetch(url, options).then(resp => {
+                // token 失效自动踢回登录页
+                if (resp.status === 401) {
+                    localStorage.removeItem('saved_token');
+                    alert("登录已失效，请重新登录");
+                    location.reload();
+                }
+                return resp;
+            }).finally(() => {
+                isRequesting = false;
+                document.querySelectorAll('button.btn-loading').forEach(btn => {
+                    restoreButton(btn);
+                });
+            });
+        };
+    }
+
+    // ================= 🛡️ 全局按钮强反馈 =================
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.entry-links a, .back-btn');
@@ -519,43 +573,41 @@
         }
     }
 
-    if (!window._originalFetch) {
-        window._originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            isRequesting = true;
-            return window._originalFetch.apply(this, args).finally(() => {
-                isRequesting = false;
-                document.querySelectorAll('button.btn-loading').forEach(btn => {
-                    restoreButton(btn);
-                });
-            });
-        };
-    }
-
-    // ================= 🔒 密码验证逻辑 =================
-    const APP_PASSWORD = "shinia299.";
-
-    function checkPwd() {
+    // ================= 🔒 登录逻辑（调用 Worker /auth） =================
+    async function checkPwd() {
         const inputPwd = document.getElementById('pwdInput').value;
-        if (inputPwd === APP_PASSWORD) {
-            localStorage.setItem('saved_pwd', APP_PASSWORD);
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            loadProducts();
-        } else {
-            document.getElementById('pwdError').innerText = "密码错误，请重试！";
-            document.getElementById('pwdInput').value = "";
+        const pwdError = document.getElementById('pwdError');
+        pwdError.innerText = "";
+
+        try {
+            const resp = await window._originalFetch(WORKER_URL + "/auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: inputPwd })
+            });
+            const result = await resp.json();
+            if (result.code === 0) {
+                localStorage.setItem('saved_token', result.token);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                loadProducts();
+            } else {
+                pwdError.innerText = result.msg || "密码错误，请重试！";
+                document.getElementById('pwdInput').value = "";
+            }
+        } catch (err) {
+            pwdError.innerText = "网络错误：" + err.message;
         }
     }
 
     function logout() {
         if (!confirm("确定要退出登录吗？（下次打开需重新输入密码）")) return;
-        localStorage.removeItem('saved_pwd');
+        localStorage.removeItem('saved_token');
         location.reload();
     }
 
     window.onload = function() {
-        if (localStorage.getItem('saved_pwd') === APP_PASSWORD) {
+        if (localStorage.getItem('saved_token')) {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             loadProducts();
@@ -596,8 +648,7 @@
         }
     });
 
-    // ================= 原有逻辑 =================
-    const WORKER_URL = "https://api.1113630283.online";
+    // ================= 商品逻辑 =================
     const productTableBody = document.getElementById('productTableBody');
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameDisplay = document.getElementById('userNameDisplay');
