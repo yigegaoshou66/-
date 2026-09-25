@@ -76,47 +76,83 @@
         .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
+        /* ================= 📱 手机端卡片化布局（重构版） ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
         
+        /* 核心修复：使用网格布局，明确指定每个元素的位置 */
         tr { 
-            display: flex; flex-wrap: wrap; 
-            background: #fff; border-radius: 16px; 
-            margin-bottom: 10px; padding: 14px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); 
-            transition: transform 0.2s;
+            display: grid !important; 
+            grid-template-columns: 1fr 1fr; 
+            grid-template-areas: 
+                "order order"
+                "title title"
+                "buyer time"
+                "amount status"
+                "action action";
+            gap: 8px 16px; 
+            background: #fff; 
+            border-radius: 16px; 
+            margin-bottom: 12px; 
+            padding: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); 
+            border: 1px solid rgba(0,0,0,0.02); 
+            flex-wrap: nowrap !important; /* 覆盖旧的 flex-wrap */
         }
-        tr:active { transform: scale(0.99); }
         
         td { 
-            display: flex; align-items: center; 
-            padding: 0; border: none; 
-            font-size: 13px; text-align: left; color: #1c1c1e; 
-            flex: 0 0 auto; margin-right: 12px; 
+            display: flex !important; 
+            align-items: center; 
+            justify-content: space-between; 
+            width: 100% !important; 
+            margin: 0 !important; 
+            font-size: 13px; 
+            color: #1c1c1e; 
+            text-align: right; 
+            word-break: break-all; 
         }
-        td::before { content: attr(data-label); font-weight: 500; color: var(--ios-gray); margin-right: 4px; flex-shrink: 0; }
-        
-        td[data-label="订单号"], td[data-label="商品"], td[data-label="操作"] { 
-            flex: 0 0 100%; width: 100%; margin-right: 0;
+        td::before { 
+            content: attr(data-label); 
+            font-weight: 500; 
+            color: var(--ios-gray); 
+            margin-right: 8px; 
+            flex-shrink: 0; 
+            text-align: left; 
         }
         
-        td[data-label="订单号"] { font-size: 11px; color: var(--ios-gray); padding-bottom: 4px; border-bottom: 1px solid #F2F2F7; margin-bottom: 4px; }
-        td[data-label="订单号"]::before { font-size: 11px; }
+        /* 对应网格区域 */
+        td[data-label="订单号"] { grid-area: order; justify-content: flex-start; font-size: 11px; color: var(--ios-gray); padding-bottom: 4px; border-bottom: 1px solid #F2F2F7; margin-bottom: 4px; }
+        td[data-label="订单号"]::before { display: none; }
         
-        td[data-label="商品"] { font-size: 16px; font-weight: 700; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid #F2F2F7; }
+        td[data-label="商品"] { grid-area: title; justify-content: flex-start; font-size: 16px; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid #F2F2F7; margin-bottom: 4px; line-height: 1.4; }
         td[data-label="商品"]::before { display: none; }
+        td[data-label="商品"] small { display: block; font-weight: 500; font-size: 12px; margin-top: 4px; color: var(--ios-gray); }
         
-        td[data-label="买家"], td[data-label="金额"], td[data-label="状态"], td[data-label="时间"] { width: calc(50% - 6px); margin-right: 0; }
+        td[data-label="买家"] { grid-area: buyer; }
+        td[data-label="时间"] { grid-area: time; }
+        td[data-label="金额"] { grid-area: amount; }
+        td[data-label="状态"] { grid-area: status; }
         
         td[data-label="操作"] { 
-            margin-top: 10px; padding-top: 10px; 
+            grid-area: action; 
+            justify-content: flex-start; 
+            gap: 8px; 
+            padding-top: 8px; 
             border-top: 1px solid #F2F2F7; 
-            justify-content: flex-start; gap: 8px; flex-wrap: wrap;
+            margin-top: 4px; 
         }
         td[data-label="操作"]::before { display: none; }
-        td[data-label="操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
+        td[data-label="操作"] button { 
+            flex: 1; /* 按钮平分宽度 */
+            padding: 8px 12px; 
+            font-size: 13px; 
+            margin: 0; 
+            box-shadow: none; 
+            border-radius: 8px; 
+        }
         
+        /* 状态标签 */
         .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .status-11 { background: #fff3cd; color: #856404; }
         .status-12 { background: #cce5ff; color: #004085; }
@@ -127,8 +163,13 @@
         .status-msg { margin-top: 10px; color: #555; font-weight: 600; font-size: 13px; text-align: center; }
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 
+        /* ================= 🛡️ 全局按钮强反馈与防重复点击 ================= */
         @media (max-width: 768px) {
-            button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
+            button:active {
+                transform: scale(0.9) !important;
+                opacity: 0.7 !important;
+                transition: transform 0.1s, opacity 0.1s;
+            }
         }
         button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
         .btn-loading { pointer-events: none; opacity: 0.8; }
@@ -139,9 +180,14 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ================= 💻 电脑端专属优化 ================= */
         @media (min-width: 768px) {
             body { padding: 20px; background: #F4F6F9; }
-            .container { padding: 24px; border-radius: 16px; background: #fff; border: 1px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.03); backdrop-filter: none; }
+            .container { 
+                padding: 24px; border-radius: 16px; 
+                background: #fff; border: 1px solid #E5E7EB; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.03); backdrop-filter: none; 
+            }
             .page-header h1 { font-size: 22px; }
 
             .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 16px; background: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 24px; }
@@ -157,7 +203,18 @@
             
             tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid #F3F4F6 !important; transition: background 0.2s; }
             tbody tr:hover { background: #F9FAFB !important; }
-            tbody td { display: table-cell !important; padding: 16px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 14px; color: #1F2937 !important; }
+            tbody td { 
+                display: table-cell !important; 
+                padding: 16px !important; 
+                text-align: left; 
+                border: none !important; 
+                vertical-align: middle; 
+                flex: none !important; 
+                width: auto !important; 
+                margin: 0 !important; 
+                font-size: 14px; 
+                color: #1F2937 !important; 
+            }
             tbody td::before { display: none !important; }
             
             tbody td[data-label="订单号"] { font-family: monospace; color: #6B7280 !important; font-size: 13px !important; white-space: nowrap; }
@@ -168,7 +225,15 @@
             tbody td[data-label="时间"] { white-space: nowrap; color: #6B7280 !important; font-size: 13px !important; }
             
             tbody td[data-label="操作"] { white-space: nowrap; min-width: 130px; }
-            tbody td[data-label="操作"] button { display: inline-block !important; width: auto !important; margin: 0 8px 0 0 !important; padding: 6px 14px !important; font-size: 13px !important; border-radius: 6px !important; box-shadow: none !important; }
+            tbody td[data-label="操作"] button { 
+                display: inline-block !important; 
+                width: auto !important; 
+                margin: 0 8px 0 0 !important; 
+                padding: 6px 14px !important; 
+                font-size: 13px !important; 
+                border-radius: 6px !important;
+                box-shadow: none !important;
+            }
             tbody td[data-label="操作"] button:last-child { margin-right: 0 !important; }
             
             .page-btn { padding: 8px 18px; font-size: 14px; }
