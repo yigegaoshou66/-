@@ -134,7 +134,8 @@
         td[data-label="商品ID"]::before { font-size: 11px; }
         
         td[data-label="价格"]::before { content: "价:"; }
-        td[data-label="库存"]::before { content: "存:"; }
+        /* 全局把“存”改为“库” */
+        td[data-label="库存"]::before { content: "库:"; }
         
         /* 状态和操作融合的样式 */
         td[data-label="状态 / 操作"] { 
@@ -145,7 +146,7 @@
         td[data-label="状态 / 操作"]::before { display: none; }
         td[data-label="状态 / 操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
         
-        /* SKU 展开行 */
+        /* ================= 📦 SKU 展开行（手机端优化：保存和输入框同一行） ================= */
         tr.sku-row {
             display: flex; flex-wrap: wrap;
             background: #F8F9FA; border-radius: 12px;
@@ -155,22 +156,44 @@
             box-shadow: none;
             border: 1px solid #E9ECEF; border-left: 4px solid var(--ios-blue);
         }
-        tr.sku-row td { font-size: 13px; padding: 2px 0; margin-right: 8px; }
-        tr.sku-row td::before { width: auto; margin-right: 4px; }
+        tr.sku-row td { font-size: 13px; padding: 0; margin-right: 0; border: none; }
         
-        tr.sku-row td[data-label="SKU_ID"] { font-size: 11px; color: var(--ios-gray); width: 100%; margin-bottom: 4px; }
+        /* 第一行：SKU_ID */
+        tr.sku-row td[data-label="SKU_ID"] { width: 100%; flex: 0 0 100%; font-size: 11px; color: var(--ios-gray); margin-bottom: 4px; }
         tr.sku-row td[data-label="SKU_ID"]::before { display: none; }
-        tr.sku-row td[data-label="规格"] { font-weight: 600; width: 100%; margin-bottom: 6px; }
+        
+        /* 第二行：规格 */
+        tr.sku-row td[data-label="规格"] { width: 100%; flex: 0 0 100%; font-weight: 600; margin-bottom: 8px; }
         tr.sku-row td[data-label="规格"]::before { display: none; }
         
-        tr.sku-row td[data-label="价格"], tr.sku-row td[data-label="库存"] { margin-right: 12px; }
+        /* 第三行：价格、库存、操作 同一行排列 */
+        tr.sku-row td[data-label="价格"], 
+        tr.sku-row td[data-label="库存"] { 
+            flex: 1 1 auto; 
+            display: flex; 
+            align-items: center; 
+            margin-right: 6px; 
+            min-width: 0; 
+        }
+        /* 确保SKU行的库存标签也显示“库” */
+        tr.sku-row td[data-label="库存"]::before { content: "库:"; } 
+        
+        tr.sku-row td[data-label="操作"] { 
+            flex: 0 0 auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            width: auto !important; 
+            margin-top: 0 !important; 
+            padding-top: 0 !important; 
+            border-top: none !important; 
+        }
+        
         tr.sku-row .input-box { 
-            width: 60px; padding: 6px; font-size: 14px; text-align: center; margin: 0 4px; 
+            width: 45px; padding: 4px; font-size: 13px; text-align: center; margin: 0 2px; 
             border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; outline: none; transition: all 0.2s;
         }
         tr.sku-row .input-box:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
-        
-        tr.sku-row td[data-label="操作"] { width: 100%; margin-top: 8px; padding-top: 8px; border-top: 1px solid #E9ECEF; justify-content: flex-end; }
         
         /* 状态标签 */
         .badge-on { background: var(--ios-green); color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
