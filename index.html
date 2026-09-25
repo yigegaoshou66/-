@@ -16,7 +16,6 @@
             --text-secondary: rgba(60, 60, 67, 0.6);
             --text-tertiary: rgba(60, 60, 67, 0.35);
             
-            /* 核心：iOS 浅色玻璃材质 */
             --glass-light: rgba(255, 255, 255, 0.55);
             --glass-light-strong: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(255, 255, 255, 0.9);
@@ -38,7 +37,6 @@
             min-height: 100vh;
         }
 
-        /* 🌟 彩色柔和光斑背景 */
         body::before {
             content: "";
             position: fixed;
@@ -68,7 +66,6 @@
             100% { transform: translate(-20px, 20px) scale(1.05); }
         }
 
-        /* ================= 内容层 ================= */
         .container { 
             position: relative;
             z-index: 1;
@@ -77,7 +74,6 @@
             padding: 20px;
         }
 
-        /* 头部：店铺名称 + 刷新按钮 */
         .top-header { 
             display: flex; 
             justify-content: space-between; 
@@ -98,7 +94,7 @@
                 inset 0 -1px 0 rgba(255, 255, 255, 0.5),
                 0 4px 16px rgba(0, 0, 0, 0.05);
             overflow-x: auto; white-space: nowrap;
-            flex: 1; /* 让店铺名称自动填充剩余空间 */
+            flex: 1;
             min-width: 0;
         }
         .store-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
@@ -123,7 +119,6 @@
         }
         .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
 
-        /* 快捷入口 */
         .entry-links { display: flex; gap: 10px; margin-bottom: 16px; }
         .entry-links a { 
             flex: 1; text-align: center; text-decoration: none; padding: 18px 8px; 
@@ -153,7 +148,6 @@
         .entry-after { color: #FF9500; }
         .entry-kami { color: #6F42C1; }
 
-        /* 顶部工具栏 */
         .top-bar { margin-bottom: 20px; }
         .top-bar button { 
             width: 100%; padding: 18px; font-size: 16px; font-weight: 600;
@@ -183,7 +177,6 @@
         }
         .top-bar button:active { transform: scale(0.98); }
 
-        /* 通用按钮 */
         button { 
             padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; 
             background: var(--ios-blue); 
@@ -195,7 +188,6 @@
         .btn-edit { background: var(--ios-orange); color: #fff; }
         .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; }
         
-        /* ================= 📱 手机端卡片化 ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
@@ -256,7 +248,6 @@
         td[data-label="状态 / 操作"]::before { display: none; }
         td[data-label="状态 / 操作"] button { padding: 10px 16px; font-size: 13px; margin: 0; border-radius: 100px; width: auto; font-weight: 600; }
         
-        /* SKU 展开行 */
         tr.sku-row {
             display: flex; flex-wrap: wrap;
             background: rgba(255, 255, 255, 0.45);
@@ -276,11 +267,10 @@
         tr.sku-row td[data-label="规格"] { width: 100%; flex: 0 0 100%; font-weight: 600; margin-bottom: 8px; }
         tr.sku-row td[data-label="规格"]::before { display: none; }
         
-        /* 极致优化：让价格、库存、保存按钮在小屏幕绝对保持在一行 */
         tr.sku-row td[data-label="价格"], 
         tr.sku-row td[data-label="库存"] { 
             flex: 1 1 0; 
-            width: 0; /* 核心：打破内容撑开宽度的限制 */
+            width: 0;
             display: flex; 
             align-items: center; 
             margin-right: 4px; 
@@ -303,7 +293,7 @@
         
         tr.sku-row .input-box { 
             flex: 1; 
-            width: 100%; /* 填满容器 */
+            width: 100%;
             min-width: 25px;
             padding: 6px 2px; 
             font-size: 13px; 
@@ -325,7 +315,6 @@
             margin: 0 !important;
         }
 
-        /* 状态按钮 */
         .status-btn {
             display: inline-flex !important; align-items: center; gap: 4px;
             padding: 10px 16px !important; border-radius: 100px !important;
@@ -341,7 +330,6 @@
 
         .status-msg { margin-top: 12px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
 
-        /* 弹窗 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
         .modal-content { 
             background: rgba(255, 255, 255, 0.92);
@@ -384,7 +372,6 @@
         }
         .sku-edit-item .sku-inputs input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
-        /* ================= 🛡️ 全局按钮强反馈 ================= */
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
         }
@@ -397,12 +384,10 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ================= 💻 电脑端 ================= */
         @media (min-width: 768px) {
             body { padding: 32px; }
             .container { padding: 0; max-width: 1200px; }
             
-            /* PC端店铺名称与刷新按钮在一行 */
             .top-header { margin-bottom: 20px; }
             .store-bar { max-width: none; margin: 0; } 
             .logout-btn button { padding: 14px 28px; font-size: 15px; }
@@ -467,7 +452,6 @@
             tr.sku-row td[data-label="操作"] { justify-content: flex-start !important; width: auto !important; margin: 0 !important; padding: 18px !important; border-top: none !important; }
             tr.sku-row td[data-label="价格"]::before { content: "价:"; margin-right: 4px; font-size: 14px; }
             tr.sku-row td[data-label="库存"]::before { content: "库:"; margin-right: 4px; font-size: 14px; }
-            /* PC端把元、件加回来显示 */
             tr.sku-row td[data-label="价格"]::after { content: " 元"; }
             tr.sku-row td[data-label="库存"]::after { content: " 件"; }
 
@@ -487,7 +471,6 @@
 <body>
 
 <div class="container">
-    <!-- 头部：店铺名称 + 刷新按钮 -->
     <div class="top-header">
         <div class="store-bar">
             <span class="store-label">当前店铺：</span>
@@ -632,11 +615,9 @@
             const expandedRows = document.querySelectorAll('.sku-row');
             if (expandedRows.length > 0) {
                 expandedRows.forEach(row => row.remove());
-                document.querySelectorAll('#productTableBody button').forEach(btn => {
-                    if (btn.dataset.expanded === 'true') {
-                        btn.innerText = '展开规格';
-                        btn.dataset.expanded = 'false';
-                    }
+                document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(btn => {
+                    btn.innerText = '展开规格';
+                    btn.setAttribute('data-expanded', 'false');
                 });
             }
         }
@@ -689,7 +670,7 @@
                         <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 8px;">
                             ${statusActionBtn}
                             <button class="btn-edit" onclick="openEditProductModal(${product.product_id})" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">编辑</button>
-                            <button onclick="toggleSkuList(${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
+                            <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
                         </td>
                     `;
                     productTableBody.appendChild(tr);
@@ -811,28 +792,65 @@
         }
     }
 
-    async function toggleSkuList(productId, btn) {
+    // ================= 🚀 重点优化：SKU 展开逻辑（彻底解决卡死与速度慢） =================
+    async function toggleSkuList(event, productId, btn) {
+        // 阻止事件冒泡，防止全局按钮拦截器覆盖我们的状态
+        if (event) event.stopPropagation();
+
+        // 1. 强制重置按钮状态，移除一切可能的残留状态（解决卡死问题）
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+
         const mainRow = btn.closest('tr');
-        if (btn.dataset.expanded === 'true') {
-            let nextRow = mainRow.nextElementSibling;
-            while (nextRow && nextRow.classList.contains('sku-row')) { let rowToDelete = nextRow; nextRow = nextRow.nextElementSibling; rowToDelete.remove(); }
-            btn.innerText = "展开规格"; btn.dataset.expanded = "false"; return; 
+        const isExpanded = btn.getAttribute('data-expanded') === 'true';
+
+        // 2. 无论什么情况，先把当前行下方所有已存在的 SKU 行移除，确保状态干净
+        let nextRow = mainRow.nextElementSibling;
+        while (nextRow && nextRow.classList.contains('sku-row')) {
+            let rowToDelete = nextRow;
+            nextRow = nextRow.nextElementSibling;
+            rowToDelete.remove();
         }
-        document.querySelectorAll('.sku-row').forEach(row => row.remove());
-        document.querySelectorAll('#productTableBody button').forEach(otherBtn => {
-            if (otherBtn.dataset.expanded === 'true') { otherBtn.innerText = "展开规格"; otherBtn.dataset.expanded = "false"; }
+
+        // 3. 将按钮强制恢复为“展开规格”状态
+        btn.innerText = "展开规格";
+        btn.setAttribute('data-expanded', 'false');
+
+        // 4. 如果是“收起”操作，到这里逻辑已经完成了（行已移除，文字已重置），直接结束
+        if (isExpanded) {
+            return;
+        }
+
+        // 5. 以下是“展开”逻辑
+        btn.innerText = "加载中...";
+        btn.disabled = true;
+        btn.classList.add('btn-loading');
+
+        // 清理其他已展开的行（保持界面整洁，同时只展开一个）
+        document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
+            if (otherBtn !== btn) {
+                otherBtn.innerText = "展开规格";
+                otherBtn.setAttribute('data-expanded', 'false');
+            }
         });
-        btn.innerText = "加载中..."; btn.disabled = true;
+        document.querySelectorAll('.sku-row').forEach(row => row.remove());
+
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+            });
             const result = await response.json();
+
             if (result.code === 0 && result.data.sku_items) {
-                let lastInsertedRow = mainRow; 
+                // ⚡ 核心优化：使用 DocumentFragment 批量构建 DOM，极大提升渲染速度
+                const fragment = document.createDocumentFragment();
+                
                 result.data.sku_items.forEach(sku => {
                     const skuTr = document.createElement('tr');
                     skuTr.className = 'sku-row';
-                    const priceInYuan = (sku.price / 100).toFixed(2); 
-                    // 注意：这里去掉了 " 元" 和 " 件"，让输入框完全撑满，保持一行
+                    const priceInYuan = (sku.price / 100).toFixed(2);
                     skuTr.innerHTML = `
                         <td data-label="SKU_ID">└─ ${sku.sku_id}</td>
                         <td data-label="规格" data-sku-text="${sku.sku_text}">${sku.sku_text}</td>
@@ -840,12 +858,34 @@
                         <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></td>
                         <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})">保存</button></td>
                     `;
-                    lastInsertedRow.parentNode.insertBefore(skuTr, lastInsertedRow.nextSibling);
-                    lastInsertedRow = skuTr; 
+                    fragment.appendChild(skuTr);
                 });
-                btn.innerText = "收起规格"; btn.disabled = false; btn.dataset.expanded = "true"; 
-            } else { alert("获取规格失败：" + (result.msg || "未知错误")); btn.innerText = "重试"; btn.disabled = false; }
-        } catch (error) { alert("网络错误：" + error.message); btn.innerText = "重试"; btn.disabled = false; }
+
+                // 检查是否真的生成了节点
+                if (fragment.hasChildNodes()) {
+                    mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
+                    btn.innerText = "收起规格";
+                    btn.disabled = false;
+                    btn.classList.remove('btn-loading');
+                    btn.setAttribute('data-expanded', 'true');
+                } else {
+                    alert("该商品暂无规格数据");
+                    btn.innerText = "展开规格";
+                    btn.disabled = false;
+                    btn.classList.remove('btn-loading');
+                }
+            } else {
+                alert("获取规格失败：" + (result.msg || "未知错误"));
+                btn.innerText = "展开规格";
+                btn.disabled = false;
+                btn.classList.remove('btn-loading');
+            }
+        } catch (error) {
+            alert("网络错误：" + error.message);
+            btn.innerText = "展开规格";
+            btn.disabled = false;
+            btn.classList.remove('btn-loading');
+        }
     }
 
     async function updateSkuData(productId, skuId) {
@@ -926,7 +966,6 @@
         } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "下架"; btn.disabled = false; }
     }
 
-    // 页面加载直接拉数据
     loadProducts();
 </script>
 </body>
