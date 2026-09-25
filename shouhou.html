@@ -510,31 +510,14 @@
         loadRefunds(newPage); 
     }
 
-    // ================= 📝 详情逻辑（含买家昵称查询） =================
+    // ================= 📝 详情逻辑 =================
     async function openDetailModal(orderNo) {
         document.getElementById('detailContent').innerHTML = '加载中...';
         document.getElementById('detailModal').style.display = 'flex';
         
         try {
-            // 1. 调售后详情
             const refundResp = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/detail", body: { order_no: orderNo } }) });
             const refundResult = await refundResp.json();
-            
-            // 2. 用订单号去订单列表接口查买家昵称（独立 try，失败不影响详情）
-            let buyerName = '未知买家';
-            try {
-                const orderResp = await fetch(WORKER_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ path: "/api/open/order/list", body: { order_no: orderNo, page_no: 1, page_size: 1 } }) 
-                });
-                const orderResult = await orderResp.json();
-                if (orderResult.code === 0 && orderResult.data.list && orderResult.data.list.length > 0) {
-                    buyerName = orderResult.data.list[0].buyer_nick || '未知买家';
-                }
-            } catch (e) {
-                console.log("获取买家信息失败", e);
-            }
             
             if (refundResult.code === 0 && refundResult.data) {
                 const d = refundResult.data;
@@ -549,7 +532,6 @@
                 document.getElementById('detailContent').innerHTML = `
                     <div class="info-item"><div class="label">退款单号</div><div class="value">${d.refund_no}</div></div>
                     <div class="info-item"><div class="label">订单号</div><div class="value">${d.order_no}</div></div>
-                    <div class="info-item"><div class="label">买家昵称</div><div class="value" style="color: var(--ios-blue);">${buyerName}</div></div>
                     <div class="info-item"><div class="label">退款原因</div><div class="value">${d.refund_reason || '无'}</div></div>
                     <div class="info-item"><div class="label">退款状态</div><div class="value" style="color: var(--ios-blue);">${refundStatusText}</div></div>
                     <div class="info-item"><div class="label">退款类型</div><div class="value">${refundTypeText}</div></div>
