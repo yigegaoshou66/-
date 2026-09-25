@@ -123,7 +123,8 @@
         }
         td::before { content: attr(data-label); font-weight: 500; color: var(--ios-gray); margin-right: 4px; flex-shrink: 0; }
         
-        td[data-label="标题"], td[data-label="商品ID"], td[data-label="操作"] { 
+        /* 合并后的状态/操作列 */
+        td[data-label="标题"], td[data-label="商品ID"], td[data-label="状态 / 操作"] { 
             flex: 0 0 100%; width: 100%; margin-right: 0;
         }
         
@@ -134,15 +135,15 @@
         
         td[data-label="价格"]::before { content: "价:"; }
         td[data-label="库存"]::before { content: "存:"; }
-        td[data-label="状态"]::before { display: none; }
         
-        td[data-label="操作"] { 
+        /* 状态和操作融合的样式 */
+        td[data-label="状态 / 操作"] { 
             margin-top: 10px; padding-top: 10px; 
             border-top: 1px solid #F2F2F7; 
-            justify-content: flex-start; gap: 8px; flex-wrap: wrap;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-start;
         }
-        td[data-label="操作"]::before { display: none; }
-        td[data-label="操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
+        td[data-label="状态 / 操作"]::before { display: none; }
+        td[data-label="状态 / 操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
         
         /* SKU 展开行 */
         tr.sku-row {
@@ -176,6 +177,21 @@
         .badge-off { background: var(--ios-red); color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
         .badge-sold { background: var(--ios-gray); color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
         .badge-unknown { background: var(--ios-orange); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+
+        /* 🎯 状态按钮（可点击） */
+        .status-btn {
+            display: inline-flex !important; align-items: center; gap: 4px;
+            padding: 6px 12px !important; border-radius: 8px !important;
+            font-size: 12px !important; font-weight: 600 !important;
+            cursor: pointer !important; border: none !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+            transition: transform 0.1s, opacity 0.1s, filter 0.1s !important;
+        }
+        .status-btn:active { transform: scale(0.9) !important; opacity: 0.75 !important; }
+        .status-btn-on { background: var(--ios-green) !important; color: #fff !important; }
+        .status-btn-off { background: var(--ios-red) !important; color: #fff !important; }
+        .status-btn-sold { background: var(--ios-gray) !important; color: #fff !important; }
+        .status-btn-unknown { background: var(--ios-orange) !important; color: #fff !important; }
 
         .status-msg { margin-top: 10px; color: #555; font-weight: 600; font-size: 13px; text-align: center; }
 
@@ -263,20 +279,26 @@
             table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.6); border-radius: 16px; overflow: hidden; box-shadow: var(--glass-shadow); border-collapse: collapse; }
             thead { display: table-header-group !important; background: rgba(0,0,0,0.02); }
             thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
-            thead th { display: table-cell !important; padding: 16px !important; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid rgba(0,0,0,0.05); }
+            thead th { display: table-cell !important; padding: 16px !important; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid rgba(0,0,0,0.05); white-space: nowrap; }
             
             tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.03) !important; }
             tbody tr:hover { background: rgba(255, 255, 255, 0.8) !important; }
             tbody td { display: table-cell !important; padding: 16px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 14px; color: #1c1c1e !important; }
             tbody td::before { display: none !important; }
             
-            tbody td[data-label="标题"], tbody td[data-label="商品ID"], tbody td[data-label="操作"] {
-                width: auto !important; margin: 0 !important; border: none !important; padding: 16px !important;
+            /* 电脑端状态和操作合并列的样式 */
+            tbody td[data-label="状态 / 操作"] {
+                display: table-cell !important;
+                white-space: nowrap;
             }
-            tbody td[data-label="标题"] { font-weight: 600; border-bottom: none !important; }
-            
-            td[data-label="操作"] { display: table-cell !important; }
-            td[data-label="操作"] button { display: inline-block !important; width: auto; margin: 0 6px 6px 0 !important; padding: 8px 14px !important; font-size: 12px !important; }
+            tbody td[data-label="状态 / 操作"] button {
+                display: inline-block !important;
+                width: auto !important;
+                margin: 0 6px 0 0 !important;
+                padding: 6px 14px !important;
+                font-size: 12px !important;
+            }
+            tbody td[data-label="状态 / 操作"] button:last-child { margin-right: 0 !important; }
 
             /* SKU 展开行彻底重置 */
             tr.sku-row { 
@@ -360,7 +382,7 @@
 
         <div class="table-wrapper">
             <table id="productTable">
-                <thead><tr><th>商品ID</th><th>标题</th><th>状态</th><th>价格(元)</th><th>库存</th><th>操作</th></tr></thead>
+                <thead><tr><th>商品ID</th><th>标题</th><th>价格(元)</th><th>库存</th><th>状态 / 操作</th></tr></thead>
                 <tbody id="productTableBody"></tbody>
             </table>
         </div>
@@ -403,66 +425,49 @@
 </div>
 
 <script>
-    // ================= 🛡️ 全局强反馈与防重复点击（升级版：同时支持按钮和跳转链接） =================
+    // ================= 🛡️ 全局强反馈与防重复点击 =================
     let isRequesting = false;
     let isNavigating = false;
 
     document.addEventListener('click', function(e) {
-        // 同时捕获按钮，以及首页的跳转卡片、详情页的返回按钮
         const btn = e.target.closest('button');
         const link = e.target.closest('.entry-links a, .back-btn');
 
         if (!btn && !link) return;
 
-        // 1. 处理跳转链接（卡片/返回按钮）
         if (link) {
-            if (isNavigating) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                return;
-            }
+            if (isNavigating) { e.stopImmediatePropagation(); e.preventDefault(); return; }
             isNavigating = true;
-            link.style.pointerEvents = 'none'; // 禁止重复点击
-            link.style.opacity = '0.5';       // 变暗
-            link.style.transform = 'scale(0.9)'; // 缩小反馈
+            link.style.pointerEvents = 'none';
+            link.style.opacity = '0.5';
+            link.style.transform = 'scale(0.9)';
             link.style.transition = 'all 0.1s ease'; 
-            
-            // 2秒后重置（防止跳转失败导致永久卡死）
             setTimeout(() => {
                 isNavigating = false;
                 link.style.pointerEvents = '';
                 link.style.opacity = '';
                 link.style.transform = '';
             }, 2000);
-            return; // 继续执行 href 跳转
+            return;
         }
 
-        // 2. 处理按钮点击（原有逻辑）
         if (btn) {
             if (btn.disabled) return;
-
             if (isRequesting) {
                 e.stopImmediatePropagation();
                 e.preventDefault();
                 const originalText = btn.innerText;
                 btn.innerText = '处理中...';
                 btn.style.opacity = '0.5';
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.style.opacity = '1';
-                }, 500);
+                setTimeout(() => { btn.innerText = originalText; btn.style.opacity = '1'; }, 500);
                 return;
             }
-
             btn.dataset.originalText = btn.innerText;
             btn.innerText = '等待中...';
             btn.disabled = true;
             btn.classList.add('btn-loading');
-
             setTimeout(() => {
-                if (!isRequesting && btn.classList.contains('btn-loading')) {
-                    restoreButton(btn);
-                }
+                if (!isRequesting && btn.classList.contains('btn-loading')) { restoreButton(btn); }
             }, 500);
         }
     }, true);
@@ -476,7 +481,6 @@
         }
     }
 
-    // 劫持 fetch，全局管理请求状态
     if (!window._originalFetch) {
         window._originalFetch = window.fetch;
         window.fetch = function(...args) {
@@ -545,25 +549,34 @@
                 });
 
                 currentProductData.forEach(product => {
-                    let statusBadge = `<span class="badge-unknown">未知(${product.product_status || '无'})</span>`;
-                    if (product.product_status === 22) statusBadge = `<span class="badge-on">✅ 已上架</span>`;
-                    else if (product.product_status === 31) statusBadge = `<span class="badge-off">⛔ 已下架</span>`;
-                    else if (product.product_status === 23) statusBadge = `<span class="badge-sold">🏷️ 已售出</span>`;
                     const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
                     const stock = product.stock !== undefined ? product.stock : '-';
                     
+                    // 🎯 核心改动：状态本身就是按钮，点击可切换上下架
+                    let statusActionBtn = '';
+                    if (product.product_status === 22) {
+                        // 已上架：点击执行下架
+                        statusActionBtn = `<button class="status-btn status-btn-on" onclick="downShelfProduct(${product.product_id}, this)" title="点击下架">✅ 已上架</button>`;
+                    } else if (product.product_status === 31) {
+                        // 已下架：点击执行上架
+                        statusActionBtn = `<button class="status-btn status-btn-off" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">⛔ 已下架</button>`;
+                    } else if (product.product_status === 23) {
+                        statusActionBtn = `<button class="status-btn status-btn-sold" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">🏷️ 已售出</button>`;
+                    } else {
+                        statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击上架">❓ 未知(${product.product_status || '无'})</button>`;
+                    }
+
                     const tr = document.createElement('tr');
+                    // 状态按钮和 编辑、展开规格 在同一行
                     tr.innerHTML = `
                         <td data-label="商品ID">${product.product_id}</td>
                         <td data-label="标题"><b>${product.title || '无标题'}</b></td>
-                        <td data-label="状态">${statusBadge}</td>
                         <td data-label="价格">${priceYuan} 元</td>
                         <td data-label="库存">${stock}</td>
-                        <td data-label="操作" style="justify-content: flex-start; gap: 5px;">
+                        <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 5px;">
+                            ${statusActionBtn}
                             <button class="btn-edit" onclick="openEditProductModal(${product.product_id})" style="padding:6px 10px; font-size:12px; width:auto;">编辑</button>
                             <button onclick="toggleSkuList(${product.product_id}, this)" data-expanded="false" style="padding:6px 10px; font-size:12px; width:auto;">展开规格</button>
-                            <button class="btn-publish" onclick="publishProduct(${product.product_id}, this)" style="padding:6px 10px; font-size:12px; width:auto;">上架</button>
-                            <button class="btn-down" onclick="downShelfProduct(${product.product_id}, this)" style="padding:6px 10px; font-size:12px; width:auto;">下架</button>
                         </td>
                     `;
                     productTableBody.appendChild(tr);
