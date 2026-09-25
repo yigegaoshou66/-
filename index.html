@@ -535,8 +535,36 @@
 
 <script>
     const WORKER_URL = "https://api.1113630283.online";
-    let isRequesting = false;
     let isNavigating = false;
+    
+    // ⚡ 核心优化：限制最大并发请求数，防止排队卡死
+    const MAX_CONCURRENT = 3;
+    let activeRequests = 0;
+
+    // 专门处理请求超时 + 并发控制的 fetch
+    async function fetchWithControl(url, options, timeout = 8000) {
+        if (activeRequests >= MAX_CONCURRENT) {
+            throw new Error('当前请求过多，请稍后重试（正在处理其他操作）');
+        }
+        activeRequests++;
+        
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        
+        try {
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        } catch (error) {
+            clearTimeout(id);
+            if (error.name === 'AbortError') {
+                throw new Error('请求超时（超过8秒），请检查网络或稍后再试');
+            }
+            throw error;
+        } finally {
+            activeRequests--;
+        }
+    }
 
     // ================= 🛡️ 全局按钮强反馈 =================
     document.addEventListener('click', function(e) {
@@ -563,22 +591,11 @@
 
         if (btn) {
             if (btn.disabled) return;
-            if (isRequesting) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                const originalText = btn.innerText;
-                btn.innerText = '处理中...';
-                btn.style.opacity = '0.5';
-                setTimeout(() => { btn.innerText = originalText; btn.style.opacity = '1'; }, 500);
-                return;
+            if (!btn.dataset.originalText) {
+                btn.dataset.originalText = btn.innerText;
             }
-            btn.dataset.originalText = btn.innerText;
-            btn.innerText = '等待中...';
             btn.disabled = true;
             btn.classList.add('btn-loading');
-            setTimeout(() => {
-                if (!isRequesting && btn.classList.contains('btn-loading')) { restoreButton(btn); }
-            }, 500);
         }
     }, true);
 
@@ -618,6 +635,7 @@
                 document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(btn => {
                     btn.innerText = '展开规格';
                     btn.setAttribute('data-expanded', 'false');
+                    restoreButton(btn);
                 });
             }
         }
@@ -629,15 +647,22 @@
     const userNameDisplay = document.getElementById('userNameDisplay');
     let currentProductData = []; 
 
+    // 缓存已拉取的SKU数据，避免重复请求
+    const skuCache = {}; 
+
     async function loadProducts() {
         productStatusMsg.innerText = "正在加载商品列表...";
         productTableBody.innerHTML = "";
+        const refreshBtn = document.querySelector('.top-bar button');
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } }) });
+            const response = await fetchWithControl(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } }) 
+            });
             const result = await response.json();
             if (result.code === 0) {
                 productStatusMsg.innerText = "加载成功！";
-                
                 currentProductData = result.data.list || []; 
 
                 currentProductData.sort((a, b) => {
@@ -676,7 +701,12 @@
                     productTableBody.appendChild(tr);
                 });
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
-        } catch (error) { productStatusMsg.innerText = "请求出错：" + error.message; }
+        } catch (error) { 
+            productStatusMsg.innerText = "请求出错：" + error.message; 
+            alert(error.message);
+        } finally {
+            if (refreshBtn) restoreButton(refreshBtn);
+        }
     }
 
     async function openEditProductModal(productId) {
@@ -697,9 +727,17 @@
         document.getElementById('editProductModal').style.display = 'flex';
 
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
+            const response = await fetchWithControl(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
+            });
             const result = await response.json();
             if (result.code === 0 && result.data) {
+                if (result.data.sku_items) {
+                    skuCache[productId] = result.data.sku_items;
+                }
+
                 let content = result.data.content; 
                 if (!content && result.data.publish_shop && result.data.publish_shop.length > 0) {
                     content = result.data.publish_shop[0].content; 
@@ -728,7 +766,7 @@
             }
         } catch (error) {
             console.log("获取商品详情失败：", error);
-            document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败</span>';
+            document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败: ' + error.message + '</span>';
         }
     }
 
@@ -773,7 +811,7 @@
         if (skuItems.length > 0) requestBody.sku_items = skuItems;
 
         try {
-            const response = await fetch(WORKER_URL, { 
+            const response = await fetchWithControl(WORKER_URL, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
@@ -792,19 +830,15 @@
         }
     }
 
-    // ================= 🚀 重点优化：SKU 展开逻辑（彻底解决卡死与速度慢） =================
     async function toggleSkuList(event, productId, btn) {
-        // 阻止事件冒泡，防止全局按钮拦截器覆盖我们的状态
         if (event) event.stopPropagation();
 
-        // 1. 强制重置按钮状态，移除一切可能的残留状态（解决卡死问题）
         btn.classList.remove('btn-loading');
         btn.disabled = false;
 
         const mainRow = btn.closest('tr');
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
-        // 2. 无论什么情况，先把当前行下方所有已存在的 SKU 行移除，确保状态干净
         let nextRow = mainRow.nextElementSibling;
         while (nextRow && nextRow.classList.contains('sku-row')) {
             let rowToDelete = nextRow;
@@ -812,42 +846,46 @@
             rowToDelete.remove();
         }
 
-        // 3. 将按钮强制恢复为“展开规格”状态
         btn.innerText = "展开规格";
         btn.setAttribute('data-expanded', 'false');
 
-        // 4. 如果是“收起”操作，到这里逻辑已经完成了（行已移除，文字已重置），直接结束
         if (isExpanded) {
+            restoreButton(btn);
             return;
         }
 
-        // 5. 以下是“展开”逻辑
         btn.innerText = "加载中...";
         btn.disabled = true;
         btn.classList.add('btn-loading');
 
-        // 清理其他已展开的行（保持界面整洁，同时只展开一个）
         document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
             if (otherBtn !== btn) {
                 otherBtn.innerText = "展开规格";
                 otherBtn.setAttribute('data-expanded', 'false');
+                restoreButton(otherBtn);
             }
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
         try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
-            });
-            const result = await response.json();
+            let skuItems = skuCache[productId]; // 优先使用缓存，瞬间响应
 
-            if (result.code === 0 && result.data.sku_items) {
-                // ⚡ 核心优化：使用 DocumentFragment 批量构建 DOM，极大提升渲染速度
+            if (!skuItems) {
+                const response = await fetchWithControl(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+                });
+                const result = await response.json();
+                if (result.code === 0 && result.data.sku_items) {
+                    skuItems = result.data.sku_items;
+                    skuCache[productId] = skuItems;
+                }
+            }
+
+            if (skuItems && skuItems.length > 0) {
                 const fragment = document.createDocumentFragment();
-                
-                result.data.sku_items.forEach(sku => {
+                skuItems.forEach(sku => {
                     const skuTr = document.createElement('tr');
                     skuTr.className = 'sku-row';
                     const priceInYuan = (sku.price / 100).toFixed(2);
@@ -861,28 +899,17 @@
                     fragment.appendChild(skuTr);
                 });
 
-                // 检查是否真的生成了节点
                 if (fragment.hasChildNodes()) {
                     mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
                     btn.innerText = "收起规格";
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
                     btn.setAttribute('data-expanded', 'true');
-                } else {
-                    alert("该商品暂无规格数据");
-                    btn.innerText = "展开规格";
-                    btn.disabled = false;
-                    btn.classList.remove('btn-loading');
                 }
             } else {
-                alert("获取规格失败：" + (result.msg || "未知错误"));
-                btn.innerText = "展开规格";
-                btn.disabled = false;
-                btn.classList.remove('btn-loading');
+                alert("该商品暂无规格数据");
             }
         } catch (error) {
-            alert("网络错误：" + error.message);
-            btn.innerText = "展开规格";
+            alert("获取规格失败：" + error.message);
+        } finally {
             btn.disabled = false;
             btn.classList.remove('btn-loading');
         }
@@ -902,23 +929,30 @@
         if(saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
 
         try {
-            const detailResponse = await fetch(WORKER_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
-            });
-            const detailResult = await detailResponse.json();
+            let skuItems = skuCache[productId];
             
-            if (detailResult.code !== 0 || !detailResult.data.sku_items) {
-                throw new Error("获取原规格失败，无法保存");
+            if (!skuItems) {
+                const detailResponse = await fetchWithControl(WORKER_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
+                });
+                const detailResult = await detailResponse.json();
+                if (detailResult.code !== 0 || !detailResult.data.sku_items) {
+                    throw new Error("获取原规格失败，无法保存");
+                }
+                skuItems = detailResult.data.sku_items;
+                skuCache[productId] = skuItems;
             }
 
-            const updatedSkuItems = detailResult.data.sku_items.map(sku => {
+            const updatedSkuItems = skuItems.map(sku => {
                 if (sku.sku_id === skuId) {
                     return { ...sku, price: newPriceFen, stock: newStock };
                 }
                 return sku;
             });
+            
+            skuCache[productId] = updatedSkuItems;
 
             const requestBody = {
                 product_id: productId,
@@ -929,14 +963,18 @@
                 }))
             };
 
-            const response = await fetch(WORKER_URL, { 
+            const response = await fetchWithControl(WORKER_URL, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
             });
             const result = await response.json();
             
-            if (result.code === 0) { alert("SKU 修改成功！"); } else { alert("修改失败：" + result.msg); }
+            if (result.code === 0) { 
+                alert("SKU 修改成功！"); 
+            } else { 
+                alert("修改失败：" + result.msg); 
+            }
         } catch (error) {
             alert("请求出错：" + error.message);
         } finally {
@@ -950,7 +988,7 @@
         if (!confirm(`确定将商品 ${productId} 上架？`)) return;
         btn.innerText = "上架中..."; btn.disabled = true;
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/publish", body: { product_id: parseInt(productId), user_name: [userName] } }) });
+            const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/publish", body: { product_id: parseInt(productId), user_name: [userName] } }) });
             const result = await response.json();
             if (result.code === 0) { alert("上架指令发送成功！稍后刷新查看"); loadProducts(); } else { alert("上架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "上架"; btn.disabled = false; }
@@ -960,7 +998,7 @@
         if (!confirm(`确定将商品 ${productId} 下架？`)) return;
         btn.innerText = "下架中..."; btn.disabled = true;
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: parseInt(productId) } }) });
+            const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: parseInt(productId) } }) });
             const result = await response.json();
             if (result.code === 0) { alert("下架指令发送成功！稍后刷新查看"); loadProducts(); } else { alert("下架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { btn.innerText = "下架"; btn.disabled = false; }
