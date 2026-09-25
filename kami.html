@@ -49,7 +49,7 @@
             padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.2s; white-space: nowrap; 
         }
-        .back-btn:active { transform: translateY(-50%) scale(0.95); }
+        .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
         .nav-tabs { display: flex; background: rgba(0, 0, 0, 0.04); padding: 4px; border-radius: 14px; margin-bottom: 16px; }
         .nav-tabs button { 
@@ -68,13 +68,20 @@
         .filter-content input, .filter-content select { padding: 12px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.9); border-radius: 12px; font-size: 16px; outline: none; width: 100%; }
         .filter-content input:focus, .filter-content select:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
+        /* 👇 增强按钮点击反馈 */
         button { 
             padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; 
             font-size: 14px; font-weight: 600; background: var(--ios-blue); 
-            box-shadow: 0 4px 12px rgba(0,122,255,0.2); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            box-shadow: 0 4px 12px rgba(0,122,255,0.2); 
+            transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s; 
             width: 100%; margin-bottom: 10px; 
         }
-        button:active { transform: scale(0.97); opacity: 0.9; }
+        button:active { 
+            transform: scale(0.92); 
+            opacity: 0.85;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            filter: brightness(0.9);
+        }
         .btn-edit { background: var(--ios-orange); color: #fff; }
         .btn-delete { background: var(--ios-red); }
         .btn-stock { background: var(--ios-green); }
@@ -86,11 +93,10 @@
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
         
-        /* 使用 Grid 布局重构卡片，实现紧凑的两列多行效果 */
         tr { 
             display: grid; 
             grid-template-columns: 1fr auto; 
-            gap: 4px 10px; /* 行间距4px，列间距10px */
+            gap: 4px 10px; 
             background: #fff; 
             border-radius: 16px; 
             margin-bottom: 10px; 
@@ -110,7 +116,6 @@
             color: #1c1c1e; 
         }
         
-        /* 第一行：名称 和 ID */
         td[data-label="名称"] { 
             grid-column: 1; 
             font-size: 16px; 
@@ -127,7 +132,6 @@
         }
         td[data-label="卡种ID"]::before { content: "ID: "; margin-right: 2px; }
 
-        /* 第二行：库存 和 成本 */
         td[data-label="库存"] { 
             grid-column: 1; 
             font-size: 13px; 
@@ -147,10 +151,8 @@
         }
         td[data-label="成本"]::before { content: "成本: "; color: var(--ios-gray); font-weight: 500; margin-right: 4px; }
 
-        /* 隐藏分类 */
         td[data-label="分类"] { display: none; }
 
-        /* 第三行：操作按钮组 (4个按钮均分宽度) */
         td[data-label="操作"] { 
             grid-column: 1 / -1; 
             display: grid; 
@@ -201,27 +203,25 @@
         .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
-        /* ================= 💻 电脑端专属保护（强制还原标准表格） ================= */
+        /* ================= 💻 电脑端专属保护（严格隔离） ================= */
         @media (min-width: 768px) {
             .mobile-filter-header { display: none !important; }
             .filter-content { display: flex !important; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 0; width: 100%; }
             .filter-content label { display: block !important; white-space: nowrap; margin-bottom: 0; font-size: 14px; }
             .filter-content input, .filter-content select { flex: 1; min-width: 140px; width: auto !important; margin-bottom: 0; }
-            .filter-content button { width: auto !important; margin-bottom: 0; padding: 10px 20px; }
+            .filter-content button; { width: auto !important; margin-bottom: 0; padding: 10px 20px; }
 
             .table-wrapper { display: block !important; overflow-x: auto; }
             table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.6); border-radius: 16px; overflow: hidden; box-shadow: var(--glass-shadow); border-collapse: collapse; }
             thead { display: table-header-group !important; background: rgba(0,0,0,0.02); }
             
-            /* 强制重置 tr 为表格行 */
-            thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
-            thead th { display: table-cell !important; padding: 16px !important; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid rgba(0,0,0,0.05); }
+            thead tr { display: table-row !important; background: none !important; border: none !important; box }
+-shadow: none !important; margin:            0 ! theadimportant; padding: 0 !important; border th-radius: 0 !important { display: table-cell !important; padding: 16px !important; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid rgba(0,0,0,0.05); }
             
             tbody { display: table-row-group !important; }
             tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.03) !important; }
             tbody tr:hover { background: rgba(255, 255, 255, 0.8) !important; }
             
-            /* 强制重置 td 为表格单元格，并恢复分类的显示 */
             tbody td { 
                 display: table-cell !important; 
                 padding: 16px !important; 
@@ -319,6 +319,7 @@
     </div>
 </div>
 
+<!-- 👇 弹窗区域，添加 data-dirty 标记方便统一管理 -->
 <div id="categoryModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 450px;">
         <h2 id="categoryModalTitle">新建卡密分类</h2>
@@ -400,6 +401,71 @@
     let currentKindPage = 1;
     const kindPageSize = 20;
 
+    // 👇 记录表单是否被修改过，防止误触关闭丢失数据
+    const formState = {
+        stock: false,
+        kind: false,
+        category: false
+    };
+
+    // 重置表单状态
+    function resetFormState(type) {
+        if (type) formState[type] = false;
+    }
+
+    // 监听表单输入，标记为已修改
+    function setupInputListeners() {
+        // 添加卡密表单监听
+        const stockInputs = document.querySelectorAll('#stockModal textarea, #stockModal input[type="checkbox"]');
+        stockInputs.forEach(el => {
+            el.addEventListener('input', () => formState.stock = true);
+            el.addEventListener('change', () => formState.stock = true);
+        });
+
+        // 编辑卡种表单监听
+        const kindInputs = document.querySelectorAll('#kindModal input:not([type="hidden"]), #kindModal select');
+        kindInputs.forEach(el => {
+            el.addEventListener('input', () => formState.kind = true);
+            el.addEventListener('change', () => formState.kind = true);
+        });
+
+        // 编辑分类表单监听
+        const catInputs = document.querySelectorAll('#categoryModal input, #categoryModal textarea');
+        catInputs.forEach(el => {
+            el.addEventListener('input', () => formState.category = true);
+            el.addEventListener('change', () => formState.category = true);
+        });
+    }
+
+    // 初始化时绑定监听器
+    setupInputListeners();
+
+    // 👇 点击空白处（遮罩层）关闭弹窗逻辑
+    function setupOverlayClick(modalId, closeFn, dirtyFlag, type) {
+        const modal = document.getElementById(modalId);
+        modal.addEventListener('mousedown', function(e) {
+            // 只有直接点击遮罩层才触发，点击弹窗内容不会触发
+            if (e.target === this) {
+                if (formState[dirtyFlag]) {
+                    alert('您有未保存的内容，请点击取消或提交保存后再关闭。');
+                } else {
+                    closeFn();
+                    resetFormState(type);
+                }
+            }
+        });
+    }
+
+    // 绑定各个弹窗的遮罩点击事件
+    setupOverlayClick('stockModal', closeStockModal, 'stock', 'stock');
+    setupOverlayClick('kindModal', closeKindModal, 'kind', 'kind');
+    setupOverlayClick('categoryModal', closeCategoryModal, 'category', 'category');
+    // 卡种详情没有输入框，直接允许点击关闭
+    document.getElementById('kindInfoModal').addEventListener('mousedown', function(e) {
+        if (e.target === this) closeKindInfoModal();
+    });
+
+    // 手机端折叠控制
     function toggleMobileFilter() {
         const content = document.getElementById('filterContent');
         const icon = document.getElementById('filterToggleIcon');
@@ -512,9 +578,14 @@
         document.getElementById('editKindStockWarning').value = kind.stock_warning || 0;
         document.getElementById('editKindSort').value = kind.sort || 0;
         document.getElementById('editKindCost').value = kind.cost ? (parseFloat(kind.cost) / 100).toFixed(2) : '0.00';
+        
+        resetFormState('kind'); // 重置状态
         document.getElementById('kindModal').style.display = 'flex';
     }
-    function closeKindModal() { document.getElementById('kindModal').style.display = 'none'; }
+    function closeKindModal() { 
+        document.getElementById('kindModal').style.display = 'none'; 
+        resetFormState('kind');
+    }
 
     async function submitKindEdit() {
         const kindId = document.getElementById('editKindId').value;
@@ -548,18 +619,24 @@
         if (!kind) return alert("找不到数据");
         document.getElementById('addStockKindName').value = kind.kind_name;
         document.getElementById('addStockCards').value = '';
-        document.getElementById('stockModal').dataset.kindId = kindId; // 绑定ID
+        document.getElementById('addStockCover').checked = false;
+        document.getElementById('addStockPriority').checked = true;
+        
+        document.getElementById('stockModal').dataset.kindId = kindId; 
+        resetFormState('stock'); // 重置状态
         document.getElementById('stockModal').style.display = 'flex';
     }
-    function closeStockModal() { document.getElementById('stockModal').style.display = 'none'; }
+    function closeStockModal() { 
+        document.getElementById('stockModal').style.display = 'none'; 
+        resetFormState('stock');
+    }
 
     async function submitAddStock() {
         const kindId = parseInt(document.getElementById('stockModal').dataset.kindId);
         if (!kindId) return alert("找不到卡种ID");
         
-        // 自动获取成本：如果该卡种原先有成本，则沿用；否则默认给 1 元（100分），避免后端报错
         const kindData = currentKindData.find(k => k.kind_id === kindId);
-        let costToSend = 100; // 默认 1 元
+        let costToSend = 100; 
         if (kindData && kindData.cost) {
             const parsedCost = parseInt(kindData.cost);
             if (!isNaN(parsedCost) && parsedCost > 0) {
@@ -576,7 +653,7 @@
             path: "/api/open/kami/storage/create", 
             body: { 
                 kind_id: kindId, 
-                cost: costToSend, // 传入成本
+                cost: costToSend, 
                 is_cover: document.getElementById('addStockCover').checked, 
                 is_repeat: true, 
                 is_priority: document.getElementById('addStockPriority').checked, 
@@ -622,6 +699,7 @@
         document.getElementById('categoryModalTitle').innerText = "新建卡密分类";
         document.getElementById('editCategoryName').value = '';
         document.getElementById('editCategoryRemark').value = '';
+        resetFormState('category');
         document.getElementById('categoryModal').style.display = 'flex';
     }
     function editCategory(id) {
@@ -630,9 +708,13 @@
         document.getElementById('categoryModalTitle').innerText = "编辑卡密分类";
         document.getElementById('editCategoryName').value = cat.category_name;
         document.getElementById('editCategoryRemark').value = cat.remark || '';
+        resetFormState('category');
         document.getElementById('categoryModal').style.display = 'flex';
     }
-    function closeCategoryModal() { document.getElementById('categoryModal').style.display = 'none'; }
+    function closeCategoryModal() { 
+        document.getElementById('categoryModal').style.display = 'none'; 
+        resetFormState('category');
+    }
 
     async function submitCategory() {
         const name = document.getElementById('editCategoryName').value.trim();
