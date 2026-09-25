@@ -284,20 +284,56 @@
         tr.sku-row td[data-label="SKU_ID"]::before { display: none; }
         tr.sku-row td[data-label="规格"] { width: 100%; flex: 0 0 100%; font-weight: 600; margin-bottom: 8px; }
         tr.sku-row td[data-label="规格"]::before { display: none; }
+        
+        /* 极致优化：让价格、库存、保存按钮在小屏幕绝对保持在一行 */
         tr.sku-row td[data-label="价格"], 
-        tr.sku-row td[data-label="库存"] { flex: 1 1 auto; display: flex; align-items: center; margin-right: 6px; min-width: 0; }
-        tr.sku-row td[data-label="库存"]::before { content: "库:"; } 
-        tr.sku-row td[data-label="操作"] { 
-            flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; 
-            width: auto !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; 
+        tr.sku-row td[data-label="库存"] { 
+            flex: 1 1 0; 
+            width: 0; /* 核心：打破内容撑开宽度的限制 */
+            display: flex; 
+            align-items: center; 
+            margin-right: 4px; 
+            min-width: 0; 
         }
+        tr.sku-row td[data-label="价格"]::before { content: "价"; margin-right: 2px; font-size: 12px; color: var(--text-secondary); }
+        tr.sku-row td[data-label="库存"]::before { content: "库"; margin-right: 2px; font-size: 12px; color: var(--text-secondary); }
+        
+        tr.sku-row td[data-label="操作"] { 
+            flex: 0 0 auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            width: auto !important; 
+            margin-top: 0 !important; 
+            padding-top: 0 !important; 
+            border-top: none !important; 
+            margin-left: 2px;
+        }
+        
         tr.sku-row .input-box { 
-            width: 55px; padding: 6px; font-size: 13px; text-align: center; margin: 0 4px; 
-            border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; outline: none; transition: all 0.2s;
+            flex: 1; 
+            width: 100%; /* 填满容器 */
+            min-width: 25px;
+            padding: 6px 2px; 
+            font-size: 13px; 
+            text-align: center; 
+            margin: 0; 
+            border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: 8px; 
+            outline: none; 
+            transition: all 0.2s;
             background: #fff;
         }
-        tr.sku-row .input-box:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        tr.sku-row .input-box:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 2px rgba(0,122,255,0.15); }
         
+        tr.sku-row td[data-label="操作"] .btn-save {
+            padding: 6px 12px !important;
+            font-size: 12px !important;
+            white-space: nowrap;
+            border-radius: 100px !important;
+            margin: 0 !important;
+        }
+
         /* 状态按钮 */
         .status-btn {
             display: inline-flex !important; align-items: center; gap: 4px;
@@ -432,8 +468,13 @@
             tr.sku-row { display: table-row !important; background: rgba(255,255,255,0.4) !important; border-radius: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; border-left: none !important; backdrop-filter: none; }
             tr.sku-row td { display: table-cell !important; padding: 18px !important; font-size: 14px !important; width: auto !important; margin: 0 !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important; }
             tr.sku-row td[data-label="SKU_ID"], tr.sku-row td[data-label="规格"] { font-weight: normal !important; font-size: 14px !important; color: var(--text-primary) !important; }
-            tr.sku-row .input-box { width: 80px !important; padding: 8px !important; font-size: 14px !important; border-radius: 8px !important; }
+            tr.sku-row .input-box { width: 80px !important; padding: 8px !important; font-size: 14px !important; border-radius: 8px !important; flex: none; }
             tr.sku-row td[data-label="操作"] { justify-content: flex-start !important; width: auto !important; margin: 0 !important; padding: 18px !important; border-top: none !important; }
+            tr.sku-row td[data-label="价格"]::before { content: "价:"; margin-right: 4px; font-size: 14px; }
+            tr.sku-row td[data-label="库存"]::before { content: "库:"; margin-right: 4px; font-size: 14px; }
+            /* PC端把元、件加回来显示 */
+            tr.sku-row td[data-label="价格"]::after { content: " 元"; }
+            tr.sku-row td[data-label="库存"]::after { content: " 件"; }
 
             .modal-overlay { align-items: center; }
             .modal-content { 
@@ -797,12 +838,13 @@
                     const skuTr = document.createElement('tr');
                     skuTr.className = 'sku-row';
                     const priceInYuan = (sku.price / 100).toFixed(2); 
+                    // 注意：这里去掉了 " 元" 和 " 件"，让输入框完全撑满，保持一行
                     skuTr.innerHTML = `
                         <td data-label="SKU_ID">└─ ${sku.sku_id}</td>
                         <td data-label="规格" data-sku-text="${sku.sku_text}">${sku.sku_text}</td>
-                        <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"> 元</td>
-                        <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"> 件</td>
-                        <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})" style="border-radius:100px; padding:8px 16px;">保存</button></td>
+                        <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"></td>
+                        <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></td>
+                        <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})">保存</button></td>
                     `;
                     lastInsertedRow.parentNode.insertBefore(skuTr, lastInsertedRow.nextSibling);
                     lastInsertedRow = skuTr; 
