@@ -76,71 +76,93 @@
         .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
-        /* ================= 📱 手机端卡片化布局（重构版） ================= */
+        /* ================= 📱 手机端卡片化布局（紧凑版） ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
         
-        /* 核心修复：使用网格布局，明确指定每个元素的位置 */
         tr { 
-            display: grid !important; 
-            grid-template-columns: 1fr 1fr; 
-            grid-template-areas: 
-                "order order"
-                "title title"
-                "buyer time"
-                "amount status"
-                "action action";
-            gap: 8px 16px; 
+            display: flex !important; 
+            flex-wrap: wrap; 
             background: #fff; 
             border-radius: 16px; 
-            margin-bottom: 12px; 
-            padding: 16px; 
+            margin-bottom: 10px; 
+            padding: 14px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.04); 
             border: 1px solid rgba(0,0,0,0.02); 
-            flex-wrap: nowrap !important; /* 覆盖旧的 flex-wrap */
+            flex-wrap: wrap;
         }
         
         td { 
             display: flex !important; 
             align-items: center; 
-            justify-content: space-between; 
-            width: 100% !important; 
-            margin: 0 !important; 
+            padding: 2px 0; 
+            border: none; 
             font-size: 13px; 
             color: #1c1c1e; 
-            text-align: right; 
-            word-break: break-all; 
+            width: 50%; /* 关键：默认占据一半宽度，实现两两一排 */
+            margin: 0 !important;
+            box-sizing: border-box;
         }
         td::before { 
             content: attr(data-label); 
             font-weight: 500; 
             color: var(--ios-gray); 
-            margin-right: 8px; 
+            margin-right: 6px; 
             flex-shrink: 0; 
-            text-align: left; 
         }
         
-        /* 对应网格区域 */
-        td[data-label="订单号"] { grid-area: order; justify-content: flex-start; font-size: 11px; color: var(--ios-gray); padding-bottom: 4px; border-bottom: 1px solid #F2F2F7; margin-bottom: 4px; }
+        /* 全宽显示的行 */
+        td[data-label="订单号"], td[data-label="商品"], td[data-label="操作"] { 
+            width: 100%; 
+        }
+        
+        /* 订单号：小字、变淡 */
+        td[data-label="订单号"] { 
+            font-size: 11px; 
+            color: var(--ios-gray); 
+            padding-bottom: 4px; 
+            border-bottom: 1px solid #F2F2F7; 
+            margin-bottom: 6px !important; 
+        }
         td[data-label="订单号"]::before { display: none; }
         
-        td[data-label="商品"] { grid-area: title; justify-content: flex-start; font-size: 16px; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid #F2F2F7; margin-bottom: 4px; line-height: 1.4; }
+        /* 商品：加粗、限制 2 行、截断 */
+        td[data-label="商品"] { 
+            font-size: 15px; 
+            font-weight: 700; 
+            line-height: 1.4; 
+            padding-bottom: 8px; 
+            margin-bottom: 6px !important; 
+            border-bottom: 1px solid #F2F2F7;
+            
+            /* 核心修改：限制文本行数，超出显示省略号 */
+            display: -webkit-box !important; 
+            -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
         td[data-label="商品"]::before { display: none; }
-        td[data-label="商品"] small { display: block; font-weight: 500; font-size: 12px; margin-top: 4px; color: var(--ios-gray); }
+        /* 隐藏多余的商品规格信息，保持整洁 */
+        td[data-label="商品"] small { display: none; } 
         
-        td[data-label="买家"] { grid-area: buyer; }
-        td[data-label="时间"] { grid-area: time; }
-        td[data-label="金额"] { grid-area: amount; }
-        td[data-label="状态"] { grid-area: status; }
+        /* 买家、时间、金额、状态：左右两两一排 */
+        td[data-label="买家"], td[data-label="时间"],
+        td[data-label="金额"], td[data-label="状态"] {
+            padding: 4px 0;
+        }
+        td[data-label="买家"]::before { content: "买家:"; }
+        td[data-label="时间"]::before { content: "时间:"; }
+        td[data-label="金额"]::before { content: "金额:"; }
+        td[data-label="状态"]::before { content: "状态:"; }
         
+        /* 操作按钮平分宽度 */
         td[data-label="操作"] { 
-            grid-area: action; 
-            justify-content: flex-start; 
-            gap: 8px; 
-            padding-top: 8px; 
+            margin-top: 8px !important; 
+            padding-top: 10px !important; 
             border-top: 1px solid #F2F2F7; 
-            margin-top: 4px; 
+            gap: 8px; 
         }
         td[data-label="操作"]::before { display: none; }
         td[data-label="操作"] button { 
@@ -219,7 +241,7 @@
             
             tbody td[data-label="订单号"] { font-family: monospace; color: #6B7280 !important; font-size: 13px !important; white-space: nowrap; }
             tbody td[data-label="买家"] { white-space: nowrap; }
-            tbody td[data-label="商品"] { min-width: 250px; white-space: normal; line-height: 1.5; }
+            tbody td[data-label="商品"] { min-width: 250px; white-space: normal; line-height: 1.5; display: table-cell !important; -webkit-line-clamp: unset; }
             tbody td[data-label="金额"] { white-space: nowrap; font-weight: 600; }
             tbody td[data-label="状态"] { white-space: nowrap; }
             tbody td[data-label="时间"] { white-space: nowrap; color: #6B7280 !important; font-size: 13px !important; }
@@ -376,17 +398,23 @@
         orders.forEach(order => {
             const goods = order.goods || {};
             const priceInYuan = (order.total_amount / 100).toFixed(2); 
-            const timeStamp = order.create_time || order.order_time;
-            const timeStr = timeStamp ? new Date(timeStamp * 1000).toLocaleString('zh-CN') : '未知时间';
             
+            // 核心修改：时间精简，去掉秒
+            const timeStamp = order.create_time || order.order_time;
+            let timeStr = '未知时间';
+            if (timeStamp) {
+                const date = new Date(timeStamp * 1000);
+                timeStr = date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + String(date.getDate()).padStart(2, '0') + ' ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td data-label="订单号">${order.order_no}</td>
+                <td data-label="商品">${goods.title || '未知'}<!-- 隐藏规格信息 <br><small style="color:var(--ios-gray);">${goods.sku_text || ''}</small> --></td>
                 <td data-label="买家">${order.buyer_nick}</td>
-                <td data-label="商品">${goods.title || '未知'}<br><small style="color:var(--ios-gray);">${goods.sku_text || ''}</small></td>
+                <td data-label="时间">${timeStr}</td>
                 <td data-label="金额"><b>${priceInYuan} 元</b></td>
                 <td data-label="状态"><span class="status-badge status-${order.order_status}">${statusMap[order.order_status] || '未知'}</span></td>
-                <td data-label="时间">${timeStr}</td>
                 <td data-label="操作" style="justify-content: flex-start;">
                     <button class="page-btn" style="background: var(--ios-orange); color:#fff;" onclick="alert('改价开发中')">改价</button>
                     <button class="page-btn" style="background: var(--ios-green); color:#fff;" onclick="alert('发货开发中')">发货</button>
