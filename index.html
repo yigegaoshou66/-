@@ -65,28 +65,44 @@
         }
         h1 { color: #1c1c1e; text-align: center; margin-bottom: 16px; font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
 
-        .logout-btn { text-align: right; margin-bottom: 5px; }
+        /* 退出登录按钮 */
+        .logout-btn { text-align: right; margin-bottom: 10px; }
         .logout-btn button { 
             width: auto; padding: 8px 14px; font-size: 13px; background: rgba(255,255,255,0.8); color: var(--ios-red); 
             border: 1px solid rgba(255,59,48,0.2); box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 0; 
         }
 
-        .entry-links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        /* 店铺名称置顶展示区（预留扩展） */
+        .store-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            overflow-x: auto; /* 预留横向滚动，方便以后添加更多店铺 */
+            white-space: nowrap;
+        }
+        .store-label { font-size: 13px; color: var(--ios-gray); font-weight: 500; }
+        .store-name { font-size: 15px; font-weight: 700; color: var(--ios-blue); }
+        /* 以后新增店铺时，只需在这里按相同格式添加 <span class="store-name">店铺名</span> 即可 */
+
+        /* 快捷入口按钮（一行并排且缩小） */
+        .entry-links { display: flex; flex-direction: row; gap: 10px; margin-bottom: 16px; }
         .entry-links a { 
-            text-align: center; text-decoration: none; padding: 14px; border-radius: 14px; 
-            color: #fff; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex: 1;
+            text-align: center; text-decoration: none; padding: 10px 5px; border-radius: 12px; 
+            color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: transform 0.1s, opacity 0.1s, filter 0.1s;
         }
         .entry-order { background: linear-gradient(135deg, #17a2b8, #0f6674); }
         .entry-kami { background: linear-gradient(135deg, #6f42c1, #462688); }
 
-        .top-bar { display: flex; flex-direction: row; align-items: center; gap: 10px; margin-bottom: 16px; background: rgba(255, 255, 255, 0.5); padding: 12px 14px; border-radius: 16px; border: 1px solid var(--glass-border); }
-        .top-bar label { display: none; }
-        .top-bar input { 
-            padding: 12px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255, 255, 255, 0.9); 
-            border-radius: 12px; font-size: 16px; outline: none; width: 100%; transition: all 0.2s;
-        }
-        .top-bar input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        /* 顶部工具栏（只剩刷新按钮） */
+        .top-bar { margin-bottom: 16px; }
+        .top-bar button { width: 100%; margin-bottom: 0; }
         
         button { 
             padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; 
@@ -134,7 +150,6 @@
         td[data-label="商品ID"]::before { font-size: 11px; }
         
         td[data-label="价格"]::before { content: "价:"; }
-        /* 全局把“存”改为“库” */
         td[data-label="库存"]::before { content: "库:"; }
         
         /* 状态和操作融合的样式 */
@@ -175,7 +190,6 @@
             margin-right: 6px; 
             min-width: 0; 
         }
-        /* 确保SKU行的库存标签也显示“库” */
         tr.sku-row td[data-label="库存"]::before { content: "库:"; } 
         
         tr.sku-row td[data-label="操作"] { 
@@ -290,15 +304,14 @@
             .container { padding: 20px; border-radius: 24px; }
             h1 { font-size: 22px; margin-bottom: 16px; }
             
-            .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
-            .entry-links a { padding: 16px; font-size: 15px; border-radius: 16px; }
-
-            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 14px; }
-            .top-bar label { display: block; white-space: nowrap; font-weight: 600; color: #555; font-size: 14px; }
-            .top-bar input { flex: 1; min-width: 150px; width: auto; padding: 12px; font-size: 16px; border-radius: 12px; }
-            .top-bar button { width: auto; margin-bottom: 0; padding: 12px 20px; font-size: 14px; }
+            .store-bar { max-width: 400px; margin-left: auto; margin-right: auto; justify-content: center; } /* 电脑端居中显示店铺栏 */
             
-            .table-wrapper { overflow-x: auto; }
+            .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
+            .entry-links a { padding: 14px; font-size: 15px; border-radius: 14px; }
+
+            .top-bar button { width: auto; margin-bottom: 0; padding: 12px 20px; font-size: 14px; float: right; }
+            
+            .table-wrapper { overflow-x: auto; clear: both; }
             table { display: table !important; width: 100%; background: rgba(255, 255, 255, 0.6); border-radius: 16px; overflow: hidden; box-shadow: var(--glass-shadow); border-collapse: collapse; }
             thead { display: table-header-group !important; background: rgba(0,0,0,0.02); }
             thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
@@ -387,8 +400,16 @@
 <!-- 主界面 -->
 <div class="container" id="mainContainer">
     <div class="logout-btn"><button onclick="logout()">退出登录</button></div>
-    <h1>闲管家 · 综合管理助手</h1>
 
+    <!-- 店铺名称区域（固定置顶，预留扩展） -->
+    <div class="store-bar">
+        <span class="store-label">当前店铺：</span>
+        <span class="store-name" id="userNameDisplay">叶刘军</span>
+        <!-- 预留扩展位，未来可以在这里用JS动态插入更多店铺的标签 -->
+    </div>
+
+
+    <!-- 快捷入口按钮（一行并排且缩小） -->
     <div class="entry-links">
         <a href="orders.html" class="entry-order">📋 独立订单页</a>
         <a href="kami.html" class="entry-kami">🎫 卡密管理页</a>
@@ -397,10 +418,8 @@
     <!-- 商品管理 -->
     <div id="product-page">
         <div class="top-bar">
-            <label>🏪 闲鱼会员名：</label>
-            <input type="text" id="userNameInput" value="叶刘军" placeholder="请输入闲鱼会员名">
+            <button onclick="loadProducts()">刷新商品列表</button>
         </div>
-        <button onclick="loadProducts()">刷新商品列表</button>
         <div id="productStatusMsg" class="status-msg">正在加载商品列表...</div>
 
         <div class="table-wrapper">
@@ -551,7 +570,8 @@
     const WORKER_URL = "https://api.1113630283.online";
     const productTableBody = document.getElementById('productTableBody');
     const productStatusMsg = document.getElementById('productStatusMsg');
-    const userNameInput = document.getElementById('userNameInput');
+    // 注意：这里改为了从 span 获取店铺名称的 textContent
+    const userNameDisplay = document.getElementById('userNameDisplay');
     let currentProductData = []; 
 
     async function loadProducts() {
@@ -612,8 +632,9 @@
 
     // 打开编辑弹窗
     async function openEditProductModal(productId) {
-        const userName = userNameInput.value.trim();
-        if (!userName) return alert("请先填写顶部的【闲鱼会员名】，否则无法编辑！");
+        // 注意：这里从固定标签获取店铺名
+        const userName = userNameDisplay.textContent.trim();
+        if (!userName) return alert("找不到当前店铺名称，请刷新页面！");
 
         const product = currentProductData.find(p => p.product_id === productId);
         document.getElementById('editProductId').value = productId;
@@ -680,12 +701,13 @@
         const priceYuan = document.getElementById('editPrice').value;
         const stock = parseInt(document.getElementById('editStock').value);
         const content = document.getElementById('editContent').value.trim();
-        const userName = userNameInput.value.trim();
+        // 注意：这里从固定标签获取店铺名
+        const userName = userNameDisplay.textContent.trim(); 
 
         if (!title || !priceYuan || isNaN(stock) || !content) {
             return alert("请完整填写所有必填项！");
         }
-        if (!userName) return alert("请先填写顶部的【闲鱼会员名】！");
+        if (!userName) return alert("找不到当前店铺名称，请刷新页面！");
 
         const priceFen = Math.round(parseFloat(priceYuan) * 100); 
 
@@ -849,8 +871,9 @@
     }
 
     async function publishProduct(productId, btn) {
-        const userName = userNameInput.value.trim();
-        if (!userName) return alert("请先填写闲鱼会员名！");
+        // 注意：这里从固定标签获取店铺名
+        const userName = userNameDisplay.textContent.trim();
+        if (!userName) return alert("找不到当前店铺名称，请刷新页面！");
         if (!confirm(`确定将商品 ${productId} 上架？`)) return;
         btn.innerText = "上架中..."; btn.disabled = true;
         try {
