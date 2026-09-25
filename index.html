@@ -717,7 +717,7 @@
 
                 currentProductData.forEach(product => renderProductRow(product));
                 
-                // ⚡ 关键优化：列表渲染完成后，立刻在后台静默预加载所有详情和SKU
+                // ⚡ 关键优化：列表渲染完成后，立刻在后台静默预加载【已上架】商品的详情
                 prefetchProductDetails(currentProductData);
                 
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
@@ -729,15 +729,23 @@
         }
     }
 
-    // ⚡ 后台静默预加载逻辑
+    // ⚡ 后台静默预加载逻辑（优化版：只预加载已上架商品）
     async function prefetchProductDetails(products) {
-        console.log("开始后台静默预加载商品详情...");
+        // 1. 只筛选出【已上架】的商品（product_status === 22）进行预加载
+        const onlineProducts = products.filter(p => p.product_status === 22);
+        
+        if (onlineProducts.length === 0) {
+            console.log("当前没有已上架商品，跳过预加载。");
+            return;
+        }
+        
+        console.log(`开始后台静默预加载已上架商品详情，共计 ${onlineProducts.length} 个...`);
         const prefetchLimit = 3; // 每批请求3个，避免瞬间并发过高
         
-        // 将商品列表分批
+        // 2. 将已上架的商品列表分批
         const chunks = [];
-        for (let i = 0; i < products.length; i += prefetchLimit) {
-            chunks.push(products.slice(i, i + prefetchLimit));
+        for (let i = 0; i < onlineProducts.length; i += prefetchLimit) {
+            chunks.push(onlineProducts.slice(i, i + prefetchLimit));
         }
 
         for (let chunk of chunks) {
@@ -762,10 +770,10 @@
                     }
                 }
             }));
-            // 每批之间延迟100ms，平滑请求曲线
+            // 每批之间延迟 100ms，让请求曲线更平滑
             await new Promise(r => setTimeout(r, 100));
         }
-        console.log("后台静默预加载完成！");
+        console.log("已上架商品静默预加载完成！");
     }
 
     // 辅助渲染详情数据到弹窗的方法
