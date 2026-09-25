@@ -75,9 +75,8 @@
         .entry-links a { 
             text-align: center; text-decoration: none; padding: 14px; border-radius: 14px; 
             color: #fff; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.05s, filter 0.05s;
+            transition: transform 0.1s, opacity 0.1s, filter 0.1s;
         }
-        .entry-links a:active { transform: scale(0.97); filter: brightness(0.9); }
         .entry-order { background: linear-gradient(135deg, #17a2b8, #0f6674); }
         .entry-kami { background: linear-gradient(135deg, #6f42c1, #462688); }
 
@@ -229,7 +228,7 @@
         }
         .sku-edit-item .sku-inputs input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
-        /* ================= 🛡️ 全局按钮强反馈与防重复点击（新增） ================= */
+        /* ================= 🛡️ 全局按钮强反馈与防重复点击 ================= */
         @media (max-width: 768px) {
             button:active {
                 transform: scale(0.9) !important;
@@ -404,39 +403,68 @@
 </div>
 
 <script>
-    // ================= 🛡️ 全局按钮强反馈与防重复点击（新增） =================
+    // ================= 🛡️ 全局强反馈与防重复点击（升级版：同时支持按钮和跳转链接） =================
     let isRequesting = false;
+    let isNavigating = false;
 
     document.addEventListener('click', function(e) {
+        // 同时捕获按钮，以及首页的跳转卡片、详情页的返回按钮
         const btn = e.target.closest('button');
-        if (!btn || btn.disabled) return;
+        const link = e.target.closest('.entry-links a, .back-btn');
 
-        // 1. 如果正在请求中，阻止点击，并给出“处理中”反馈
-        if (isRequesting) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            const originalText = btn.innerText;
-            btn.innerText = '处理中...';
-            btn.style.opacity = '0.5';
+        if (!btn && !link) return;
+
+        // 1. 处理跳转链接（卡片/返回按钮）
+        if (link) {
+            if (isNavigating) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                return;
+            }
+            isNavigating = true;
+            link.style.pointerEvents = 'none'; // 禁止重复点击
+            link.style.opacity = '0.5';       // 变暗
+            link.style.transform = 'scale(0.9)'; // 缩小反馈
+            link.style.transition = 'all 0.1s ease'; 
+            
+            // 2秒后重置（防止跳转失败导致永久卡死）
             setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.opacity = '1';
-            }, 500);
-            return;
+                isNavigating = false;
+                link.style.pointerEvents = '';
+                link.style.opacity = '';
+                link.style.transform = '';
+            }, 2000);
+            return; // 继续执行 href 跳转
         }
 
-        // 2. 正常点击：立即显示“等待中...”并禁用按钮，提供强反馈
-        btn.dataset.originalText = btn.innerText;
-        btn.innerText = '等待中...';
-        btn.disabled = true;
-        btn.classList.add('btn-loading');
+        // 2. 处理按钮点击（原有逻辑）
+        if (btn) {
+            if (btn.disabled) return;
 
-        // 3. 安全网：如果 500ms 内没有 fetch 触发（比如点击只是打开弹窗），自动恢复按钮状态
-        setTimeout(() => {
-            if (!isRequesting && btn.classList.contains('btn-loading')) {
-                restoreButton(btn);
+            if (isRequesting) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                const originalText = btn.innerText;
+                btn.innerText = '处理中...';
+                btn.style.opacity = '0.5';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.opacity = '1';
+                }, 500);
+                return;
             }
-        }, 500);
+
+            btn.dataset.originalText = btn.innerText;
+            btn.innerText = '等待中...';
+            btn.disabled = true;
+            btn.classList.add('btn-loading');
+
+            setTimeout(() => {
+                if (!isRequesting && btn.classList.contains('btn-loading')) {
+                    restoreButton(btn);
+                }
+            }, 500);
+        }
     }, true);
 
     function restoreButton(btn) {
@@ -448,14 +476,13 @@
         }
     }
 
-    // 4. 劫持 fetch，全局管理请求状态
+    // 劫持 fetch，全局管理请求状态
     if (!window._originalFetch) {
         window._originalFetch = window.fetch;
         window.fetch = function(...args) {
             isRequesting = true;
             return window._originalFetch.apply(this, args).finally(() => {
                 isRequesting = false;
-                // 请求结束后，恢复所有处于加载状态的按钮
                 document.querySelectorAll('button.btn-loading').forEach(btn => {
                     restoreButton(btn);
                 });
