@@ -545,11 +545,13 @@
     // 专门处理请求超时 + 并发控制的 fetch
     const MAX_CONCURRENT = 3;
     let activeRequests = 0;
-    async function fetchWithControl(url, options, timeout = 8000) {
-        if (activeRequests >= MAX_CONCURRENT) {
+    
+    // isBackground = true 表示后台静默预加载，不占用用户主动请求的并发名额，超时时间更长
+    async function fetchWithControl(url, options, timeout = 8000, isBackground = false) {
+        if (!isBackground && activeRequests >= MAX_CONCURRENT) {
             throw new Error('当前请求过多，请稍后重试（正在处理其他操作）');
         }
-        activeRequests++;
+        if (!isBackground) activeRequests++;
         
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
@@ -561,11 +563,11 @@
         } catch (error) {
             clearTimeout(id);
             if (error.name === 'AbortError') {
-                throw new Error('请求超时（超过8秒），请检查网络或稍后再试');
+                throw new Error('请求超时（超过' + (timeout/1000) + '秒），请检查网络或稍后再试');
             }
             throw error;
         } finally {
-            activeRequests--;
+            if (!isBackground) activeRequests--;
         }
     }
 
@@ -703,7 +705,7 @@
                 productStatusMsg.innerText = "加载成功！";
                 currentProductData = result.data.list || []; 
                 
-                // ⚡ 优化：强制刷新时清空旧缓存，保证数据源最新
+                // 强制刷新时清空旧缓存，保证数据源最新
                 Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
                 Object.keys(skuCache).forEach(k => delete skuCache[k]);
 
@@ -714,6 +716,10 @@
                 });
 
                 currentProductData.forEach(product => renderProductRow(product));
+                
+                // ⚡ 关键优化：列表渲染完成后，立刻在后台静默预加载所有详情和SKU
+                prefetchProductDetails(currentProductData);
+                
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
         } catch (error) { 
             productStatusMsg.innerText = "请求出错：" + error.message; 
@@ -723,57 +729,43 @@
         }
     }
 
-    // ⚡ 优化：点击编辑，优先展示缓存数据
-    async function openEditProductModal(productId, btn) {
-        const userName = userNameDisplay.textContent.trim();
-        if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
-
-        const product = currentProductData.find(p => p.product_id === productId);
+    // ⚡ 后台静默预加载逻辑
+    async function prefetchProductDetails(products) {
+        console.log("开始后台静默预加载商品详情...");
+        const prefetchLimit = 3; // 每批请求3个，避免瞬间并发过高
         
-        // 1. 立即使用列表里的基础数据填充弹窗，让用户感觉“秒开”
-        document.getElementById('editProductId').value = productId;
-        document.getElementById('editTitle').value = product ? (product.title || '') : '';
-        document.getElementById('editPrice').value = product && product.price ? (product.price / 100).toFixed(2) : '';
-        document.getElementById('editStock').value = product && product.stock !== undefined ? product.stock : '';
-        document.getElementById('editContent').value = ''; 
-
-        document.getElementById('editSkuContainer').style.display = 'none';
-        document.getElementById('skuListWrapper').innerHTML = '正在后台加载详情...';
-        
-        editFormDirty = false;
-        document.getElementById('editProductModal').style.display = 'flex';
-
-        // 如果本地缓存有详情，直接渲染，不走网络请求
-        if (productDetailCache[productId]) {
-            renderDetailToModal(productDetailCache[productId]);
-            restoreButton(btn);
-            return;
+        // 将商品列表分批
+        const chunks = [];
+        for (let i = 0; i < products.length; i += prefetchLimit) {
+            chunks.push(products.slice(i, i + prefetchLimit));
         }
 
-        // 2. 如果没有缓存，才发起网络请求，静默更新描述和 SKU
-        try {
-            const response = await fetchWithControl(WORKER_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
-            });
-            const result = await response.json();
-            if (result.code === 0 && result.data) {
-                // 存入缓存
-                productDetailCache[productId] = result.data;
-                if (result.data.sku_items) skuCache[productId] = result.data.sku_items;
-                
-                // 如果弹窗还开着，把数据填进去
-                if (document.getElementById('editProductModal').style.display === 'flex') {
-                    renderDetailToModal(result.data);
+        for (let chunk of chunks) {
+            await Promise.all(chunk.map(async (product) => {
+                if (!productDetailCache[product.product_id]) {
+                    try {
+                        const response = await fetchWithControl(WORKER_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: product.product_id } })
+                        }, 10000, true); // 后台静默模式，不占用用户主动请求额度
+                        
+                        const result = await response.json();
+                        if (result.code === 0 && result.data) {
+                            productDetailCache[product.product_id] = result.data;
+                            if (result.data.sku_items) {
+                                skuCache[product.product_id] = result.data.sku_items;
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`静默预加载商品 ${product.product_id} 失败:`, e);
+                    }
                 }
-            }
-        } catch (error) {
-            console.log("获取商品详情失败：", error);
-            document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败: ' + error.message + '</span>';
-        } finally {
-            if (btn) restoreButton(btn);
+            }));
+            // 每批之间延迟100ms，平滑请求曲线
+            await new Promise(r => setTimeout(r, 100));
         }
+        console.log("后台静默预加载完成！");
     }
 
     // 辅助渲染详情数据到弹窗的方法
@@ -802,6 +794,56 @@
             document.getElementById('skuListWrapper').innerHTML = skuHtml;
         } else {
             document.getElementById('editSkuContainer').style.display = 'none';
+        }
+    }
+
+    // 点击编辑
+    async function openEditProductModal(productId, btn) {
+        const userName = userNameDisplay.textContent.trim();
+        if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
+
+        const product = currentProductData.find(p => p.product_id === productId);
+        
+        document.getElementById('editProductId').value = productId;
+        document.getElementById('editTitle').value = product ? (product.title || '') : '';
+        document.getElementById('editPrice').value = product && product.price ? (product.price / 100).toFixed(2) : '';
+        document.getElementById('editStock').value = product && product.stock !== undefined ? product.stock : '';
+        document.getElementById('editContent').value = ''; 
+
+        document.getElementById('editSkuContainer').style.display = 'none';
+        document.getElementById('skuListWrapper').innerHTML = '正在后台加载详情...';
+        
+        editFormDirty = false;
+        document.getElementById('editProductModal').style.display = 'flex';
+
+        // 如果本地缓存有详情，直接渲染，不走网络请求
+        if (productDetailCache[productId]) {
+            renderDetailToModal(productDetailCache[productId]);
+            restoreButton(btn);
+            return;
+        }
+
+        // 没有缓存才走网络请求（理论上预加载完成后，这里几乎不会触发）
+        try {
+            const response = await fetchWithControl(WORKER_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
+            });
+            const result = await response.json();
+            if (result.code === 0 && result.data) {
+                productDetailCache[productId] = result.data;
+                if (result.data.sku_items) skuCache[productId] = result.data.sku_items;
+                
+                if (document.getElementById('editProductModal').style.display === 'flex') {
+                    renderDetailToModal(result.data);
+                }
+            }
+        } catch (error) {
+            console.log("获取商品详情失败：", error);
+            document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败: ' + error.message + '</span>';
+        } finally {
+            if (btn) restoreButton(btn);
         }
     }
 
@@ -864,7 +906,6 @@
                     product.title = title;
                     product.price = priceFen;
                     product.stock = stock;
-                    // 更新本地详情缓存
                     if (!productDetailCache[productId]) productDetailCache[productId] = {};
                     productDetailCache[productId].content = content;
                     if (skuItems.length > 0) {
@@ -883,7 +924,7 @@
         }
     }
 
-    // ⚡ 优化：展开规格，优先使用缓存
+    // 点击展开规格
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
 
@@ -893,7 +934,6 @@
         const mainRow = btn.closest('tr');
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
-        // 清理当前行下方已经存在的 SKU 列表
         let nextRow = mainRow.nextElementSibling;
         while (nextRow && nextRow.classList.contains('sku-row')) {
             let rowToDelete = nextRow;
@@ -901,7 +941,6 @@
             rowToDelete.remove();
         }
 
-        // 重置按钮状态为“展开”
         btn.innerText = "展开规格";
         btn.setAttribute('data-expanded', 'false');
 
@@ -910,7 +949,6 @@
             return;
         }
 
-        // 每次展开，先收起其他行
         document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
             if (otherBtn !== btn) {
                 otherBtn.innerText = "展开规格";
@@ -929,7 +967,7 @@
             return;
         }
 
-        // 2. 没有缓存，显示加载，去请求
+        // 2. 没有缓存，显示加载，去请求（理论上预加载完成后，这里几乎不会触发）
         btn.innerText = "加载中...";
         btn.disabled = true;
         btn.classList.add('btn-loading');
@@ -943,7 +981,7 @@
             const result = await response.json();
             if (result.code === 0 && result.data.sku_items) {
                 skuCache[productId] = result.data.sku_items;
-                productDetailCache[productId] = result.data; // 同时补充详情缓存
+                productDetailCache[productId] = result.data;
 
                 renderSkuRows(mainRow, result.data.sku_items, productId);
                 btn.innerText = "收起规格";
@@ -982,7 +1020,7 @@
         mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
     }
 
-    // ⚡ 优化：保存单个 SKU，直接从前端缓存组装数据，不走详情请求
+    // 保存单个 SKU
     async function updateSkuData(productId, skuId, saveBtn) {
         const stockInput = document.getElementById(`stock_${skuId}`);
         const priceInput = document.getElementById(`price_${skuId}`);
@@ -1000,7 +1038,6 @@
         if(saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
 
         try {
-            // 从缓存拿数据，如果缓存没有，说明逻辑异常，防错处理
             let skuItems = skuCache[productId];
             
             if (!skuItems) {
@@ -1017,7 +1054,6 @@
                 skuCache[productId] = skuItems;
             }
 
-            // 更新内存中对应的 SKU
             const updatedSkuItems = skuItems.map(sku => {
                 if (sku.sku_id === skuId) {
                     return { ...sku, price: newPriceFen, stock: newStock };
@@ -1025,7 +1061,6 @@
                 return sku;
             });
             
-            // 更新缓存
             skuCache[productId] = updatedSkuItems;
             if (productDetailCache[productId]) productDetailCache[productId].sku_items = updatedSkuItems;
 
@@ -1047,12 +1082,6 @@
             
             if (result.code === 0) { 
                 alert("SKU 修改成功！"); 
-                // 实时更新主列表里的库存显示（简单处理，不重新请求）
-                const mainProduct = currentProductData.find(p => p.product_id === productId);
-                if (mainProduct) {
-                    // 如果后台不支持自动汇总SKU库存到主商品，这里最好不更新主商品库存，以免误导用户。
-                    // 目前仅做本地缓存更新。下次手动刷新列表时会拉取真实汇总数据。
-                }
             } else { 
                 alert("修改失败：" + result.msg); 
             }
