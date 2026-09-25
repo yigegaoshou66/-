@@ -145,8 +145,7 @@
             border-radius: 24px 24px 0 0; 
             padding: 20px 20px calc(20px + env(safe-area-inset-bottom)) 20px;
             width: 100%; max-height: 90vh; 
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -185,11 +184,7 @@
 
         @media (min-width: 768px) {
             body { padding: 20px; background: #F4F6F9; }
-            .container { 
-                padding: 24px; border-radius: 16px; 
-                background: #fff; border: 1px solid #E5E7EB; 
-                box-shadow: 0 4px 20px rgba(0,0,0,0.03); backdrop-filter: none; 
-            }
+            .container { padding: 24px; border-radius: 16px; background: #fff; border: 1px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.03); backdrop-filter: none; }
             .page-header h1 { font-size: 22px; }
 
             .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 16px; background: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 24px; }
@@ -332,50 +327,8 @@
 </div>
 
 <script>
-    // ================= 配置 =================
     const WORKER_URL = "https://api.1113630283.online";
-
-    // ================= 🔐 双存储 token 工具 =================
-    function getToken() {
-        return localStorage.getItem('saved_token') || sessionStorage.getItem('saved_token') || null;
-    }
-    function clearToken() {
-        localStorage.removeItem('saved_token');
-        sessionStorage.removeItem('saved_token');
-    }
-
-    // 页面加载时，先检查登录状态，没登录就跳回 index.html
-    if (!getToken()) {
-        location.replace('index.html');
-    }
-
-    // ================= 🛡️ 全局强反馈与防重复点击 =================
     let isRequesting = false;
-
-    if (!window._originalFetch) {
-        window._originalFetch = window.fetch;
-        window.fetch = function(url, options = {}) {
-            const token = getToken();
-            if (token) {
-                options.headers = options.headers || {};
-                options.headers['Authorization'] = 'Bearer ' + token;
-            }
-            isRequesting = true;
-            return window._originalFetch(url, options).then(resp => {
-                if (resp.status === 401) {
-                    clearToken();
-                    alert("登录已失效，请重新登录");
-                    location.replace('index.html');
-                }
-                return resp;
-            }).finally(() => {
-                isRequesting = false;
-                document.querySelectorAll('button.btn-loading').forEach(btn => {
-                    restoreButton(btn);
-                });
-            });
-        };
-    }
 
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
@@ -429,20 +382,16 @@
         }
     }
 
-    // ================= 🎯 点击空白处关闭弹窗 =================
     function setupOverlayClick(modalId, closeFn) {
         const modal = document.getElementById(modalId);
         modal.addEventListener('mousedown', function(e) {
-            if (e.target === this) {
-                closeFn();
-            }
+            if (e.target === this) { closeFn(); }
         });
     }
     setupOverlayClick('detailModal', closeDetailModal);
     setupOverlayClick('agreeModal', closeAgreeModal);
     setupOverlayClick('refuseModal', closeRefuseModal);
 
-    // ================= 核心逻辑 =================
     let currentPage = 1;
     const pageSize = 20;
     const tableBody = document.getElementById('tableBody');
@@ -666,10 +615,7 @@
         }
     }
 
-    // 只有有 token 时才加载数据
-    if (getToken()) {
-        loadRefunds(1);
-    }
+    loadRefunds(1);
 </script>
 </body>
 </html>

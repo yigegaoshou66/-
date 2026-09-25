@@ -105,48 +105,18 @@
         }
         tr:active { transform: scale(0.99); }
         
-        td { 
-            display: flex; 
-            align-items: center; 
-            padding: 0; 
-            border-bottom: none; 
-            font-size: 14px; 
-            color: #1c1c1e; 
-        }
+        td { display: flex; align-items: center; padding: 0; border-bottom: none; font-size: 14px; color: #1c1c1e; }
         
-        td[data-label="名称"] { 
-            grid-column: 1; 
-            font-size: 16px; 
-            font-weight: 700; 
-            color: #1c1c1e; 
-        }
+        td[data-label="名称"] { grid-column: 1; font-size: 16px; font-weight: 700; color: #1c1c1e; }
         td[data-label="名称"]::before { display: none; }
 
-        td[data-label="卡种ID"] { 
-            grid-column: 2; 
-            font-size: 11px; 
-            color: var(--ios-gray); 
-            justify-content: flex-end; 
-        }
+        td[data-label="卡种ID"] { grid-column: 2; font-size: 11px; color: var(--ios-gray); justify-content: flex-end; }
         td[data-label="卡种ID"]::before { content: "ID: "; margin-right: 2px; }
 
-        td[data-label="库存"] { 
-            grid-column: 1; 
-            font-size: 13px; 
-            color: var(--ios-green); 
-            font-weight: 600; 
-            margin-top: 4px;
-        }
+        td[data-label="库存"] { grid-column: 1; font-size: 13px; color: var(--ios-green); font-weight: 600; margin-top: 4px; }
         td[data-label="库存"]::before { content: "库存: "; color: var(--ios-gray); font-weight: 500; margin-right: 4px; }
 
-        td[data-label="成本"] { 
-            grid-column: 2; 
-            font-size: 13px; 
-            color: var(--ios-red); 
-            font-weight: 600; 
-            justify-content: flex-end; 
-            margin-top: 4px;
-        }
+        td[data-label="成本"] { grid-column: 2; font-size: 13px; color: var(--ios-red); font-weight: 600; justify-content: flex-end; margin-top: 4px; }
         td[data-label="成本"]::before { content: "成本: "; color: var(--ios-gray); font-weight: 500; margin-right: 4px; }
 
         td[data-label="分类"] { display: none; }
@@ -201,11 +171,7 @@
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
         @media (max-width: 768px) {
-            button:active {
-                transform: scale(0.9) !important;
-                opacity: 0.7 !important;
-                transition: transform 0.1s, opacity 0.1s;
-            }
+            button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
         }
         button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
         .btn-loading { pointer-events: none; opacity: 0.8; }
@@ -234,28 +200,13 @@
             tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.03) !important; }
             tbody tr:hover { background: rgba(255, 255, 255, 0.8) !important; }
             
-            tbody td { 
-                display: table-cell !important; 
-                padding: 16px !important; 
-                text-align: left !important; 
-                border: none !important; 
-                vertical-align: middle !important; 
-                font-size: 14px !important; 
-                color: #1c1c1e !important;
-            }
+            tbody td { display: table-cell !important; padding: 16px !important; text-align: left !important; border: none !important; vertical-align: middle !important; font-size: 14px !important; color: #1c1c1e !important; }
             
             tbody td[data-label="分类"] { display: table-cell !important; }
             tbody td::before { display: none !important; }
             
             tbody td[data-label="操作"] { display: table-cell !important; border-top: none !important; margin-top: 0 !important; padding-top: 16px !important; }
-            tbody td[data-label="操作"] button { 
-                display: inline-block !important; 
-                width: auto !important; 
-                margin: 0 6px 6px 0 !important; 
-                padding: 8px 14px !important; 
-                font-size: 12px !important;
-                box-shadow: 0 2px 6px rgba(0, 122, 255, 0.15) !important;
-            }
+            tbody td[data-label="操作"] button { display: inline-block !important; width: auto !important; margin: 0 6px 6px 0 !important; padding: 8px 14px !important; font-size: 12px !important; box-shadow: 0 2px 6px rgba(0, 122, 255, 0.15) !important; }
 
             .modal-overlay { align-items: center; }
             .modal-content { border-radius: 24px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh; animation: fadeIn 0.2s; }
@@ -406,52 +357,10 @@
 </div>
 
 <script>
-    // ================= 配置 =================
     const WORKER_URL = "https://api.1113630283.online";
 
-    // ================= 🔐 双存储 token 工具 =================
-    function getToken() {
-        return localStorage.getItem('saved_token') || sessionStorage.getItem('saved_token') || null;
-    }
-    function clearToken() {
-        localStorage.removeItem('saved_token');
-        sessionStorage.removeItem('saved_token');
-    }
-
-    // 页面加载时，先检查登录状态，没登录就跳回 index.html
-    if (!getToken()) {
-        location.replace('index.html');
-    }
-
-    // ================= 🛡️ 全局 fetch 拦截器（自动带 token + 401 踢回登录） =================
     let isRequesting = false;
 
-    if (!window._originalFetch) {
-        window._originalFetch = window.fetch;
-        window.fetch = function(url, options = {}) {
-            const token = getToken();
-            if (token) {
-                options.headers = options.headers || {};
-                options.headers['Authorization'] = 'Bearer ' + token;
-            }
-            isRequesting = true;
-            return window._originalFetch(url, options).then(resp => {
-                if (resp.status === 401) {
-                    clearToken();
-                    alert("登录已失效，请重新登录");
-                    location.replace('index.html');
-                }
-                return resp;
-            }).finally(() => {
-                isRequesting = false;
-                document.querySelectorAll('button.btn-loading').forEach(btn => {
-                    restoreButton(btn);
-                });
-            });
-        };
-    }
-
-    // ================= 🛡️ 全局按钮强反馈 =================
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.back-btn');
@@ -804,10 +713,8 @@
         } catch (error) { alert("出错：" + error.message); }
     }
 
-    // 只有有 token 时才加载数据
-    if (getToken()) {
-        loadKinds(1);
-    }
+    // 页面加载直接拉数据
+    loadKinds(1);
 </script>
 </body>
 </html>
