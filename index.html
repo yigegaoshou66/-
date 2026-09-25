@@ -77,46 +77,16 @@
             padding: 20px;
         }
 
-        /* 头部 */
+        /* 头部：店铺名称 + 刷新按钮 */
         .top-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 16px; 
+            gap: 12px;
         }
-        .shop-avatar {
-            width: 48px; height: 48px;
-            border-radius: 50%; object-fit: cover;
-            background: var(--glass-light-strong);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: 
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-                0 4px 12px rgba(0, 0, 0, 0.06);
-        }
-        .logout-btn button { 
-            width: auto; padding: 10px 20px; font-size: 14px; font-weight: 600;
-            background: var(--glass-light-strong);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            color: var(--ios-blue);
-            border: 1px solid var(--glass-border); 
-            border-radius: 100px;
-            cursor: pointer;
-            box-shadow: 
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-                0 4px 12px rgba(0, 0, 0, 0.06);
-            transition: all 0.15s;
-            margin-bottom: 0;
-        }
-        .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
-
-        /* 店铺条 */
         .store-bar {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
             padding: 14px 20px;
             border-radius: 22px;
             background: var(--glass-light);
@@ -128,9 +98,30 @@
                 inset 0 -1px 0 rgba(255, 255, 255, 0.5),
                 0 4px 16px rgba(0, 0, 0, 0.05);
             overflow-x: auto; white-space: nowrap;
+            flex: 1; /* 让店铺名称自动填充剩余空间 */
+            min-width: 0;
         }
         .store-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
         .store-name { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
+
+        .logout-btn button { 
+            width: auto; padding: 14px 20px; font-size: 14px; font-weight: 600;
+            background: var(--glass-light-strong);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            color: var(--ios-blue);
+            border: 1px solid var(--glass-border); 
+            border-radius: 22px;
+            cursor: pointer;
+            box-shadow: 
+                inset 0 1px 0 var(--glass-highlight),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+                0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
 
         /* 快捷入口 */
         .entry-links { display: flex; gap: 10px; margin-bottom: 16px; }
@@ -411,7 +402,11 @@
             body { padding: 32px; }
             .container { padding: 0; max-width: 1200px; }
             
-            .store-bar { max-width: 400px; margin-left: auto; margin-right: auto; justify-content: center; }
+            /* PC端店铺名称与刷新按钮在一行 */
+            .top-header { margin-bottom: 20px; }
+            .store-bar { max-width: none; margin: 0; } 
+            .logout-btn button { padding: 14px 28px; font-size: 15px; }
+
             .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
             .entry-links a { padding: 16px; font-size: 15px; }
 
@@ -492,14 +487,13 @@
 <body>
 
 <div class="container">
+    <!-- 头部：店铺名称 + 刷新按钮 -->
     <div class="top-header">
-        <img src="https://wx1.sinaimg.cn/mw690/007ZjuTely1ihg356tvrxj30on0ontb1.jpg?raw=true" alt="店铺头像" class="shop-avatar" onerror="this.src='https://via.placeholder.com/44x44/CCCCCC/ffffff?text=头像'">
+        <div class="store-bar">
+            <span class="store-label">当前店铺：</span>
+            <span class="store-name" id="userNameDisplay">叶刘军</span>
+        </div>
         <div class="logout-btn"><button onclick="location.reload()">🔄 刷新</button></div>
-    </div>
-
-    <div class="store-bar">
-        <span class="store-label">当前店铺：</span>
-        <span class="store-name" id="userNameDisplay">叶刘军</span>
     </div>
 
     <div class="entry-links">
