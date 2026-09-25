@@ -88,12 +88,38 @@
         }
         .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
-        .nav-tabs { display: flex; background: rgba(255, 255, 255, 0.4); padding: 5px; border-radius: 100px; margin-bottom: 20px; border: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
-        .nav-tabs button { 
-            flex: 1; background: none; border: none; color: var(--text-secondary); font-size: 14px; font-weight: 600; 
-            padding: 12px; border-radius: 100px; transition: all 0.2s; margin-bottom: 0; 
+        .nav-tabs { 
+            display: flex; 
+            background: rgba(255, 255, 255, 0.6); 
+            padding: 4px; 
+            border-radius: 100px; 
+            margin-bottom: 20px; 
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+            backdrop-filter: blur(20px); 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
         }
-        .nav-tabs button.active { color: var(--ios-blue); background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .nav-tabs button { 
+            flex: 1; 
+            background: transparent; 
+            border: none; 
+            color: #666666; 
+            font-size: 14px; 
+            font-weight: 600; 
+            padding: 14px; 
+            border-radius: 100px; 
+            transition: all 0.3s ease; 
+            margin-bottom: 0; 
+            cursor: pointer;
+        }
+        .nav-tabs button:active {
+            transform: scale(0.98);
+        }
+        .nav-tabs button.active { 
+            color: #1c1c1e; 
+            background: #ffffff; 
+            font-weight: 700; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0,0,0,0.05); 
+        }
 
         .top-bar { 
             display: block; 
@@ -117,19 +143,33 @@
         .filter-content input, .filter-content select { padding: 12px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.9); border-radius: 14px; font-size: 16px; outline: none; width: 100%; }
         .filter-content input:focus, .filter-content select:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
+        /* 这里移除了之前强行给 filter-content 按钮加灰色的代码，恢复默认蓝色样式 */
+        
         button { 
             padding: 10px 16px; color: white; border: none; border-radius: 100px; cursor: pointer; 
             font-size: 14px; font-weight: 600; 
-            transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s; 
+            transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s, background-color 0.3s, color 0.3s; 
             width: 100%; margin-bottom: 10px; 
+            background: var(--ios-blue);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
         }
         button:active { transform: scale(0.92); opacity: 0.85; filter: brightness(0.9); }
         
-        .btn-edit { background: var(--ios-orange); color: #fff; }
-        .btn-delete { background: var(--ios-red); }
-        .btn-stock { background: var(--ios-green); }
-        .btn-info { background: var(--ios-gray); }
-        .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; }
+        .btn-edit { background: var(--ios-orange); color: #fff; box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2); }
+        .btn-delete { background: var(--ios-red); box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2); }
+        .btn-stock { background: var(--ios-green); box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2); }
+        .btn-info { background: var(--ios-gray); box-shadow: 0 4px 12px rgba(142, 142, 147, 0.2); }
+        .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2); }
+
+        /* 优化按钮禁用/加载状态：使用灰色背景+深灰字，防止看不清 */
+        button:disabled { 
+            background-color: #E5E5EA !important; 
+            color: #8E8E93 !important; 
+            box-shadow: none !important; 
+            opacity: 1 !important; 
+            cursor: not-allowed !important; 
+            transform: none !important; 
+        }
 
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
@@ -236,8 +276,8 @@
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
         }
-        button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
-        .btn-loading { pointer-events: none; opacity: 0.8; }
+        
+        .btn-loading { pointer-events: none; }
         .btn-loading::after {
             content: ""; display: inline-block; width: 14px; height: 14px;
             margin-left: 6px; vertical-align: middle; border: 2px solid currentColor;
@@ -314,7 +354,11 @@
                 <select id="kindTypeFilter"><option value="">全部</option><option value="1">唯一卡</option><option value="2">图片</option></select>
                 <label>分类ID：</label>
                 <input type="number" id="kindCategoryFilter" placeholder="ID">
-                <button onclick="loadKinds(1)">搜索</button>
+                
+                <!-- 搜索按钮：初始为禁用状态(灰色)，有输入后自动变蓝 -->
+                <button id="kindSearchBtn" onclick="loadKinds(1)" disabled>搜索</button>
+                
+                <!-- 刷新按钮：始终保持蓝色 -->
                 <button onclick="loadKinds(1)">刷新</button>
             </div>
         </div>
@@ -341,6 +385,7 @@
                 <span id="filterToggleIcon2" class="filter-icon">▼</span>
             </div>
             <div class="filter-content" id="filterContentCategory">
+                <!-- 刷新分类按钮：保持蓝色 -->
                 <button onclick="loadCategories()">刷新分类列表</button>
                 <button class="btn-save" onclick="openCategoryModal()">+ 新建分类</button>
             </div>
@@ -485,6 +530,34 @@
             delete btn.dataset.originalText;
         }
     }
+
+    // ============ 新增：动态控制搜索按钮状态 ============
+    function initSearchBtnState() {
+        const nameInput = document.getElementById('kindNameFilter');
+        const typeSelect = document.getElementById('kindTypeFilter');
+        const categoryInput = document.getElementById('kindCategoryFilter');
+        const searchBtn = document.getElementById('kindSearchBtn');
+
+        function updateState() {
+            // 判断是否有任意一个筛选条件不为空
+            const hasValue = nameInput.value.trim() !== '' || typeSelect.value !== '' || categoryInput.value.trim() !== '';
+            if (hasValue) {
+                searchBtn.disabled = false; // 变蓝，可点击
+            } else {
+                searchBtn.disabled = true;  // 变灰，不可点击
+            }
+        }
+
+        // 监听输入和选择事件
+        nameInput.addEventListener('input', updateState);
+        typeSelect.addEventListener('change', updateState);
+        categoryInput.addEventListener('input', updateState);
+        
+        updateState(); // 初始化状态
+    }
+    // 执行初始化
+    initSearchBtnState();
+    // ====================================================
 
     let currentCategoryData = [];
     let currentKindData = [];
