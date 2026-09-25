@@ -11,67 +11,185 @@
             --ios-red: #FF3B30;
             --ios-orange: #FF9500;
             --ios-gray: #8E8E93;
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --text-primary: #1c1c1e;
+            --text-secondary: rgba(60, 60, 67, 0.6);
+            --text-tertiary: rgba(60, 60, 67, 0.35);
+            --glass-light: rgba(255, 255, 255, 0.55);
+            --glass-light-strong: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-highlight: rgba(255, 255, 255, 1);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+        html, body { margin: 0; padding: 0; min-height: 100vh; }
+
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; 
-            padding: 12px; 
-            background: linear-gradient(135deg, #E3F2FD 0%, #FCE4EC 100%);
-            background-attachment: fixed; 
-            margin: 0; 
-            color: #1c1c1e; 
+            padding: 16px; 
+            color: var(--text-primary); 
             -webkit-font-smoothing: antialiased;
+            background: #F2F4F8;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: -100px;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 15% 20%, rgba(255, 150, 150, 0.6) 0%, transparent 30%),
+                radial-gradient(circle at 85% 15%, rgba(120, 180, 255, 0.6) 0%, transparent 32%),
+                radial-gradient(circle at 70% 60%, rgba(150, 230, 180, 0.5) 0%, transparent 33%),
+                radial-gradient(circle at 20% 75%, rgba(255, 220, 130, 0.55) 0%, transparent 30%),
+                radial-gradient(circle at 50% 100%, rgba(200, 160, 240, 0.55) 0%, transparent 33%);
+            filter: blur(70px);
+            opacity: 0.9;
+            animation: blobsMove 25s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
+            pointer-events: none;
+        }
+        @keyframes blobsMove {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(20px, -30px) scale(1.1); }
+            100% { transform: translate(-20px, 20px) scale(1.05); }
         }
 
-        .page-header { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; }
+        .page-header { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; z-index: 10; }
         .page-header h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
         .back-btn { 
             position: absolute; left: 0; top: 50%; transform: translateY(-50%); 
-            text-decoration: none; background: rgba(255, 255, 255, 0.8); color: var(--ios-blue); 
-            padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.2s; white-space: nowrap; 
+            text-decoration: none; 
+            background: var(--glass-light-strong);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            color: var(--ios-blue); 
+            padding: 10px 16px; border-radius: 100px; font-size: 13px; font-weight: 600; 
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px rgba(0,0,0,0.06);
+            transition: 0.15s; white-space: nowrap; 
         }
         .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
         .container { 
+            position: relative;
+            z-index: 1;
             max-width: 1200px; 
             margin: 0 auto; 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(25px) saturate(180%); 
-            -webkit-backdrop-filter: blur(25px) saturate(180%); 
-            border: 1px solid var(--glass-border); 
-            border-radius: 24px; 
-            box-shadow: var(--glass-shadow); 
-            padding: 16px; 
+            padding: 20px;
         }
 
         .top-bar { 
             display: flex; flex-direction: row; align-items: center; gap: 10px; 
-            margin-bottom: 16px; background: rgba(255, 255, 255, 0.5); 
-            padding: 12px 14px; border-radius: 16px; border: 1px solid var(--glass-border); 
+            margin-bottom: 20px; 
+            background: var(--glass-light);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            padding: 14px 18px; border-radius: 22px; 
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
             flex-wrap: wrap;
+            /* 修复：提升层级，防止下拉菜单被卡片遮挡 */
+            position: relative;
+            z-index: 100;
         }
         .top-bar label { display: none; }
-        .top-bar select { 
-            flex: 1; min-width: 120px; padding: 10px; 
-            border: 1px solid rgba(0,0,0,0.08); background: rgba(255, 255, 255, 0.9); 
-            border-radius: 12px; font-size: 15px; outline: none; transition: all 0.2s;
+
+        /* 自定义下拉菜单样式 */
+        .custom-select-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 120px;
         }
-        .top-bar select:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
-        .top-bar button { width: auto; margin-bottom: 0; padding: 10px 20px; font-size: 14px; }
+        .custom-select-trigger {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 14px;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .custom-select-trigger:focus, .custom-select-trigger.active {
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+        }
+        .custom-select-trigger::after {
+            content: "▼";
+            font-size: 10px;
+            color: var(--text-secondary);
+            transition: transform 0.2s;
+            margin-left: 8px;
+        }
+        .custom-select-trigger.active::after {
+            transform: rotate(180deg);
+        }
+        .custom-options {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 999; /* 确保下拉选项最高层级 */
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            padding: 6px;
+            min-width: 140px;
+        }
+        .custom-options.open {
+            display: block;
+            animation: slideDownFade 0.2s ease-out;
+        }
+        @keyframes slideDownFade {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-option {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: background 0.1s;
+            white-space: nowrap;
+            margin-bottom: 2px;
+        }
+        .custom-option:last-child { margin-bottom: 0; }
+        .custom-option:hover {
+            background: rgba(0, 122, 255, 0.1);
+        }
+        .custom-option.selected {
+            background: var(--ios-blue);
+            color: white;
+        }
 
         button { 
-            padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; 
+            padding: 10px 16px; color: white; border: none; border-radius: 100px; cursor: pointer; font-size: 14px; font-weight: 600; 
             background: var(--ios-blue); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); 
             transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s; 
             width: 100%; margin-bottom: 10px;
         }
-        button:active { transform: scale(0.92); opacity: 0.85; box-shadow: 0 1px 3px rgba(0,0,0,0.1); filter: brightness(0.9); }
+        .top-bar button { width: auto; margin-bottom: 0; padding: 10px 20px; font-size: 14px; }
+        button:active { transform: scale(0.92); opacity: 0.85; filter: brightness(0.9); }
         
         .btn-agree { background: var(--ios-green); }
         .btn-refuse { background: var(--ios-red); }
@@ -84,30 +202,44 @@
         
         tr { 
             display: flex; flex-wrap: wrap; 
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px; 
-            margin-bottom: 10px; padding: 14px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.9); 
-            transition: transform 0.2s;
+            background: var(--glass-light);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 24px; 
+            margin-bottom: 12px; padding: 18px; 
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,0.06); 
+            position: relative;
+            z-index: 1; /* 卡片层级低于 top-bar 的 100 */
+            overflow: hidden;
         }
-        tr:active { transform: scale(0.99); }
+        tr::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 15%; right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
+            z-index: 2;
+        }
         
         td { 
             display: flex; align-items: center; 
             padding: 0; border: none; 
-            font-size: 13px; text-align: left; color: #1c1c1e; 
+            font-size: 13px; text-align: left; color: var(--text-primary); 
             flex: 0 0 auto; margin-right: 12px; 
+            position: relative;
+            z-index: 1;
         }
-        td::before { content: attr(data-label); font-weight: 500; color: var(--ios-gray); margin-right: 4px; flex-shrink: 0; }
+        td::before { content: attr(data-label); font-weight: 500; color: var(--text-secondary); margin-right: 4px; flex-shrink: 0; }
         
         td[data-label="订单号"], td[data-label="退款原因"], td[data-label="操作"] { 
             flex: 0 0 100%; width: 100%; margin-right: 0;
         }
         
-        td[data-label="订单号"] { font-size: 11px; color: var(--ios-gray); padding-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 4px; }
+        td[data-label="订单号"] { font-size: 11px; color: var(--text-tertiary); padding-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); margin-bottom: 6px; }
         td[data-label="订单号"]::before { display: none; }
         
-        td[data-label="退款原因"] { font-size: 15px; font-weight: 700; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        td[data-label="退款原因"] { font-size: 15px; font-weight: 700; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); }
         td[data-label="退款原因"]::before { display: none; }
         
         td[data-label="金额"], td[data-label="状态"], td[data-label="类型"], td[data-label="时间"] { width: calc(50% - 6px); margin-right: 0; }
@@ -117,58 +249,62 @@
         td[data-label="时间"]::before { content: "时间:"; }
         
         td[data-label="操作"] { 
-            margin-top: 10px; padding-top: 10px; 
-            border-top: 1px solid rgba(0,0,0,0.05); 
+            margin-top: 12px; padding-top: 12px; 
+            border-top: 1px solid rgba(60,60,67,0.08); 
             display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start;
         }
         td[data-label="操作"]::before { display: none; }
-        td[data-label="操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
+        td[data-label="操作"] button { padding: 10px 14px; font-size: 13px; margin: 0; border-radius: 100px; width: auto; }
 
-        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-        .status-0 { background: #fff3cd; color: #856404; }
-        .status-1 { background: #cce5ff; color: #004085; }
-        .status-2 { background: #d4edda; color: #155724; }
-        .status-3 { background: #d1ecf1; color: #0c5460; }
-        .status-4, .status-5 { background: #f8d7da; color: #721c24; }
-        .status-6 { background: #e2e3e5; color: #383d41; }
-        .status-8 { background: #ffc107; color: #333; }
+        .status-badge { padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .status-0 { background: rgba(255,193,7,0.2); color: #856404; }
+        .status-1 { background: rgba(0,123,255,0.15); color: #004085; }
+        .status-2 { background: rgba(40,167,69,0.15); color: #155724; }
+        .status-3 { background: rgba(23,162,184,0.15); color: #0c5460; }
+        .status-4, .status-5 { background: rgba(220,53,69,0.15); color: #721c24; }
+        .status-6 { background: rgba(108,117,125,0.15); color: #383d41; }
+        .status-8 { background: rgba(255,193,7,0.25); color: #333; }
 
-        .status-msg { margin-top: 10px; color: #555; font-weight: 600; font-size: 13px; text-align: center; }
+        .status-msg { margin-top: 12px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
-        .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
-        .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
+        .page-btn { background: var(--glass-light-strong); color: var(--ios-blue); border: 1px solid var(--glass-border); padding: 10px 16px; font-size: 13px; width: auto; margin-bottom: 0; backdrop-filter: blur(20px); box-shadow: inset 0 1px 0 var(--glass-highlight), 0 2px 8px rgba(0,0,0,0.04); }
+        .page-btn:disabled { opacity: 0.5; color: var(--text-secondary); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
         
         .modal-content { 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(30px) saturate(180%); 
-            border-radius: 24px 24px 0 0; 
-            padding: 20px 20px calc(20px + env(safe-area-inset-bottom)) 20px;
+            background: rgba(255, 255, 255, 0.92); 
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 28px 28px 0 0; 
+            padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
             width: 100%; max-height: 90vh; 
-            overflow-y: auto; -webkit-overflow-scrolling: touch;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            overflow-y: auto; 
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,1);
+            animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        .modal-content h2 { margin-top: 0; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; font-size: 18px; font-weight: 700; }
+        .modal-content h2 { margin-top: 0; border-bottom: 1px solid rgba(60,60,67,0.08); padding-bottom: 12px; font-size: 18px; font-weight: 700; }
         
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #555; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); }
         .form-group input, .form-group textarea, .form-group select { 
-            width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.08); 
-            background: rgba(255,255,255,0.8); border-radius: 12px; 
+            width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.08); 
+            background: rgba(255,255,255,0.7); border-radius: 14px; 
             font-size: 16px; outline: none; box-sizing: border-box; transition: all 0.2s;
         }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--ios-blue); background: #fff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         .form-group textarea { height: 100px; resize: vertical; }
         
-        .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 16px; display: flex; gap: 12px; justify-content: flex-end; }
-        .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; font-size: 14px; }
+        .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(60,60,67,0.08); padding-top: 16px; display: flex; gap: 12px; justify-content: flex-end; }
+        .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; font-size: 14px; border-radius: 100px; }
 
         .info-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .info-item { background: rgba(255,255,255,0.6); padding: 12px; border-radius: 12px; border-left: 4px solid var(--ios-blue); border: 1px solid rgba(0,0,0,0.02); }
-        .info-item .label { font-size: 12px; color: var(--ios-gray); font-weight: 500; }
-        .info-item .value { font-size: 15px; font-weight: 700; margin-top: 4px; color: #1c1c1e; word-break: break-all; }
+        .info-item { background: var(--glass-light); padding: 14px; border-radius: 16px; border-left: 4px solid var(--ios-blue); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-highlight); }
+        .info-item .label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        .info-item .value { font-size: 15px; font-weight: 700; margin-top: 4px; color: var(--text-primary); word-break: break-all; }
 
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
@@ -183,39 +319,48 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (min-width: 768px) {
-            body { padding: 20px; background: #F4F6F9; }
-            .container { padding: 24px; border-radius: 16px; background: #fff; border: 1px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.03); backdrop-filter: none; }
-            .page-header h1 { font-size: 22px; }
+            body { padding: 32px; }
+            .container { padding: 0; max-width: 1200px; }
 
-            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 16px; background: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 24px; }
-            .top-bar label { display: block; white-space: nowrap; font-size: 14px; color: #374151; }
-            .top-bar select { flex: 1; min-width: 200px; width: auto; padding: 10px 16px; font-size: 15px; border: 1px solid #D1D5DB; border-radius: 8px; }
+            .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 18px; margin-bottom: 24px; }
+            .top-bar label { display: block; white-space: nowrap; font-size: 14px; }
+            .custom-select-wrapper { flex: 1; min-width: 150px; }
             .top-bar button { width: auto; margin-bottom: 0; padding: 10px 24px; font-size: 14px; }
 
-            .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #E5E7EB; }
-            table { display: table !important; width: 100%; background: #fff; border-collapse: collapse; }
-            thead { display: table-header-group !important; background: #F9FAFB; }
+            .table-wrapper { 
+                overflow-x: auto; 
+                border-radius: 22px; 
+                border: 1px solid var(--glass-border);
+                background: var(--glass-light);
+                backdrop-filter: blur(30px) saturate(180%);
+                -webkit-backdrop-filter: blur(30px) saturate(180%);
+                box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
+            }
+            table { display: table !important; width: 100%; border-collapse: collapse; }
+            thead { display: table-header-group !important; background: rgba(255, 255, 255, 0.4); }
             thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
-            thead th { display: table-cell !important; padding: 16px !important; text-align: left; font-weight: 600; color: #4B5563; border-bottom: 1px solid #E5E7EB; white-space: nowrap; font-size: 14px; }
+            thead tr::before { display: none; }
+            thead th { display: table-cell !important; padding: 18px !important; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid rgba(60,60,67,0.08); white-space: nowrap; font-size: 13px; }
             
-            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid #F3F4F6 !important; transition: background 0.2s; }
-            tbody tr:hover { background: #F9FAFB !important; }
-            tbody td { display: table-cell !important; padding: 16px !important; text-align: left; border: none !important; vertical-align: middle; flex: none !important; width: auto !important; margin: 0 !important; font-size: 14px; color: #1F2937 !important; }
+            tbody tr { display: table-row !important; background: transparent !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important; overflow: visible; }
+            tbody tr::before { display: none; }
+            tbody tr:hover { background: rgba(255, 255, 255, 0.4) !important; }
+            tbody td { display: table-cell !important; padding: 18px !important; text-align: left; border: none !important; vertical-align: middle; width: auto !important; margin: 0 !important; font-size: 14px; color: var(--text-primary) !important; }
             tbody td::before { display: none !important; }
             
-            tbody td[data-label="订单号"] { font-family: monospace; color: #6B7280 !important; font-size: 13px !important; white-space: nowrap; }
+            tbody td[data-label="订单号"] { font-family: monospace; color: var(--text-tertiary) !important; font-size: 13px !important; white-space: nowrap; }
             tbody td[data-label="退款原因"] { min-width: 200px; white-space: normal; line-height: 1.5; font-weight: 600; }
             tbody td[data-label="金额"] { white-space: nowrap; font-weight: 600; }
             tbody td[data-label="状态"] { white-space: nowrap; }
             tbody td[data-label="类型"] { white-space: nowrap; }
-            tbody td[data-label="时间"] { white-space: nowrap; color: #6B7280 !important; font-size: 13px !important; }
+            tbody td[data-label="时间"] { white-space: nowrap; color: var(--text-secondary) !important; font-size: 13px !important; }
             
-            tbody td[data-label="操作"] { white-space: nowrap; min-width: 200px; }
-            tbody td[data-label="操作"] button { display: inline-block !important; width: auto !important; margin: 0 8px 0 0 !important; padding: 6px 14px !important; font-size: 13px !important; border-radius: 6px !important; box-shadow: none !important; }
+            tbody td[data-label="操作"] { white-space: nowrap; min-width: 200px; border-top: none !important; margin-top: 0 !important; padding-top: 18px !important; }
+            tbody td[data-label="操作"] button { display: inline-block !important; width: auto !important; margin: 0 8px 0 0 !important; padding: 8px 18px !important; font-size: 13px !important; }
             tbody td[data-label="操作"] button:last-child { margin-right: 0 !important; }
 
             .modal-overlay { align-items: center; }
-            .modal-content { border-radius: 24px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh; animation: fadeIn 0.2s; padding: 24px; }
+            .modal-content { border-radius: 28px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh; animation: fadeIn 0.2s; padding: 28px; }
             @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         }
     </style>
@@ -230,21 +375,29 @@
 
     <div class="top-bar">
         <label>📦 筛选：</label>
-        <select id="refundStatusFilter">
-            <option value="">全部退款状态</option>
-            <option value="1">待商家处理</option>
-            <option value="2">待买家退货</option>
-            <option value="3">待商家收货</option>
-            <option value="4">退款关闭</option>
-            <option value="5">退款成功</option>
-            <option value="6">已拒绝退款</option>
-            <option value="8">待确认退货地址</option>
-        </select>
-        <select id="refundTypeFilter">
-            <option value="">全部退款类型</option>
-            <option value="1">仅退款</option>
-            <option value="2">退货退款</option>
-        </select>
+        <div class="custom-select-wrapper">
+            <div class="custom-select-trigger" id="refundStatusTrigger" data-value="">全部退款状态</div>
+            <div class="custom-options" id="refundStatusOptions">
+                <div class="custom-option selected" data-value="">全部退款状态</div>
+                <div class="custom-option" data-value="1">待商家处理</div>
+                <div class="custom-option" data-value="2">待买家退货</div>
+                <div class="custom-option" data-value="3">待商家收货</div>
+                <div class="custom-option" data-value="4">退款关闭</div>
+                <div class="custom-option" data-value="5">退款成功</div>
+                <div class="custom-option" data-value="6">已拒绝退款</div>
+                <div class="custom-option" data-value="8">待确认退货地址</div>
+            </div>
+        </div>
+        
+        <div class="custom-select-wrapper">
+            <div class="custom-select-trigger" id="refundTypeTrigger" data-value="">全部退款类型</div>
+            <div class="custom-options" id="refundTypeOptions">
+                <div class="custom-option selected" data-value="">全部退款类型</div>
+                <div class="custom-option" data-value="1">仅退款</div>
+                <div class="custom-option" data-value="2">退货退款</div>
+            </div>
+        </div>
+        
         <button onclick="loadRefunds(1)">🔍 查询</button>
         <button onclick="loadRefunds(1)">刷新</button>
     </div>
@@ -263,7 +416,7 @@
     </div>
 
     <div class="pagination">
-        <span id="pageInfo" style="font-size: 13px; color:#555; font-weight: 500;"></span>
+        <span id="pageInfo" style="font-size: 13px; color:var(--text-secondary); font-weight: 500;"></span>
         <div>
             <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
             <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
@@ -329,6 +482,59 @@
 <script>
     const WORKER_URL = "https://api.1113630283.online";
     let isRequesting = false;
+    let currentRefundStatus = "";
+    let currentRefundType = "";
+
+    function setupCustomSelect(triggerId, optionsId, onChange) {
+        const trigger = document.getElementById(triggerId);
+        const optionsContainer = document.getElementById(optionsId);
+        const options = optionsContainer.querySelectorAll('.custom-option');
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-options.open').forEach(el => {
+                if (el !== optionsContainer) {
+                    el.classList.remove('open');
+                    el.previousElementSibling.classList.remove('active');
+                }
+            });
+            optionsContainer.classList.toggle('open');
+            trigger.classList.toggle('active');
+        });
+
+        options.forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const value = opt.getAttribute('data-value');
+                const text = opt.textContent;
+
+                trigger.setAttribute('data-value', value);
+                trigger.textContent = text;
+                
+                options.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+
+                optionsContainer.classList.remove('open');
+                trigger.classList.remove('active');
+
+                if (onChange) onChange(value);
+            });
+        });
+    }
+
+    setupCustomSelect('refundStatusTrigger', 'refundStatusOptions', (value) => {
+        currentRefundStatus = value;
+    });
+    setupCustomSelect('refundTypeTrigger', 'refundTypeOptions', (value) => {
+        currentRefundType = value;
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-options.open').forEach(el => {
+            el.classList.remove('open');
+            el.previousElementSibling.classList.remove('active');
+        });
+    });
 
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
@@ -411,10 +617,8 @@
         pageInfo.innerText = `第 ${currentPage} 页`;
         
         const bodyParams = { page_no: currentPage, page_size: pageSize };
-        const statusVal = document.getElementById('refundStatusFilter').value;
-        const typeVal = document.getElementById('refundTypeFilter').value;
-        if (statusVal) bodyParams.refund_status = parseInt(statusVal);
-        if (typeVal) bodyParams.refund_type = parseInt(typeVal);
+        if (currentRefundStatus) bodyParams.refund_status = parseInt(currentRefundStatus);
+        if (currentRefundType) bodyParams.refund_type = parseInt(currentRefundType);
 
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/list", body: bodyParams }) });
@@ -443,23 +647,23 @@
 
             let actionButtons = '';
             if (item.refund_status === 1 || item.refund_status === 8) {
-                actionButtons += `<button class="btn-agree" onclick="openAgreeModal('${item.order_no}', ${item.refund_type})" style="padding:6px 10px; font-size:12px; width:auto;">同意退款</button>`;
-                actionButtons += `<button class="btn-refuse" onclick="openRefuseModal('${item.order_no}')" style="padding:6px 10px; font-size:12px; width:auto;">拒绝退款</button>`;
+                actionButtons += `<button class="btn-agree" onclick="openAgreeModal('${item.order_no}', ${item.refund_type})" style="padding:10px 14px; font-size:13px; width:auto;">同意退款</button>`;
+                actionButtons += `<button class="btn-refuse" onclick="openRefuseModal('${item.order_no}')" style="padding:10px 14px; font-size:13px; width:auto;">拒绝退款</button>`;
             }
-            actionButtons += `<button class="btn-detail" onclick="openDetailModal('${item.order_no}')" style="padding:6px 10px; font-size:12px; width:auto;">查看详情</button>`;
+            actionButtons += `<button class="btn-detail" onclick="openDetailModal('${item.order_no}')" style="padding:10px 14px; font-size:13px; width:auto;">查看详情</button>`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td data-label="订单号">
-                    <div style="font-size:10px; color:var(--ios-gray);">退款: ${item.refund_no}</div>
-                    <div>订单: ${item.order_no}</div>
+                    <div style="font-size:10px; color:var(--text-tertiary); font-family:monospace;">退款: ${item.refund_no}</div>
+                    <div style="font-family:monospace;">订单: ${item.order_no}</div>
                 </td>
                 <td data-label="退款原因">${item.refund_reason || '无'}</td>
                 <td data-label="金额"><b>${applyAmountYuan} 元</b></td>
                 <td data-label="状态"><span class="status-badge status-${item.refund_status}">${statusText}</span></td>
                 <td data-label="类型">${typeText}</td>
                 <td data-label="时间">${applyTimeStr}</td>
-                <td data-label="操作" style="justify-content: flex-start; gap: 5px;">
+                <td data-label="操作" style="justify-content: flex-start; gap: 8px;">
                     ${actionButtons}
                 </td>
             `;
