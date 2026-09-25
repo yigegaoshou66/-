@@ -41,12 +41,36 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
         .login-box h2 { margin-top: 0; color: #1c1c1e; font-size: 22px; font-weight: 700; margin-bottom: 20px; }
-        .login-box input {
+        .login-box input[type="password"] {
             width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
-            font-size: 16px; outline: none; text-align: center; letter-spacing: 2px; margin-bottom: 15px;
+            font-size: 16px; outline: none; text-align: center; letter-spacing: 2px; margin-bottom: 12px;
             background: rgba(255,255,255,0.9); transition: all 0.2s;
         }
-        .login-box input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        .login-box input[type="password"]:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        
+        /* 👇 新增：记住密码复选框 */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .remember-row input[type="checkbox"] {
+            width: 18px; height: 18px;
+            accent-color: var(--ios-blue);
+            cursor: pointer;
+            margin: 0;
+        }
+        .remember-row label {
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
         .login-box button {
             width: 100%; padding: 14px; font-size: 16px; border-radius: 12px; margin-bottom: 10px;
             background: var(--ios-blue); color: white; border: none; font-weight: 600;
@@ -64,13 +88,7 @@
         }
         h1 { color: #1c1c1e; text-align: center; margin-bottom: 16px; font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
 
-        /* 头像 + 退出登录 同一行 */
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .shop-avatar {
             width: 44px; height: 44px;
             border-radius: 50%; object-fit: cover;
@@ -83,27 +101,18 @@
             border: 1px solid rgba(255,59,48,0.2); box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 0; 
         }
 
-        /* 店铺名称置顶展示区 */
         .store-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 12px 14px;
-            border-radius: 14px;
-            border: 1px solid rgba(0,0,0,0.03);
-            overflow-x: auto;
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.8); padding: 12px 14px;
+            border-radius: 14px; border: 1px solid rgba(0,0,0,0.03);
+            overflow-x: auto; white-space: nowrap;
         }
         .store-label { font-size: 14px; color: var(--ios-gray); font-weight: 500; }
         .store-name { font-size: 16px; font-weight: 700; color: var(--ios-blue); }
 
-        /* 快捷入口按钮（三个并排） */
         .entry-links { display: flex; flex-direction: row; gap: 10px; margin-bottom: 16px; }
         .entry-links a { 
-            flex: 1;
-            text-align: center; text-decoration: none; padding: 12px 5px; border-radius: 14px; 
+            flex: 1; text-align: center; text-decoration: none; padding: 12px 5px; border-radius: 14px; 
             color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             transition: transform 0.1s, opacity 0.1s, filter 0.1s;
         }
@@ -111,7 +120,6 @@
         .entry-after { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .entry-kami { background: linear-gradient(135deg, #6f42c1, #462688); }
 
-        /* 顶部刷新按钮 */
         .top-bar { margin-bottom: 12px; }
         .top-bar button { width: 100%; margin-bottom: 0; padding: 14px; font-size: 15px; }
         
@@ -128,14 +136,12 @@
         .btn-edit { background: var(--ios-orange); color: #fff; }
         .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; }
         
-        /* ================= 📱 手机端卡片化布局（去雾优化） ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
         
         tr { 
             display: flex; flex-wrap: wrap; 
-            /* 关键修改：去掉毛玻璃，改用纯白背景和清晰的阴影，消除“雾”感 */
             background: #ffffff; 
             border-radius: 18px; 
             margin-bottom: 12px; padding: 16px; 
@@ -173,15 +179,14 @@
         td[data-label="状态 / 操作"]::before { display: none; }
         td[data-label="状态 / 操作"] button { padding: 8px 14px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
         
-        /* ================= 📦 SKU 展开行（去雾优化） ================= */
         tr.sku-row {
             display: flex; flex-wrap: wrap;
-            background: #F8F9FA; /* 实色背景，去雾 */
+            background: #F8F9FA;
             border-radius: 14px;
             margin-top: -8px; margin-bottom: 12px;
             margin-left: 10px; 
             padding: 12px; 
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); /* 内阴影代替外阴影 */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
             border: 1px solid #E9ECEF; border-left: 4px solid var(--ios-blue);
         }
         tr.sku-row td { font-size: 13px; padding: 0; margin-right: 0; border: none; }
@@ -210,7 +215,6 @@
         }
         tr.sku-row .input-box:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         
-        /* 🎯 状态按钮（可点击） */
         .status-btn {
             display: inline-flex !important; align-items: center; gap: 4px;
             padding: 8px 14px !important; border-radius: 8px !important;
@@ -227,7 +231,6 @@
 
         .status-msg { margin-top: 10px; color: #555; font-weight: 600; font-size: 13px; text-align: center; }
 
-        /* ================= 📝 弹窗样式 ================= */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); justify-content: center; align-items: flex-end; z-index: 1000; }
         
         .modal-content { 
@@ -235,8 +238,7 @@
             border-radius: 24px 24px 0 0; 
             padding: 20px 20px calc(20px + env(safe-area-inset-bottom)) 20px;
             width: 100%; max-height: 90vh; 
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -256,7 +258,6 @@
         .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid #F2F2F7; padding-top: 16px; display: flex; gap: 12px; justify-content: flex-end; }
         .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; font-size: 14px; }
 
-        /* SKU 编辑区 */
         .sku-edit-section { margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 16px; }
         .sku-edit-section h3 { font-size: 14px; margin-bottom: 12px; color: var(--ios-blue); }
         .sku-edit-item { background: #F8F9FA; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid var(--ios-blue); }
@@ -270,7 +271,6 @@
         }
         .sku-edit-item .sku-inputs input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
-        /* ================= 🛡️ 全局按钮强反馈与防重复点击 ================= */
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
         }
@@ -283,14 +283,12 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ================= 💻 电脑端专属优化 ================= */
         @media (min-width: 768px) {
             body { padding: 12px; }
             .container { padding: 20px; border-radius: 24px; }
             h1 { font-size: 22px; margin-bottom: 16px; }
             
             .store-bar { max-width: 400px; margin-left: auto; margin-right: auto; justify-content: center; }
-            
             .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
             .entry-links a { padding: 14px; font-size: 15px; border-radius: 14px; }
 
@@ -331,6 +329,11 @@
     <div class="login-box">
         <h2>🔒 系统访问验证</h2>
         <input type="password" id="pwdInput" placeholder="请输入访问密码" onkeydown="if(event.key==='Enter') checkPwd()">
+        <!-- 👇 新增：记住密码复选框 -->
+        <div class="remember-row">
+            <input type="checkbox" id="rememberPwd">
+            <label for="rememberPwd">记住密码（下次自动登录）</label>
+        </div>
         <button onclick="checkPwd()">进入系统</button>
         <p id="pwdError" class="error-msg"></p>
     </div>
@@ -338,26 +341,22 @@
 
 <!-- 主界面 -->
 <div class="container" id="mainContainer">
-    <!-- 头像 + 退出登录 -->
     <div class="top-header">
         <img src="https://github.com/yigegaoshou66/-/blob/main/1583f6acbab97019466b38dc1e49c9c4.jpg?raw=true" alt="店铺头像" class="shop-avatar" onerror="this.src='https://via.placeholder.com/44x44/CCCCCC/ffffff?text=头像'">
         <div class="logout-btn"><button onclick="logout()">退出登录</button></div>
     </div>
 
-    <!-- 店铺名称 -->
     <div class="store-bar">
         <span class="store-label">当前店铺：</span>
         <span class="store-name" id="userNameDisplay">叶刘军</span>
     </div>
 
-    <!-- 快捷入口 -->
     <div class="entry-links">
         <a href="orders.html" class="entry-order">📋 订单</a>
         <a href="shouhou.html" class="entry-after">🛠️ 售后</a>
         <a href="kami.html" class="entry-kami">🎫 卡密</a>
     </div>
 
-    <!-- 商品管理 -->
     <div id="product-page">
         <div class="top-bar">
             <button onclick="loadProducts()">刷新商品列表</button>
@@ -411,9 +410,19 @@
     // ================= 配置 =================
     const WORKER_URL = "https://api.1113630283.online";
 
-    // ================= 🛡️ 全局 fetch 拦截器 =================
+    // ================= 🛡️ 全局 fetch 拦截器（支持 localStorage + sessionStorage 双存储） =================
     let isRequesting = false;
     let isNavigating = false;
+
+    // 工具：获取 token（优先从 localStorage 找，再从 sessionStorage 找）
+    function getToken() {
+        return localStorage.getItem('saved_token') || sessionStorage.getItem('saved_token') || null;
+    }
+    // 工具：清除所有 token
+    function clearToken() {
+        localStorage.removeItem('saved_token');
+        sessionStorage.removeItem('saved_token');
+    }
 
     if (!window._originalFetch) {
         window._originalFetch = window.fetch;
@@ -421,7 +430,7 @@
             if (typeof url === 'string' && url.includes('/auth')) {
                 return window._originalFetch(url, options);
             }
-            const token = localStorage.getItem('saved_token');
+            const token = getToken();
             if (token) {
                 options.headers = options.headers || {};
                 options.headers['Authorization'] = 'Bearer ' + token;
@@ -430,7 +439,7 @@
             isRequesting = true;
             return window._originalFetch(url, options).then(resp => {
                 if (resp.status === 401) {
-                    localStorage.removeItem('saved_token');
+                    clearToken();
                     alert("登录已失效，请重新登录");
                     location.reload();
                 }
@@ -497,9 +506,10 @@
         }
     }
 
-    // ================= 🔒 登录逻辑（调用 Worker /auth） =================
+    // ================= 🔒 登录逻辑（支持记住密码） =================
     async function checkPwd() {
         const inputPwd = document.getElementById('pwdInput').value;
+        const rememberPwd = document.getElementById('rememberPwd').checked;
         const pwdError = document.getElementById('pwdError');
         pwdError.innerText = "";
 
@@ -511,7 +521,14 @@
             });
             const result = await resp.json();
             if (result.code === 0) {
-                localStorage.setItem('saved_token', result.token);
+                // 👇 根据“记住密码”勾选状态，选择存储方式
+                if (rememberPwd) {
+                    // 勾选：存 localStorage（永久保留，下次自动登录）
+                    localStorage.setItem('saved_token', result.token);
+                } else {
+                    // 不勾选：存 sessionStorage（关掉浏览器就失效）
+                    sessionStorage.setItem('saved_token', result.token);
+                }
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'block';
                 loadProducts();
@@ -526,12 +543,22 @@
 
     function logout() {
         if (!confirm("确定要退出登录吗？（下次打开需重新输入密码）")) return;
-        localStorage.removeItem('saved_token');
+        clearToken();
         location.reload();
     }
 
+    // 页面加载时，检查是否有已保存的 token（先 localStorage 后 sessionStorage）
     window.onload = function() {
-        if (localStorage.getItem('saved_token')) {
+        // 从两处任一处找到 token 就自动登录
+        const hasLocalToken = localStorage.getItem('saved_token');
+        const hasSessionToken = sessionStorage.getItem('saved_token');
+        
+        // 如果只有 sessionStorage 有 token，说明用户上次没勾选“记住密码”，但会话还没结束，也自动登录
+        if (hasLocalToken || hasSessionToken) {
+            // 自动勾选“记住密码”（如果是从 localStorage 恢复的话）
+            if (hasLocalToken) {
+                document.getElementById('rememberPwd').checked = true;
+            }
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             loadProducts();

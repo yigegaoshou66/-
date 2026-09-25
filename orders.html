@@ -76,7 +76,6 @@
         .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
-        /* ================= 📱 手机端卡片化布局（紧凑） ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
@@ -128,7 +127,6 @@
         .status-msg { margin-top: 10px; color: #555; font-weight: 600; font-size: 13px; text-align: center; }
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 
-        /* ================= 🛡️ 全局按钮强反馈与防重复点击（新增） ================= */
         @media (max-width: 768px) {
             button:active {
                 transform: scale(0.9) !important;
@@ -145,7 +143,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ================= 💻 电脑端专属优化（彻底重写，修复布局错乱） ================= */
         @media (min-width: 768px) {
             body { padding: 20px; background: #F4F6F9; }
             .container { 
@@ -245,36 +242,93 @@
 </div>
 
 <script>
-    // ================= 🛡️ 全局按钮强反馈与防重复点击（新增） =================
+    // ================= 配置 =================
+    const WORKER_URL = "https://api.1113630283.online";
+
+    // ================= 🔐 双存储 token 工具 =================
+    function getToken() {
+        return localStorage.getItem('saved_token') || sessionStorage.getItem('saved_token') || null;
+    }
+    function clearToken() {
+        localStorage.removeItem('saved_token');
+        sessionStorage.removeItem('saved_token');
+    }
+
+    // 页面加载时，先检查登录状态，没登录就跳回 index.html
+    if (!getToken()) {
+        location.replace('index.html');
+    }
+
+    // ================= 🛡️ 全局 fetch 拦截器 =================
     let isRequesting = false;
 
+    if (!window._originalFetch) {
+        window._originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const token = getToken();
+            if (token) {
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+            }
+            isRequesting = true;
+            return window._originalFetch(url, options).then(resp => {
+                if (resp.status === 401) {
+                    clearToken();
+                    alert("登录已失效，请重新登录");
+                    location.replace('index.html');
+                }
+                return resp;
+            }).finally(() => {
+                isRequesting = false;
+                document.querySelectorAll('button.btn-loading').forEach(btn => {
+                    restoreButton(btn);
+                });
+            });
+        };
+    }
+
+    // ================= 🛡️ 全局按钮强反馈 =================
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
-        if (!btn || btn.disabled) return;
+        const link = e.target.closest('.back-btn');
 
-        if (isRequesting) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            const originalText = btn.innerText;
-            btn.innerText = '处理中...';
-            btn.style.opacity = '0.5';
+        if (!btn && !link) return;
+
+        if (link) {
+            if (window._isNavigating) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+            window._isNavigating = true;
+            link.style.pointerEvents = 'none';
+            link.style.opacity = '0.5';
+            link.style.transform = 'translateY(-50%) scale(0.9)';
+            link.style.transition = 'all 0.1s ease';
             setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.opacity = '1';
-            }, 500);
+                window._isNavigating = false;
+                link.style.pointerEvents = '';
+                link.style.opacity = '';
+                link.style.transform = 'translateY(-50%)';
+            }, 2000);
             return;
         }
 
-        btn.dataset.originalText = btn.innerText;
-        btn.innerText = '等待中...';
-        btn.disabled = true;
-        btn.classList.add('btn-loading');
-
-        setTimeout(() => {
-            if (!isRequesting && btn.classList.contains('btn-loading')) {
-                restoreButton(btn);
+        if (btn) {
+            if (btn.disabled) return;
+            if (isRequesting) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                const originalText = btn.innerText;
+                btn.innerText = '处理中...';
+                btn.style.opacity = '0.5';
+                setTimeout(() => { btn.innerText = originalText; btn.style.opacity = '1'; }, 500);
+                return;
             }
-        }, 500);
+            btn.dataset.originalText = btn.innerText;
+            btn.innerText = '等待中...';
+            btn.disabled = true;
+            btn.classList.add('btn-loading');
+            setTimeout(() => {
+                if (!isRequesting && btn.classList.contains('btn-loading')) { restoreButton(btn); }
+            }, 500);
+        }
     }, true);
 
     function restoreButton(btn) {
@@ -286,22 +340,8 @@
         }
     }
 
-    if (!window._originalFetch) {
-        window._originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            isRequesting = true;
-            return window._originalFetch.apply(this, args).finally(() => {
-                isRequesting = false;
-                document.querySelectorAll('button.btn-loading').forEach(btn => {
-                    restoreButton(btn);
-                });
-            });
-        };
-    }
-
-    const WORKER_URL = "https://api.1113630283.online";
     let currentPage = 1;
-    const pageSize = 20; // 固定每页 20 条
+    const pageSize = 20;
     const tableBody = document.getElementById('tableBody');
     const statusMsg = document.getElementById('statusMsg');
     const statusFilter = document.getElementById('statusFilter');
@@ -368,7 +408,11 @@
     }
     
     statusFilter.addEventListener('change', () => { loadOrders(1); });
-    loadOrders(1);
+
+    // 只有有 token 时才加载数据
+    if (getToken()) {
+        loadOrders(1);
+    }
 </script>
 </body>
 </html>

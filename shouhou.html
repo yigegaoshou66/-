@@ -28,7 +28,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ================= 📌 页面标题栏与返回按钮 ================= */
         .page-header { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; }
         .page-header h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
         .back-btn { 
@@ -51,7 +50,6 @@
             padding: 16px; 
         }
 
-        /* 顶部筛选栏 */
         .top-bar { 
             display: flex; flex-direction: row; align-items: center; gap: 10px; 
             margin-bottom: 16px; background: rgba(255, 255, 255, 0.5); 
@@ -80,7 +78,6 @@
         .btn-detail { background: var(--ios-blue); }
         .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; }
 
-        /* ================= 📱 手机端卡片化布局 ================= */
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
@@ -127,7 +124,6 @@
         td[data-label="操作"]::before { display: none; }
         td[data-label="操作"] button { padding: 8px 12px; font-size: 13px; margin: 0; box-shadow: none; border-radius: 8px; width: auto; }
 
-        /* 状态标签 */
         .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .status-0 { background: #fff3cd; color: #856404; }
         .status-1 { background: #cce5ff; color: #004085; }
@@ -142,7 +138,6 @@
         .page-btn { background: rgba(255,255,255,0.8); color: var(--ios-blue); border: 1px solid rgba(0,122,255,0.2); padding: 8px 14px; font-size: 13px; width: auto; margin-bottom: 0; }
         .page-btn:disabled { opacity: 0.5; color: var(--ios-gray); border-color: transparent; background: rgba(0,0,0,0.05); box-shadow: none; }
 
-        /* ================= 📝 弹窗样式 ================= */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
         
         .modal-content { 
@@ -171,13 +166,11 @@
         .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 16px; display: flex; gap: 12px; justify-content: flex-end; }
         .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; font-size: 14px; }
 
-        /* 详情信息网格 */
         .info-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         .info-item { background: rgba(255,255,255,0.6); padding: 12px; border-radius: 12px; border-left: 4px solid var(--ios-blue); border: 1px solid rgba(0,0,0,0.02); }
         .info-item .label { font-size: 12px; color: var(--ios-gray); font-weight: 500; }
         .info-item .value { font-size: 15px; font-weight: 700; margin-top: 4px; color: #1c1c1e; word-break: break-all; }
 
-        /* ================= 🛡️ 全局按钮强反馈与防重复点击 ================= */
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
         }
@@ -190,7 +183,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ================= 💻 电脑端专属优化 ================= */
         @media (min-width: 768px) {
             body { padding: 20px; background: #F4F6F9; }
             .container { 
@@ -284,7 +276,6 @@
     </div>
 </div>
 
-<!-- 📝 售后详情弹窗 -->
 <div id="detailModal" class="modal-overlay">
     <div class="modal-content">
         <h2>📊 售后单详情</h2>
@@ -295,7 +286,6 @@
     </div>
 </div>
 
-<!-- 📝 同意退款弹窗 -->
 <div id="agreeModal" class="modal-overlay">
     <div class="modal-content">
         <h2>✅ 同意退款</h2>
@@ -320,7 +310,6 @@
     </div>
 </div>
 
-<!-- 📝 拒绝退款弹窗 -->
 <div id="refuseModal" class="modal-overlay">
     <div class="modal-content">
         <h2>⛔ 拒绝退款</h2>
@@ -343,9 +332,50 @@
 </div>
 
 <script>
+    // ================= 配置 =================
+    const WORKER_URL = "https://api.1113630283.online";
+
+    // ================= 🔐 双存储 token 工具 =================
+    function getToken() {
+        return localStorage.getItem('saved_token') || sessionStorage.getItem('saved_token') || null;
+    }
+    function clearToken() {
+        localStorage.removeItem('saved_token');
+        sessionStorage.removeItem('saved_token');
+    }
+
+    // 页面加载时，先检查登录状态，没登录就跳回 index.html
+    if (!getToken()) {
+        location.replace('index.html');
+    }
+
     // ================= 🛡️ 全局强反馈与防重复点击 =================
     let isRequesting = false;
-    let isNavigating = false;
+
+    if (!window._originalFetch) {
+        window._originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const token = getToken();
+            if (token) {
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+            }
+            isRequesting = true;
+            return window._originalFetch(url, options).then(resp => {
+                if (resp.status === 401) {
+                    clearToken();
+                    alert("登录已失效，请重新登录");
+                    location.replace('index.html');
+                }
+                return resp;
+            }).finally(() => {
+                isRequesting = false;
+                document.querySelectorAll('button.btn-loading').forEach(btn => {
+                    restoreButton(btn);
+                });
+            });
+        };
+    }
 
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
@@ -354,17 +384,17 @@
         if (!btn && !link) return;
 
         if (link) {
-            if (isNavigating) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-            isNavigating = true;
+            if (window._isNavigating) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+            window._isNavigating = true;
             link.style.pointerEvents = 'none';
             link.style.opacity = '0.5';
-            link.style.transform = 'scale(0.9)';
-            link.style.transition = 'all 0.1s ease'; 
+            link.style.transform = 'translateY(-50%) scale(0.9)';
+            link.style.transition = 'all 0.1s ease';
             setTimeout(() => {
-                isNavigating = false;
+                window._isNavigating = false;
                 link.style.pointerEvents = '';
                 link.style.opacity = '';
-                link.style.transform = '';
+                link.style.transform = 'translateY(-50%)';
             }, 2000);
             return;
         }
@@ -399,19 +429,6 @@
         }
     }
 
-    if (!window._originalFetch) {
-        window._originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            isRequesting = true;
-            return window._originalFetch.apply(this, args).finally(() => {
-                isRequesting = false;
-                document.querySelectorAll('button.btn-loading').forEach(btn => {
-                    restoreButton(btn);
-                });
-            });
-        };
-    }
-
     // ================= 🎯 点击空白处关闭弹窗 =================
     function setupOverlayClick(modalId, closeFn) {
         const modal = document.getElementById(modalId);
@@ -426,7 +443,6 @@
     setupOverlayClick('refuseModal', closeRefuseModal);
 
     // ================= 核心逻辑 =================
-    const WORKER_URL = "https://api.1113630283.online";
     let currentPage = 1;
     const pageSize = 20;
     const tableBody = document.getElementById('tableBody');
@@ -435,7 +451,6 @@
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
 
-    // 状态映射
     const refundStatusMap = { 0: "未申请退款", 1: "待商家处理", 2: "待买家退货", 3: "待商家收货", 4: "退款关闭", 5: "退款成功", 6: "已拒绝退款", 8: "待确认退货地址" };
     const refundTypeMap = { 1: "仅退款", 2: "退货退款" };
     const goodsStatusMap = { 1: "未收到货", 2: "已收到货", 3: "已寄回", 4: "未发货", 5: "卖家确认收货", 6: "已发货" };
@@ -477,7 +492,6 @@
             const applyAmountYuan = (item.apply_amount / 100).toFixed(2);
             const applyTimeStr = item.apply_time ? new Date(item.apply_time * 1000).toLocaleString('zh-CN') : '未知时间';
 
-            // 构建操作按钮
             let actionButtons = '';
             if (item.refund_status === 1 || item.refund_status === 8) {
                 actionButtons += `<button class="btn-agree" onclick="openAgreeModal('${item.order_no}', ${item.refund_type})" style="padding:6px 10px; font-size:12px; width:auto;">同意退款</button>`;
@@ -510,7 +524,6 @@
         loadRefunds(newPage); 
     }
 
-    // ================= 📝 详情逻辑 =================
     async function openDetailModal(orderNo) {
         document.getElementById('detailContent').innerHTML = '加载中...';
         document.getElementById('detailModal').style.display = 'flex';
@@ -552,7 +565,6 @@
     }
     function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
 
-    // ================= 📝 同意退款逻辑 =================
     function openAgreeModal(orderNo, refundType) {
         document.getElementById('agreeOrderNo').value = orderNo;
         document.getElementById('returnExplain').value = '';
@@ -585,12 +597,8 @@
                 return alert("请完整填写退货地址信息！");
             }
             requestBody.return_address = {
-                name: name,
-                mobile: mobile,
-                prov_name: prov,
-                city_name: city,
-                area_name: area,
-                address: address
+                name: name, mobile: mobile,
+                prov_name: prov, city_name: city, area_name: area, address: address
             };
         }
 
@@ -609,7 +617,6 @@
         }
     }
 
-    // ================= 📝 拒绝退款逻辑 =================
     async function openRefuseModal(orderNo) {
         document.getElementById('refuseOrderNo').value = orderNo;
         document.getElementById('refuseExplain').value = '';
@@ -641,10 +648,7 @@
 
         if (!refuseReason) return alert("请选择拒绝原因！");
 
-        const requestBody = {
-            order_no: orderNo,
-            refuse_reason: refuseReason
-        };
+        const requestBody = { order_no: orderNo, refuse_reason: refuseReason };
         if (refuseExplain) requestBody.refuse_explain = refuseExplain;
 
         try {
@@ -662,8 +666,10 @@
         }
     }
 
-    // ================= 初始化 =================
-    loadRefunds(1);
+    // 只有有 token 时才加载数据
+    if (getToken()) {
+        loadRefunds(1);
+    }
 </script>
 </body>
 </html>
