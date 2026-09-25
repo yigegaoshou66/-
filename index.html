@@ -537,11 +537,14 @@
     const WORKER_URL = "https://api.1113630283.online";
     let isNavigating = false;
     
-    // ⚡ 核心优化：限制最大并发请求数，防止排队卡死
-    const MAX_CONCURRENT = 3;
-    let activeRequests = 0;
+    // ⚡ 核心优化：前端内存缓存
+    let currentProductData = []; 
+    const productDetailCache = {}; // 存储商品详情 (content + sku_items)
+    const skuCache = {}; // 仅存储 SKU 数据，便于快速展开
 
     // 专门处理请求超时 + 并发控制的 fetch
+    const MAX_CONCURRENT = 3;
+    let activeRequests = 0;
     async function fetchWithControl(url, options, timeout = 8000) {
         if (activeRequests >= MAX_CONCURRENT) {
             throw new Error('当前请求过多，请稍后重试（正在处理其他操作）');
@@ -599,7 +602,6 @@
         }
     }, true);
 
-    // 恢复按钮状态（核心修复：移除 btn-loading 类）
     function restoreButton(btn) {
         if (btn && btn.classList.contains('btn-loading')) {
             btn.disabled = false;
@@ -611,7 +613,6 @@
 
     // ================= 表单状态与遮罩层点击 =================
     let editFormDirty = false;
-
     const editInputs = document.querySelectorAll('#editProductModal input:not([type="hidden"]), #editProductModal textarea');
     editInputs.forEach(el => {
         el.addEventListener('input', () => editFormDirty = true);
@@ -646,10 +647,46 @@
     const productTableBody = document.getElementById('productTableBody');
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameDisplay = document.getElementById('userNameDisplay');
-    let currentProductData = []; 
 
-    // 缓存已拉取的SKU数据，避免重复请求
-    const skuCache = {}; 
+    // 辅助渲染单个商品行的方法（方便保存后局部更新）
+    function renderProductRow(product, isUpdate = false) {
+        const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
+        const stock = product.stock !== undefined ? product.stock : '-';
+        
+        let statusActionBtn = '';
+        if (product.product_status === 22) {
+            statusActionBtn = `<button class="status-btn status-btn-on" onclick="downShelfProduct(${product.product_id}, this)" title="点击下架">✅ 已上架</button>`;
+        } else if (product.product_status === 31) {
+            statusActionBtn = `<button class="status-btn status-btn-off" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">⛔ 已下架</button>`;
+        } else if (product.product_status === 23) {
+            statusActionBtn = `<button class="status-btn status-btn-sold" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">🏷️ 已售出</button>`;
+        } else {
+            statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击上架">❓ 未知(${product.product_status || '无'})</button>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.dataset.productId = product.product_id;
+        tr.innerHTML = `
+            <td data-label="商品ID">${product.product_id}</td>
+            <td data-label="标题"><b>${product.title || '无标题'}</b></td>
+            <td data-label="价格">${priceYuan} 元</td>
+            <td data-label="库存">${stock}</td>
+            <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 8px;">
+                ${statusActionBtn}
+                <button class="btn-edit" onclick="openEditProductModal(${product.product_id}, this)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">编辑</button>
+                <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
+            </td>
+        `;
+        
+        if (isUpdate) {
+            const oldTr = productTableBody.querySelector(`tr[data-product-id="${product.product_id}"]`);
+            if (oldTr) {
+                oldTr.replaceWith(tr); // 局部替换，不重新加载整个列表
+            }
+        } else {
+            productTableBody.appendChild(tr);
+        }
+    }
 
     async function loadProducts() {
         productStatusMsg.innerText = "正在加载商品列表...";
@@ -665,6 +702,10 @@
             if (result.code === 0) {
                 productStatusMsg.innerText = "加载成功！";
                 currentProductData = result.data.list || []; 
+                
+                // ⚡ 优化：强制刷新时清空旧缓存，保证数据源最新
+                Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
+                Object.keys(skuCache).forEach(k => delete skuCache[k]);
 
                 currentProductData.sort((a, b) => {
                     const aWeight = (a.product_status === 22) ? 0 : 1;
@@ -672,35 +713,7 @@
                     return aWeight - bWeight; 
                 });
 
-                currentProductData.forEach(product => {
-                    const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
-                    const stock = product.stock !== undefined ? product.stock : '-';
-                    
-                    let statusActionBtn = '';
-                    if (product.product_status === 22) {
-                        statusActionBtn = `<button class="status-btn status-btn-on" onclick="downShelfProduct(${product.product_id}, this)" title="点击下架">✅ 已上架</button>`;
-                    } else if (product.product_status === 31) {
-                        statusActionBtn = `<button class="status-btn status-btn-off" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">⛔ 已下架</button>`;
-                    } else if (product.product_status === 23) {
-                        statusActionBtn = `<button class="status-btn status-btn-sold" onclick="publishProduct(${product.product_id}, this)" title="点击重新上架">🏷️ 已售出</button>`;
-                    } else {
-                        statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击上架">❓ 未知(${product.product_status || '无'})</button>`;
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td data-label="商品ID">${product.product_id}</td>
-                        <td data-label="标题"><b>${product.title || '无标题'}</b></td>
-                        <td data-label="价格">${priceYuan} 元</td>
-                        <td data-label="库存">${stock}</td>
-                        <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 8px;">
-                            ${statusActionBtn}
-                            <button class="btn-edit" onclick="openEditProductModal(${product.product_id}, this)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">编辑</button>
-                            <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
-                        </td>
-                    `;
-                    productTableBody.appendChild(tr);
-                });
+                currentProductData.forEach(product => renderProductRow(product));
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
         } catch (error) { 
             productStatusMsg.innerText = "请求出错：" + error.message; 
@@ -710,11 +723,14 @@
         }
     }
 
+    // ⚡ 优化：点击编辑，优先展示缓存数据
     async function openEditProductModal(productId, btn) {
         const userName = userNameDisplay.textContent.trim();
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
 
         const product = currentProductData.find(p => p.product_id === productId);
+        
+        // 1. 立即使用列表里的基础数据填充弹窗，让用户感觉“秒开”
         document.getElementById('editProductId').value = productId;
         document.getElementById('editTitle').value = product ? (product.title || '') : '';
         document.getElementById('editPrice').value = product && product.price ? (product.price / 100).toFixed(2) : '';
@@ -722,11 +738,19 @@
         document.getElementById('editContent').value = ''; 
 
         document.getElementById('editSkuContainer').style.display = 'none';
-        document.getElementById('skuListWrapper').innerHTML = '正在加载规格信息...';
+        document.getElementById('skuListWrapper').innerHTML = '正在后台加载详情...';
         
         editFormDirty = false;
         document.getElementById('editProductModal').style.display = 'flex';
 
+        // 如果本地缓存有详情，直接渲染，不走网络请求
+        if (productDetailCache[productId]) {
+            renderDetailToModal(productDetailCache[productId]);
+            restoreButton(btn);
+            return;
+        }
+
+        // 2. 如果没有缓存，才发起网络请求，静默更新描述和 SKU
         try {
             const response = await fetchWithControl(WORKER_URL, { 
                 method: 'POST', 
@@ -735,41 +759,49 @@
             });
             const result = await response.json();
             if (result.code === 0 && result.data) {
-                if (result.data.sku_items) {
-                    skuCache[productId] = result.data.sku_items;
-                }
-
-                let content = result.data.content; 
-                if (!content && result.data.publish_shop && result.data.publish_shop.length > 0) {
-                    content = result.data.publish_shop[0].content; 
-                }
-                if (content) document.getElementById('editContent').value = content;
-
-                if (result.data.sku_items && result.data.sku_items.length > 0) {
-                    document.getElementById('editSkuContainer').style.display = 'block';
-                    let skuHtml = '';
-                    result.data.sku_items.forEach(sku => {
-                        const priceYuan = (sku.price / 100).toFixed(2);
-                        skuHtml += `
-                            <div class="sku-edit-item" data-sku-text="${sku.sku_text}">
-                                <div class="sku-title">🏷️ ${sku.sku_text}</div>
-                                <div class="sku-inputs">
-                                    <input type="number" step="0.01" class="sku-price-input" data-sku-id="${sku.sku_id}" value="${priceYuan}" placeholder="价格(元)">
-                                    <input type="number" class="sku-stock-input" data-sku-id="${sku.sku_id}" value="${sku.stock}" placeholder="库存">
-                                </div>
-                            </div>
-                        `;
-                    });
-                    document.getElementById('skuListWrapper').innerHTML = skuHtml;
-                } else {
-                    document.getElementById('editSkuContainer').style.display = 'none';
+                // 存入缓存
+                productDetailCache[productId] = result.data;
+                if (result.data.sku_items) skuCache[productId] = result.data.sku_items;
+                
+                // 如果弹窗还开着，把数据填进去
+                if (document.getElementById('editProductModal').style.display === 'flex') {
+                    renderDetailToModal(result.data);
                 }
             }
         } catch (error) {
             console.log("获取商品详情失败：", error);
             document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败: ' + error.message + '</span>';
         } finally {
-            if (btn) restoreButton(btn); // 核心修复：请求完毕后恢复“编辑”按钮
+            if (btn) restoreButton(btn);
+        }
+    }
+
+    // 辅助渲染详情数据到弹窗的方法
+    function renderDetailToModal(detailData) {
+        let content = detailData.content; 
+        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
+            content = detailData.publish_shop[0].content; 
+        }
+        if (content) document.getElementById('editContent').value = content;
+
+        if (detailData.sku_items && detailData.sku_items.length > 0) {
+            document.getElementById('editSkuContainer').style.display = 'block';
+            let skuHtml = '';
+            detailData.sku_items.forEach(sku => {
+                const priceYuan = (sku.price / 100).toFixed(2);
+                skuHtml += `
+                    <div class="sku-edit-item" data-sku-text="${sku.sku_text}">
+                        <div class="sku-title">🏷️ ${sku.sku_text}</div>
+                        <div class="sku-inputs">
+                            <input type="number" step="0.01" class="sku-price-input" data-sku-id="${sku.sku_id}" value="${priceYuan}" placeholder="价格(元)">
+                            <input type="number" class="sku-stock-input" data-sku-id="${sku.sku_id}" value="${sku.stock}" placeholder="库存">
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('skuListWrapper').innerHTML = skuHtml;
+        } else {
+            document.getElementById('editSkuContainer').style.display = 'none';
         }
     }
 
@@ -778,7 +810,7 @@
         editFormDirty = false;
     }
 
-    async function submitEditProduct(btn) { // 传入当前按钮
+    async function submitEditProduct(btn) {
         const productId = parseInt(document.getElementById('editProductId').value);
         const title = document.getElementById('editTitle').value.trim();
         const priceYuan = document.getElementById('editPrice').value;
@@ -787,7 +819,7 @@
         const userName = userNameDisplay.textContent.trim(); 
 
         if (!title || !priceYuan || isNaN(stock) || !content) {
-            restoreButton(btn); // 校验失败也要恢复按钮
+            restoreButton(btn);
             return alert("请完整填写所有必填项！");
         }
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
@@ -825,17 +857,33 @@
             if (result.code === 0) {
                 alert("商品和 SKU 修改成功！");
                 closeEditProductModal();
-                loadProducts(); 
+                
+                // ⚡ 核心优化：保存成功后，只在本地更新数据，不重新请求整个列表
+                const product = currentProductData.find(p => p.product_id === productId);
+                if (product) {
+                    product.title = title;
+                    product.price = priceFen;
+                    product.stock = stock;
+                    // 更新本地详情缓存
+                    if (!productDetailCache[productId]) productDetailCache[productId] = {};
+                    productDetailCache[productId].content = content;
+                    if (skuItems.length > 0) {
+                        productDetailCache[productId].sku_items = skuItems;
+                        skuCache[productId] = skuItems;
+                    }
+                    renderProductRow(product, true); // 局部重绘这行
+                }
             } else {
                 alert("修改失败：" + result.msg);
             }
         } catch (error) {
             alert("请求出错：" + error.message);
         } finally {
-            if (btn) restoreButton(btn); // 使用 restoreButton 彻底清理状态
+            if (btn) restoreButton(btn);
         }
     }
 
+    // ⚡ 优化：展开规格，优先使用缓存
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
 
@@ -845,6 +893,7 @@
         const mainRow = btn.closest('tr');
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
+        // 清理当前行下方已经存在的 SKU 列表
         let nextRow = mainRow.nextElementSibling;
         while (nextRow && nextRow.classList.contains('sku-row')) {
             let rowToDelete = nextRow;
@@ -852,6 +901,7 @@
             rowToDelete.remove();
         }
 
+        // 重置按钮状态为“展开”
         btn.innerText = "展开规格";
         btn.setAttribute('data-expanded', 'false');
 
@@ -860,10 +910,7 @@
             return;
         }
 
-        btn.innerText = "加载中...";
-        btn.disabled = true;
-        btn.classList.add('btn-loading');
-
+        // 每次展开，先收起其他行
         document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
             if (otherBtn !== btn) {
                 otherBtn.innerText = "展开规格";
@@ -873,43 +920,34 @@
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
+        // ⚡ 1. 优先从缓存渲染，瞬间完成
+        if (skuCache[productId]) {
+            renderSkuRows(mainRow, skuCache[productId], productId);
+            btn.innerText = "收起规格";
+            btn.setAttribute('data-expanded', 'true');
+            restoreButton(btn);
+            return;
+        }
+
+        // 2. 没有缓存，显示加载，去请求
+        btn.innerText = "加载中...";
+        btn.disabled = true;
+        btn.classList.add('btn-loading');
+
         try {
-            let skuItems = skuCache[productId]; // 优先使用缓存，瞬间响应
+            const response = await fetchWithControl(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+            });
+            const result = await response.json();
+            if (result.code === 0 && result.data.sku_items) {
+                skuCache[productId] = result.data.sku_items;
+                productDetailCache[productId] = result.data; // 同时补充详情缓存
 
-            if (!skuItems) {
-                const response = await fetchWithControl(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
-                });
-                const result = await response.json();
-                if (result.code === 0 && result.data.sku_items) {
-                    skuItems = result.data.sku_items;
-                    skuCache[productId] = skuItems;
-                }
-            }
-
-            if (skuItems && skuItems.length > 0) {
-                const fragment = document.createDocumentFragment();
-                skuItems.forEach(sku => {
-                    const skuTr = document.createElement('tr');
-                    skuTr.className = 'sku-row';
-                    const priceInYuan = (sku.price / 100).toFixed(2);
-                    skuTr.innerHTML = `
-                        <td data-label="SKU_ID">└─ ${sku.sku_id}</td>
-                        <td data-label="规格" data-sku-text="${sku.sku_text}">${sku.sku_text}</td>
-                        <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"></td>
-                        <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></td>
-                        <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id})">保存</button></td>
-                    `;
-                    fragment.appendChild(skuTr);
-                });
-
-                if (fragment.hasChildNodes()) {
-                    mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
-                    btn.innerText = "收起规格";
-                    btn.setAttribute('data-expanded', 'true');
-                }
+                renderSkuRows(mainRow, result.data.sku_items, productId);
+                btn.innerText = "收起规格";
+                btn.setAttribute('data-expanded', 'true');
             } else {
                 alert("该商品暂无规格数据");
             }
@@ -918,31 +956,51 @@
         } finally {
             btn.disabled = false;
             btn.classList.remove('btn-loading');
-            delete btn.dataset.originalText; // 清理全局监听器可能留下的状态
+            delete btn.dataset.originalText;
             if (btn.getAttribute('data-expanded') !== 'true') {
-                btn.innerText = "展开规格"; // 确保失败时文字正确
+                btn.innerText = "展开规格";
             }
         }
     }
 
-    async function updateSkuData(productId, skuId) {
+    // 辅助渲染 SKU 行的方法
+    function renderSkuRows(mainRow, skuItems, productId) {
+        const fragment = document.createDocumentFragment();
+        skuItems.forEach(sku => {
+            const skuTr = document.createElement('tr');
+            skuTr.className = 'sku-row';
+            const priceInYuan = (sku.price / 100).toFixed(2);
+            skuTr.innerHTML = `
+                <td data-label="SKU_ID">└─ ${sku.sku_id}</td>
+                <td data-label="规格" data-sku-text="${sku.sku_text}">${sku.sku_text}</td>
+                <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"></td>
+                <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></td>
+                <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id}, this)">保存</button></td>
+            `;
+            fragment.appendChild(skuTr);
+        });
+        mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
+    }
+
+    // ⚡ 优化：保存单个 SKU，直接从前端缓存组装数据，不走详情请求
+    async function updateSkuData(productId, skuId, saveBtn) {
         const stockInput = document.getElementById(`stock_${skuId}`);
         const priceInput = document.getElementById(`price_${skuId}`);
         const newStockStr = stockInput.value;
         const newPriceYuanStr = priceInput.value;
+        
         if (newStockStr === '' || newPriceYuanStr === '') {
-            const saveBtn = stockInput.closest('tr').querySelector('.btn-save');
-            if(saveBtn) restoreButton(saveBtn);
+            restoreButton(saveBtn);
             return alert("请输入价格和库存");
         }
         
         const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100);
         const newStock = parseInt(newStockStr);
 
-        const saveBtn = stockInput.closest('tr').querySelector('.btn-save');
         if(saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
 
         try {
+            // 从缓存拿数据，如果缓存没有，说明逻辑异常，防错处理
             let skuItems = skuCache[productId];
             
             if (!skuItems) {
@@ -959,6 +1017,7 @@
                 skuCache[productId] = skuItems;
             }
 
+            // 更新内存中对应的 SKU
             const updatedSkuItems = skuItems.map(sku => {
                 if (sku.sku_id === skuId) {
                     return { ...sku, price: newPriceFen, stock: newStock };
@@ -966,7 +1025,9 @@
                 return sku;
             });
             
+            // 更新缓存
             skuCache[productId] = updatedSkuItems;
+            if (productDetailCache[productId]) productDetailCache[productId].sku_items = updatedSkuItems;
 
             const requestBody = {
                 product_id: productId,
@@ -986,13 +1047,19 @@
             
             if (result.code === 0) { 
                 alert("SKU 修改成功！"); 
+                // 实时更新主列表里的库存显示（简单处理，不重新请求）
+                const mainProduct = currentProductData.find(p => p.product_id === productId);
+                if (mainProduct) {
+                    // 如果后台不支持自动汇总SKU库存到主商品，这里最好不更新主商品库存，以免误导用户。
+                    // 目前仅做本地缓存更新。下次手动刷新列表时会拉取真实汇总数据。
+                }
             } else { 
                 alert("修改失败：" + result.msg); 
             }
         } catch (error) {
             alert("请求出错：" + error.message);
         } finally {
-            if(saveBtn) restoreButton(saveBtn); // 核心修复：恢复按钮，移除转圈
+            if(saveBtn) restoreButton(saveBtn);
         }
     }
 
