@@ -385,6 +385,43 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
         .modal-content h2 { margin-top: 0; border-bottom: 1px solid rgba(60,60,67,0.08); padding-bottom: 12px; font-size: 18px; font-weight: 700; }
+
+        /* ===== 弹窗头部（标题 + 编辑按钮） ===== */
+        .modal-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(60,60,67,0.08);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+        .modal-header-row h2 {
+            margin: 0;
+            padding: 0;
+            border: none;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .modal-edit-btn {
+            width: auto !important;
+            margin: 0 !important;
+            padding: 9px 18px !important;
+            border-radius: 100px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            background: var(--ios-orange) !important;
+            color: #fff !important;
+            border: 1px solid rgba(255,255,255,0.5) !important;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(255,149,0,0.35);
+        }
+        .modal-edit-btn:active { transform: scale(0.94) !important; opacity: 0.85 !important; }
         
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); }
@@ -456,7 +493,7 @@
             font-weight: bold;
         }
 
-        /* ===== 查看属性弹窗内容样式 ===== */
+        /* ===== 查看属性内容样式 ===== */
         .viewer-section {
             margin-bottom: 22px;
         }
@@ -495,6 +532,28 @@
             text-align: center;
             padding: 24px;
         }
+
+        /* 基础信息网格 */
+        .viewer-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .viewer-info-item {
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(60,60,67,0.08);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .viewer-info-item span { font-size: 11px; color: var(--text-secondary); }
+        .viewer-info-item b { font-size: 14px; word-break: break-word; color: var(--text-primary); }
+        .viewer-info-item b.price { color: var(--ios-orange); }
+        .viewer-info-item b.stock { color: var(--ios-green); }
+
         .viewer-grid {
             display: flex;
             flex-wrap: wrap;
@@ -576,6 +635,7 @@
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
             .viewer-thumb { width: 80px; height: 80px; }
+            .modal-header-row h2 { font-size: 16px; }
             
             /* 手机端：操作按钮保持一行，按钮变窄均分 */
             td[data-label="状态 / 操作"] {
@@ -692,7 +752,7 @@
             .sku-edit-item .sku-inputs input { font-size: 15px; }
             .image-preview-item { width: 80px; height: 80px; }
             .viewer-thumb { width: 120px; height: 120px; }
-            #imageViewerModal .modal-content { max-width: 800px; }
+            #productModal .modal-content { max-width: 800px; }
         }
     </style>
 </head>
@@ -728,71 +788,93 @@
     </div>
 </div>
 
-<div id="editProductModal" class="modal-overlay">
+<!-- ======== 商品弹窗（查看属性 + 编辑 二合一） ======== -->
+<div id="productModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>编辑商品信息</h2>
-        <input type="hidden" id="editProductId">
-        <div class="form-group">
-            <label>商品标题 <span style="color: red;">*</span></label>
-            <input type="text" id="editTitle" placeholder="请输入商品标题">
-        </div>
-        <div class="form-group">
-            <label>商品价格 (元) <span style="color: red;">*</span></label>
-            <input type="number" step="0.01" id="editPrice" placeholder="例如：99.90">
-        </div>
-        <div class="form-group">
-            <label>商品总库存 <span style="color: red;">*</span></label>
-            <input type="number" id="editStock" placeholder="请输入总库存数量">
-        </div>
-        <div class="form-group">
-            <label>商品描述 <span style="color: red;">*</span></label>
-            <textarea id="editContent" placeholder="请输入商品描述，支持换行..."></textarea>
+        <div class="modal-header-row">
+            <h2 id="productModalTitle">商品属性</h2>
+            <button id="modalEditToggleBtn" class="modal-edit-btn" onclick="switchToEditMode()">编辑</button>
         </div>
 
-        <div class="form-group">
-            <label>商品图片 (最多9张) <span style="color: red;">*</span></label>
-            <div class="image-preview-container" id="imagePreviewContainer">
+        <!-- ============ 查看模式 ============ -->
+        <div id="viewModeBody">
+            <div class="viewer-section">
+                <div class="viewer-section-title">基础信息</div>
+                <div class="viewer-info-grid">
+                    <div class="viewer-info-item" style="grid-column: 1 / -1;">
+                        <span>商品标题</span>
+                        <b id="viewerTitleText">-</b>
+                    </div>
+                    <div class="viewer-info-item">
+                        <span>商品价格</span>
+                        <b class="price" id="viewerPriceText">-</b>
+                    </div>
+                    <div class="viewer-info-item">
+                        <span>总库存</span>
+                        <b class="stock" id="viewerStockText">-</b>
+                    </div>
+                    <div class="viewer-info-item" style="grid-column: 1 / -1;">
+                        <span>商品 ID</span>
+                        <b id="viewerIdText">-</b>
+                    </div>
+                </div>
             </div>
-            <textarea id="editImages" placeholder="请粘贴图片链接，每行一个链接" style="height: 80px; margin-top: 8px;"></textarea>
+
+            <div class="viewer-section">
+                <div class="viewer-section-title">商品描述</div>
+                <div class="viewer-content-box" id="viewerContentBox">加载中...</div>
+            </div>
+
+            <div class="viewer-section">
+                <div class="viewer-section-title">商品图片 <span id="viewerImageCount" style="font-weight:400; color: var(--text-secondary); font-size:12px;"></span></div>
+                <div class="viewer-grid" id="imageGrid"></div>
+            </div>
+
+            <div class="viewer-section" id="viewerSkuSection" style="display:none;">
+                <div class="viewer-section-title">规格列表 <span id="viewerSkuCount" style="font-weight:400; color: var(--text-secondary); font-size:12px;"></span></div>
+                <div class="viewer-sku-list" id="viewerSkuList"></div>
+            </div>
         </div>
 
-        <div id="editSkuContainer" class="sku-edit-section" style="display: none;">
-            <h3>多规格 SKU 列表（可单独修改价格和库存）</h3>
-            <div id="skuListWrapper"></div>
+        <!-- ============ 编辑模式 ============ -->
+        <div id="editModeBody" style="display:none;">
+            <input type="hidden" id="editProductId">
+            <div class="form-group">
+                <label>商品标题 <span style="color: red;">*</span></label>
+                <input type="text" id="editTitle" placeholder="请输入商品标题">
+            </div>
+            <div class="form-group">
+                <label>商品价格 (元) <span style="color: red;">*</span></label>
+                <input type="number" step="0.01" id="editPrice" placeholder="例如：99.90">
+            </div>
+            <div class="form-group">
+                <label>商品总库存 <span style="color: red;">*</span></label>
+                <input type="number" id="editStock" placeholder="请输入总库存数量">
+            </div>
+            <div class="form-group">
+                <label>商品描述 <span style="color: red;">*</span></label>
+                <textarea id="editContent" placeholder="请输入商品描述，支持换行..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>商品图片 (最多9张) <span style="color: red;">*</span></label>
+                <div class="image-preview-container" id="imagePreviewContainer"></div>
+                <textarea id="editImages" placeholder="请粘贴图片链接，每行一个链接" style="height: 80px; margin-top: 8px;"></textarea>
+            </div>
+
+            <div id="editSkuContainer" class="sku-edit-section" style="display: none;">
+                <h3>多规格 SKU 列表（可单独修改价格和库存）</h3>
+                <div id="skuListWrapper"></div>
+            </div>
         </div>
 
-        <div class="modal-footer">
-            <button style="background: var(--ios-gray);" onclick="closeEditProductModal()">取消</button>
+        <!-- ============ 底部按钮 ============ -->
+        <div class="modal-footer" id="viewModeFooter">
+            <button style="background: var(--ios-gray);" onclick="closeProductModal()">关闭</button>
+        </div>
+        <div class="modal-footer" id="editModeFooter" style="display:none;">
+            <button style="background: var(--ios-gray);" onclick="cancelEditMode()">取消</button>
             <button style="background: var(--ios-blue);" onclick="submitEditProduct(this)">保存修改</button>
-        </div>
-    </div>
-</div>
-
-<!-- 查看商品属性模态框 -->
-<div id="imageViewerModal" class="modal-overlay">
-    <div class="modal-content">
-        <h2 id="imageViewerTitle">商品属性</h2>
-
-        <!-- 商品描述 -->
-        <div class="viewer-section">
-            <div class="viewer-section-title">商品描述</div>
-            <div class="viewer-content-box" id="viewerContentBox">加载中...</div>
-        </div>
-
-        <!-- 商品图片 -->
-        <div class="viewer-section">
-            <div class="viewer-section-title">商品图片 <span id="viewerImageCount" style="font-weight:400; color: var(--text-secondary); font-size:12px;"></span></div>
-            <div class="viewer-grid" id="imageGrid"></div>
-        </div>
-
-        <!-- SKU 规格 -->
-        <div class="viewer-section" id="viewerSkuSection" style="display:none;">
-            <div class="viewer-section-title">规格列表 <span id="viewerSkuCount" style="font-weight:400; color: var(--text-secondary); font-size:12px;"></span></div>
-            <div class="viewer-sku-list" id="viewerSkuList"></div>
-        </div>
-
-        <div class="modal-footer">
-            <button style="background: var(--ios-gray);" onclick="closeImageViewer()">关闭</button>
         </div>
     </div>
 </div>
@@ -862,7 +944,7 @@
         if (btn) {
             if (btn.disabled) return;
             if (btn.classList.contains('no-global-loading')) return;
-            if (btn.closest('#imageZoomOverlay') || btn.closest('#imageViewerModal')) return;
+            if (btn.closest('#imageZoomOverlay') || btn.closest('#productModal')) return;
             if (!btn.dataset.originalText) {
                 btn.dataset.originalText = btn.innerText;
             }
@@ -880,30 +962,31 @@
         }
     }
 
+    /* ================= 弹窗状态 ================= */
+    let modalProductId = null;      // 当前弹窗商品
+    let modalDetailData = null;     // 当前弹窗详情数据
+    let modalMode = 'view';         // 'view' | 'edit'
+    let modalHeaderTitle = '商品属性';
+    let isSaving = false;           // 防重复提交
+
     let editFormDirty = false;
-    const editInputs = document.querySelectorAll('#editProductModal input:not([type="hidden"]):not([type="file"]), #editProductModal textarea');
-    editInputs.forEach(el => {
-        el.addEventListener('input', () => editFormDirty = true);
-        el.addEventListener('change', () => editFormDirty = true);
+
+    // 编辑区任意输入 → 标记为脏（事件委托）
+    document.getElementById('editModeBody').addEventListener('input', function() {
+        editFormDirty = true;
     });
 
-    document.getElementById('editProductModal').addEventListener('mousedown', function(e) {
+    /* ======= 点击遮罩空白区域：智能处理 ======= */
+    document.getElementById('productModal').addEventListener('click', function(e) {
+        // 只有直接点击遮罩层本身（而不是它内部的 .modal-content）才触发
         if (e.target === this) {
-            if (editFormDirty) {
-                alert('您有未保存的内容，请点击取消或保存修改后再关闭。');
-            } else {
-                closeEditProductModal();
-            }
+            handleModalCloseAttempt();
         }
     });
 
-    document.getElementById('imageViewerModal').addEventListener('mousedown', function(e) {
-        if (e.target === this) {
-            closeImageViewer();
-        }
-    });
-
+    // 点击表格空白处收起 SKU 行（弹窗内点击不触发）
     document.addEventListener('click', function(e) {
+        if (e.target.closest('.modal-content')) return;
         if (!e.target.closest('.sku-row') && !e.target.closest('button[onclick^="toggleSkuList"]')) {
             const expandedRows = document.querySelectorAll('.sku-row');
             if (expandedRows.length > 0) {
@@ -921,7 +1004,7 @@
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameDisplay = document.getElementById('userNameDisplay');
 
-    // ================= 预加载其他页面数据 =================
+    /* ================= 预加载其他页面数据 ================= */
     async function preloadOtherPages() {
         console.log("开始后台静默预加载其他页面数据...");
         
@@ -973,7 +1056,7 @@
         console.log("所有页面预加载完成！");
     }
 
-    // ================= 图片预览（编辑弹窗） =================
+    /* ================= 图片预览（编辑区） ================= */
     function renderImagePreview() {
         const imagesText = document.getElementById('editImages').value;
         const container = document.getElementById('imagePreviewContainer');
@@ -1010,7 +1093,7 @@
         editFormDirty = true;
     });
 
-    // ================= 商品列表逻辑 =================
+    /* ================= 商品列表渲染 ================= */
     function renderProductRow(product, isUpdate = false) {
         const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
         const stock = product.stock !== undefined ? product.stock : '-';
@@ -1067,8 +1150,7 @@
             <td data-label="库存">${stock}</td>
             <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 8px;">
                 ${statusActionBtn}
-                <button class="btn-edit" onclick="openEditProductModal(${product.product_id}, this)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">编辑</button>
-                <button class="no-global-loading" onclick="viewProductImages(${product.product_id}, this)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px; background: var(--ios-blue);">查看属性</button>
+                <button class="no-global-loading" onclick="openProductModal(${product.product_id}, this, false)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px; background: var(--ios-blue);">查看属性</button>
                 <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
             </td>
         `;
@@ -1158,20 +1240,255 @@
         }
     }
 
-    function renderDetailToModal(detailData) {
-        let content = detailData.content; 
-        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
-            content = detailData.publish_shop[0].content; 
-        }
-        if (content) document.getElementById('editContent').value = content;
+    /* ================= 弹窗：模式切换 ================= */
+    function setModalMode(mode) {
+        modalMode = mode;
+        const isEdit = (mode === 'edit');
+        document.getElementById('viewModeBody').style.display = isEdit ? 'none' : 'block';
+        document.getElementById('editModeBody').style.display = isEdit ? 'block' : 'none';
+        document.getElementById('viewModeFooter').style.display = isEdit ? 'none' : 'flex';
+        document.getElementById('editModeFooter').style.display = isEdit ? 'flex' : 'none';
+        document.getElementById('modalEditToggleBtn').style.display = isEdit ? 'none' : 'inline-block';
+        document.getElementById('productModalTitle').innerText = isEdit ? '编辑商品信息' : modalHeaderTitle;
+    }
 
+    window.switchToEditMode = function() {
+        editFormDirty = false;
+        setModalMode('edit');
+    }
+
+    /* ======== 取消按钮（底部） ======== */
+    window.cancelEditMode = function() {
+        if (isSaving) return;
+        if (editFormDirty) {
+            if (!confirm('放弃当前未保存的修改并返回查看模式？')) return;
+        }
+        // 用缓存数据重新渲染编辑表单，清空脏状态
+        if (modalProductId !== null && modalDetailData) {
+            renderEditForm(modalProductId, modalDetailData);
+        }
+        editFormDirty = false;
+        setModalMode('view');
+    }
+
+    /* ======== 关闭按钮 / ESC 键入口 ======== */
+    window.closeProductModal = function() {
+        if (modalMode === 'edit' && editFormDirty) {
+            handleModalCloseAttempt();
+        } else {
+            forceCloseProductModal();
+        }
+    }
+
+    /* ======== 核心：关闭尝试（含未保存检查） ======== */
+    async function handleModalCloseAttempt() {
+        if (isSaving) return;
+
+        // 非编辑模式，或没有改动，直接关闭
+        if (modalMode !== 'edit' || !editFormDirty) {
+            forceCloseProductModal();
+            return;
+        }
+
+        // 有未保存修改 → 询问是否保存
+        const wantSave = confirm(
+            '检测到未保存的修改\n\n' +
+            '点击【确定】保存并关闭\n' +
+            '点击【取消】放弃修改并关闭'
+        );
+
+        if (wantSave) {
+            isSaving = true;
+            const ok = await saveProductFromModal(true);
+            isSaving = false;
+            if (ok) {
+                forceCloseProductModal();
+            }
+            // 保存失败保持弹窗打开，让用户修改
+        } else {
+            // 用户选放弃，再确认一次防止误触
+            if (confirm('确定放弃修改并关闭吗？')) {
+                forceCloseProductModal();
+            }
+            // 选“取消”则留在编辑模式继续改
+        }
+    }
+
+    function forceCloseProductModal() {
+        document.getElementById('productModal').style.display = 'none';
+        modalProductId = null;
+        modalDetailData = null;
+        editFormDirty = false;
+        setModalMode('view');
+    }
+
+    /* ================= 打开弹窗 ================= */
+    async function openProductModal(productId, btn, startEdit = false) {
+        const originalText = btn ? btn.innerText : '';
+        if (btn) { btn.disabled = true; btn.innerText = '加载中...'; }
+
+        try {
+            let detailData = productDetailCache[productId];
+            if (!detailData) {
+                const response = await fetchWithControl(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+                });
+                const result = await response.json();
+                if (result.code === 0 && result.data) {
+                    detailData = result.data;
+                    productDetailCache[productId] = detailData;
+                    if (detailData.sku_items) skuCache[productId] = detailData.sku_items;
+                } else {
+                    throw new Error(result.msg || '获取详情失败');
+                }
+            }
+
+            modalProductId = productId;
+            modalDetailData = detailData;
+
+            renderViewMode(productId, detailData);
+            renderEditForm(productId, detailData);
+            editFormDirty = false;
+
+            document.getElementById('productModal').style.display = 'flex';
+            setModalMode(startEdit ? 'edit' : 'view');
+
+        } catch (error) {
+            alert('获取商品属性失败：' + error.message);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('btn-loading');
+                btn.innerText = originalText || '查看属性';
+                delete btn.dataset.originalText;
+            }
+        }
+    }
+
+    /* ================= 渲染：查看模式 ================= */
+    function renderViewMode(productId, detailData) {
+        const product = currentProductData.find(p => p.product_id === productId) || {};
+        const title = product.title || detailData.title || '无标题';
+
+        modalHeaderTitle = '商品属性 · ' + title;
+        document.getElementById('productModalTitle').innerText = modalHeaderTitle;
+
+        // 基础信息
+        document.getElementById('viewerTitleText').textContent = title;
+        document.getElementById('viewerPriceText').textContent =
+            (product.price !== undefined && product.price !== null && product.price !== '')
+                ? '¥' + (product.price / 100).toFixed(2) : '-';
+        document.getElementById('viewerStockText').textContent =
+            (product.stock !== undefined && product.stock !== null) ? product.stock : '-';
+        document.getElementById('viewerIdText').textContent = productId;
+
+        // 商品描述
+        let content = detailData.content;
+        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
+            content = detailData.publish_shop[0].content;
+        }
+        const contentBox = document.getElementById('viewerContentBox');
+        if (content && content.trim()) {
+            contentBox.classList.remove('empty');
+            contentBox.textContent = content;
+        } else {
+            contentBox.classList.add('empty');
+            contentBox.textContent = '暂无商品描述';
+        }
+
+        // 商品图片
+        let images = [];
+        if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images && detailData.publish_shop[0].images.length > 0) {
+            images = detailData.publish_shop[0].images;
+        } else if (detailData.images && detailData.images.length > 0) {
+            images = detailData.images;
+        } else if (detailData.image) {
+            images = [detailData.image];
+        }
+
+        const imageCountEl = document.getElementById('viewerImageCount');
+        imageCountEl.textContent = images.length > 0 ? `（共 ${images.length} 张，点击可放大）` : '';
+
+        const grid = document.getElementById('imageGrid');
+        grid.innerHTML = '';
+        if (images.length === 0) {
+            grid.innerHTML = '<div style="color:#aaa; padding: 20px; text-align:center; width:100%; font-size:13px;">暂无图片</div>';
+        } else {
+            images.forEach((imgUrl, index) => {
+                let fullUrl = imgUrl;
+                if (!fullUrl.startsWith('http')) fullUrl = 'https://img.alicdn.com/' + fullUrl;
+                const thumb = document.createElement('div');
+                thumb.className = 'viewer-thumb';
+                thumb.innerHTML = `
+                    <img src="${fullUrl}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">
+                    <span class="index-badge">${index + 1}/${images.length}</span>
+                `;
+                thumb.addEventListener('click', () => zoomImage(fullUrl));
+                grid.appendChild(thumb);
+            });
+        }
+
+        // SKU 规格
+        const skuSection = document.getElementById('viewerSkuSection');
+        const skuListEl = document.getElementById('viewerSkuList');
+        const skuCountEl = document.getElementById('viewerSkuCount');
+        const skuItems = detailData.sku_items || [];
+
+        if (skuItems.length > 0) {
+            skuSection.style.display = 'block';
+            skuCountEl.textContent = `（共 ${skuItems.length} 个规格）`;
+            let skuHtml = '';
+            skuItems.forEach(sku => {
+                const priceYuan = (sku.price / 100).toFixed(2);
+                skuHtml += `
+                    <div class="viewer-sku-item">
+                        <div class="sku-text">${sku.sku_text || '默认规格'}</div>
+                        <div class="sku-meta">
+                            <span>价格 <b>¥${priceYuan}</b></span>
+                            <span>库存 <b class="stock-num">${sku.stock !== undefined ? sku.stock : '-'}</b></span>
+                        </div>
+                    </div>
+                `;
+            });
+            skuListEl.innerHTML = skuHtml;
+        } else {
+            skuSection.style.display = 'none';
+        }
+    }
+
+    /* ================= 渲染：编辑模式 ================= */
+    function renderEditForm(productId, detailData) {
+        if (!detailData) detailData = {};
+        const product = currentProductData.find(p => p.product_id === productId) || {};
+
+        document.getElementById('editProductId').value = productId || '';
+        document.getElementById('editTitle').value = product.title || detailData.title || '';
+        document.getElementById('editPrice').value =
+            (product.price !== undefined && product.price !== null && product.price !== '')
+                ? (product.price / 100).toFixed(2) : '';
+        document.getElementById('editStock').value =
+            (product.stock !== undefined && product.stock !== null) ? product.stock : '';
+
+        // 描述
+        let content = detailData.content;
+        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
+            content = detailData.publish_shop[0].content;
+        }
+        document.getElementById('editContent').value = content || '';
+
+        // 图片
         let images = [];
         if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images) {
             images = detailData.publish_shop[0].images;
+        } else if (detailData.images) {
+            images = detailData.images;
         }
         document.getElementById('editImages').value = images.join('\n');
         renderImagePreview();
 
+        // SKU
         if (detailData.sku_items && detailData.sku_items.length > 0) {
             document.getElementById('editSkuContainer').style.display = 'block';
             let skuHtml = '';
@@ -1190,62 +1507,25 @@
             document.getElementById('skuListWrapper').innerHTML = skuHtml;
         } else {
             document.getElementById('editSkuContainer').style.display = 'none';
+            document.getElementById('skuListWrapper').innerHTML = '';
         }
     }
 
-    async function openEditProductModal(productId, btn) {
-        const userName = userNameDisplay.textContent.trim();
-        if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
-
-        const product = currentProductData.find(p => p.product_id === productId);
-        document.getElementById('editProductId').value = productId;
-        document.getElementById('editTitle').value = product ? (product.title || '') : '';
-        document.getElementById('editPrice').value = product && product.price ? (product.price / 100).toFixed(2) : '';
-        document.getElementById('editStock').value = product && product.stock !== undefined ? product.stock : '';
-        document.getElementById('editContent').value = ''; 
-        document.getElementById('editImages').value = ''; 
-        document.getElementById('imagePreviewContainer').innerHTML = '';
-
-        document.getElementById('editSkuContainer').style.display = 'none';
-        document.getElementById('skuListWrapper').innerHTML = '正在后台加载详情...';
-        
-        editFormDirty = false;
-        document.getElementById('editProductModal').style.display = 'flex';
-
-        if (productDetailCache[productId]) {
-            renderDetailToModal(productDetailCache[productId]);
-            restoreButton(btn);
-            return;
-        }
-
-        try {
-            const response = await fetchWithControl(WORKER_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
-            });
-            const result = await response.json();
-            if (result.code === 0 && result.data) {
-                productDetailCache[productId] = result.data;
-                if (result.data.sku_items) skuCache[productId] = result.data.sku_items;
-                if (document.getElementById('editProductModal').style.display === 'flex') {
-                    renderDetailToModal(result.data);
-                }
-            }
-        } catch (error) {
-            console.log("获取商品详情失败：", error);
-            document.getElementById('skuListWrapper').innerHTML = '<span style="color:red;">加载规格失败: ' + error.message + '</span>';
-        } finally {
-            if (btn) restoreButton(btn);
-        }
-    }
-
-    function closeEditProductModal() {
-        document.getElementById('editProductModal').style.display = 'none';
-        editFormDirty = false;
-    }
-
+    /* ================= 底部“保存修改”按钮 ================= */
     async function submitEditProduct(btn) {
+        if (isSaving) return;
+        if (btn) { btn.disabled = true; btn.innerText = '保存中...'; }
+        isSaving = true;
+        const ok = await saveProductFromModal(false);
+        isSaving = false;
+        if (btn) { btn.disabled = false; btn.innerText = '保存修改'; }
+    }
+
+    /* ================= 核心保存逻辑 =================
+       返回 true 表示保存成功；false 表示失败（已弹窗提示）
+       silentSuccess: true 时不弹成功提示
+    ================================================== */
+    async function saveProductFromModal(silentSuccess) {
         const productId = parseInt(document.getElementById('editProductId').value);
         const title = document.getElementById('editTitle').value.trim();
         const priceYuan = document.getElementById('editPrice').value;
@@ -1257,23 +1537,29 @@
         const images = imagesText.split('\n').map(line => line.trim()).filter(url => url !== '');
 
         if (!title || !priceYuan || isNaN(stock) || !content) {
-            restoreButton(btn); return alert("请完整填写所有必填项！");
+            alert("请完整填写所有必填项！");
+            return false;
         }
-        if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
-        if (images.length === 0) { restoreButton(btn); return alert("商品图片至少需要保留1张！"); }
-        if (images.length > 9) { restoreButton(btn); return alert("商品图片最多只能传9张！"); }
+        if (!userName) { alert("找不到当前店铺名称，请刷新页面！"); return false; }
+        if (images.length === 0) { alert("商品图片至少需要保留1张！"); return false; }
+        if (images.length > 9) { alert("商品图片最多只能传9张！"); return false; }
 
         const priceFen = Math.round(parseFloat(priceYuan) * 100); 
         const skuItems = [];
         const skuContainer = document.getElementById('skuListWrapper');
         if (document.getElementById('editSkuContainer').style.display !== 'none') {
+            let skuValid = true;
             skuContainer.querySelectorAll('.sku-edit-item').forEach(item => {
+                const pv = parseFloat(item.querySelector('.sku-price-input').value);
+                const sv = parseInt(item.querySelector('.sku-stock-input').value);
+                if (isNaN(pv) || isNaN(sv)) { skuValid = false; }
                 skuItems.push({ 
                     sku_text: item.getAttribute('data-sku-text'), 
-                    price: Math.round(parseFloat(item.querySelector('.sku-price-input').value) * 100), 
-                    stock: parseInt(item.querySelector('.sku-stock-input').value) 
+                    price: Math.round(pv * 100), 
+                    stock: sv 
                 });
             });
+            if (!skuValid) { alert("SKU 的价格或库存填写有误，请检查！"); return false; }
         }
 
         const requestBody = {
@@ -1291,22 +1577,47 @@
             });
             const result = await response.json();
             if (result.code === 0) {
-                alert("商品和 SKU 修改成功！");
-                closeEditProductModal();
+                // 同步本地数据
                 const product = currentProductData.find(p => p.product_id === productId);
                 if (product) {
-                    product.title = title; product.price = priceFen; product.stock = stock;
-                    if (!productDetailCache[productId]) productDetailCache[productId] = {};
-                    productDetailCache[productId].content = content;
-                    if (!productDetailCache[productId].publish_shop) productDetailCache[productId].publish_shop = [{}];
-                    productDetailCache[productId].publish_shop[0].images = images;
-                    if (skuItems.length > 0) { productDetailCache[productId].sku_items = skuItems; skuCache[productId] = skuItems; }
-                    renderProductRow(product, true);
+                    product.title = title;
+                    product.price = priceFen;
+                    product.stock = stock;
                 }
-            } else { alert("修改失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); } finally { if (btn) restoreButton(btn); }
+                if (!productDetailCache[productId]) productDetailCache[productId] = {};
+                const d = productDetailCache[productId];
+                d.content = content;
+                if (!d.publish_shop) d.publish_shop = [{}];
+                if (!d.publish_shop[0]) d.publish_shop[0] = {};
+                d.publish_shop[0].title = title;
+                d.publish_shop[0].content = content;
+                d.publish_shop[0].images = images;
+                if (skuItems.length > 0) {
+                    d.sku_items = skuItems;
+                    skuCache[productId] = skuItems;
+                }
+
+                if (product) renderProductRow(product, true);
+
+                // 刷新弹窗内容并切回查看
+                modalDetailData = d;
+                renderViewMode(productId, d);
+                editFormDirty = false;
+                setModalMode('view');
+
+                if (!silentSuccess) alert("商品和 SKU 修改成功！");
+                return true;
+            } else {
+                alert("修改失败：" + result.msg);
+                return false;
+            }
+        } catch (error) {
+            alert("请求出错：" + error.message);
+            return false;
+        }
     }
 
+    /* ================= 表格内 SKU 展开 ================= */
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
         btn.classList.remove('btn-loading');
@@ -1382,6 +1693,7 @@
         } catch (error) { alert("请求出错：" + error.message); } finally { if(saveBtn) restoreButton(saveBtn); }
     }
 
+    /* ================= 上下架 ================= */
     async function publishProduct(productId, btn) {
         const userName = userNameDisplay.textContent.trim();
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称！"); }
@@ -1404,119 +1716,7 @@
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
 
-    // ================= 查看商品属性（描述 + 图片 + 规格） =================
-    async function viewProductImages(productId, btn) {
-        const originalText = btn ? btn.innerText : '查看属性';
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = '加载中...';
-        }
-        try {
-            let detailData = productDetailCache[productId];
-            if (!detailData) {
-                const response = await fetchWithControl(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
-                });
-                const result = await response.json();
-                if (result.code === 0 && result.data) {
-                    detailData = result.data;
-                    productDetailCache[productId] = detailData;
-                    if (detailData.sku_items) skuCache[productId] = detailData.sku_items;
-                } else {
-                    throw new Error(result.msg || '获取详情失败');
-                }
-            }
-
-            const product = currentProductData.find(p => p.product_id === productId);
-            const titleEl = document.getElementById('imageViewerTitle');
-            titleEl.innerText = product ? `商品属性 · ${product.title || '无标题'}` : '商品属性';
-
-            // 1. 商品描述
-            let content = detailData.content;
-            if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
-                content = detailData.publish_shop[0].content;
-            }
-            const contentBox = document.getElementById('viewerContentBox');
-            if (content && content.trim()) {
-                contentBox.classList.remove('empty');
-                contentBox.textContent = content;
-            } else {
-                contentBox.classList.add('empty');
-                contentBox.textContent = '暂无商品描述';
-            }
-
-            // 2. 商品图片
-            let images = [];
-            if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images && detailData.publish_shop[0].images.length > 0) {
-                images = detailData.publish_shop[0].images;
-            } else if (detailData.images && detailData.images.length > 0) {
-                images = detailData.images;
-            } else if (detailData.image) {
-                images = [detailData.image];
-            }
-
-            const imageCountEl = document.getElementById('viewerImageCount');
-            imageCountEl.textContent = images.length > 0 ? `（共 ${images.length} 张，点击可放大）` : '';
-
-            const grid = document.getElementById('imageGrid');
-            grid.innerHTML = '';
-            if (images.length === 0) {
-                grid.innerHTML = '<div style="color:#aaa; padding: 20px; text-align:center; width:100%; font-size:13px;">暂无图片</div>';
-            } else {
-                images.forEach((imgUrl, index) => {
-                    let fullUrl = imgUrl;
-                    if (!fullUrl.startsWith('http')) fullUrl = 'https://img.alicdn.com/' + fullUrl;
-                    const thumb = document.createElement('div');
-                    thumb.className = 'viewer-thumb';
-                    thumb.innerHTML = `
-                        <img src="${fullUrl}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">
-                        <span class="index-badge">${index + 1}/${images.length}</span>
-                    `;
-                    thumb.addEventListener('click', () => zoomImage(fullUrl));
-                    grid.appendChild(thumb);
-                });
-            }
-
-            // 3. SKU 规格
-            const skuSection = document.getElementById('viewerSkuSection');
-            const skuListEl = document.getElementById('viewerSkuList');
-            const skuCountEl = document.getElementById('viewerSkuCount');
-            const skuItems = detailData.sku_items || [];
-
-            if (skuItems.length > 0) {
-                skuSection.style.display = 'block';
-                skuCountEl.textContent = `（共 ${skuItems.length} 个规格）`;
-                let skuHtml = '';
-                skuItems.forEach(sku => {
-                    const priceYuan = (sku.price / 100).toFixed(2);
-                    skuHtml += `
-                        <div class="viewer-sku-item">
-                            <div class="sku-text">${sku.sku_text || '默认规格'}</div>
-                            <div class="sku-meta">
-                                <span>价格 <b>¥${priceYuan}</b></span>
-                                <span>库存 <b class="stock-num">${sku.stock !== undefined ? sku.stock : '-'}</b></span>
-                            </div>
-                        </div>
-                    `;
-                });
-                skuListEl.innerHTML = skuHtml;
-            } else {
-                skuSection.style.display = 'none';
-            }
-
-            document.getElementById('imageViewerModal').style.display = 'flex';
-        } catch (error) {
-            alert('获取商品属性失败：' + error.message);
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerText = originalText;
-            }
-        }
-    }
-
+    /* ================= 图片放大 ================= */
     function zoomImage(url) {
         document.getElementById('zoomedImage').src = url;
         document.getElementById('imageZoomOverlay').style.display = 'flex';
@@ -1527,16 +1727,12 @@
         document.getElementById('zoomedImage').src = '';
     }
 
-    function closeImageViewer() {
-        document.getElementById('imageViewerModal').style.display = 'none';
-    }
-
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const zoomOverlay = document.getElementById('imageZoomOverlay');
             if (zoomOverlay.style.display === 'flex') { closeZoom(); return; }
-            const viewer = document.getElementById('imageViewerModal');
-            if (viewer.style.display === 'flex') { closeImageViewer(); return; }
+            const modal = document.getElementById('productModal');
+            if (modal.style.display === 'flex') { closeProductModal(); return; }
         }
     });
 
