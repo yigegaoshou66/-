@@ -576,6 +576,27 @@
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
             .viewer-thumb { width: 80px; height: 80px; }
+            
+            /* 手机端：操作按钮保持一行，按钮变窄均分 */
+            td[data-label="状态 / 操作"] {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                gap: 5px !important;
+                justify-content: unset !important;
+            }
+            td[data-label="状态 / 操作"] button,
+            td[data-label="状态 / 操作"] .status-btn {
+                flex: 1 1 0 !important;
+                width: auto !important;
+                min-width: 0 !important;
+                padding: 8px 2px !important;
+                font-size: 11px !important;
+                margin: 0 !important;
+                white-space: nowrap !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                letter-spacing: -0.3px;
+            }
         }
         button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
         .btn-loading { pointer-events: none; opacity: 0.8; }
@@ -646,8 +667,8 @@
             .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: unset; }
             
             tbody td[data-label="价格"], tbody td[data-label="库存"] { white-space: nowrap; font-weight: 600; }
-            tbody td[data-label="状态 / 操作"] { white-space: nowrap; border-top: none !important; margin-top: 0 !important; padding-top: 18px !important; }
-            tbody td[data-label="状态 / 操作"] button { display: inline-block !important; width: auto !important; margin: 0 8px 0 0 !important; padding: 8px 18px !important; font-size: 13px !important; }
+            tbody td[data-label="状态 / 操作"] { white-space: nowrap; border-top: none !important; margin-top: 0 !important; padding-top: 18px !important; display: flex !important; gap: 8px !important; }
+            tbody td[data-label="状态 / 操作"] button { display: inline-block !important; width: auto !important; margin: 0 !important; padding: 8px 18px !important; font-size: 13px !important; }
 
             tr.sku-row { display: table-row !important; background: rgba(255,255,255,0.4) !important; border-radius: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; border-left: none !important; backdrop-filter: none; }
             tr.sku-row td { display: table-cell !important; padding: 18px !important; font-size: 14px !important; width: auto !important; margin: 0 !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important; }
@@ -1412,7 +1433,7 @@
             const titleEl = document.getElementById('imageViewerTitle');
             titleEl.innerText = product ? `商品属性 · ${product.title || '无标题'}` : '商品属性';
 
-            // ============ 1. 商品描述 ============
+            // 1. 商品描述
             let content = detailData.content;
             if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
                 content = detailData.publish_shop[0].content;
@@ -1426,7 +1447,7 @@
                 contentBox.textContent = '暂无商品描述';
             }
 
-            // ============ 2. 商品图片 ============
+            // 2. 商品图片
             let images = [];
             if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images && detailData.publish_shop[0].images.length > 0) {
                 images = detailData.publish_shop[0].images;
@@ -1458,7 +1479,7 @@
                 });
             }
 
-            // ============ 3. SKU 规格列表 ============
+            // 3. SKU 规格
             const skuSection = document.getElementById('viewerSkuSection');
             const skuListEl = document.getElementById('viewerSkuList');
             const skuCountEl = document.getElementById('viewerSkuCount');
