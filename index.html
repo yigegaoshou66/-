@@ -411,7 +411,6 @@
         }
         .sku-edit-item .sku-inputs input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
-        /* 图片预览区域样式 */
         .image-preview-container {
             display: flex;
             gap: 8px;
@@ -609,14 +608,10 @@
             <textarea id="editContent" placeholder="请输入商品描述，支持换行..."></textarea>
         </div>
 
-        <!-- 🖼️ 商品图片管理（已移除上传功能，仅保留粘贴链接和预览） -->
         <div class="form-group">
             <label>商品图片 (最多9张) <span style="color: red;">*</span></label>
-            
             <div class="image-preview-container" id="imagePreviewContainer">
-                <!-- 动态渲染预览图 -->
             </div>
-            
             <textarea id="editImages" placeholder="请粘贴图片链接，每行一个链接" style="height: 80px; margin-top: 8px;"></textarea>
         </div>
 
@@ -667,7 +662,6 @@
         }
     }
 
-    // ================= 🛡️ 全局按钮强反馈 =================
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.entry-links a, .back-btn');
@@ -709,7 +703,6 @@
         }
     }
 
-    // ================= 表单状态与遮罩层点击 =================
     let editFormDirty = false;
     const editInputs = document.querySelectorAll('#editProductModal input:not([type="hidden"]):not([type="file"]), #editProductModal textarea');
     editInputs.forEach(el => {
@@ -741,31 +734,78 @@
         }
     });
 
-    // ================= 商品逻辑 =================
     const productTableBody = document.getElementById('productTableBody');
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameDisplay = document.getElementById('userNameDisplay');
 
-    // ================= 图片预览 =================
+    // ================= 预加载其他页面数据 =================
+    async function preloadOtherPages() {
+        console.log("开始后台静默预加载其他页面数据...");
+        
+        // 1. 预加载订单第一页
+        try {
+            if (!sessionStorage.getItem('preload_orders')) {
+                const response = await fetchWithControl(WORKER_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ path: "/api/open/order/list", body: { page_no: 1, page_size: 20 } }) 
+                }, 10000, true);
+                const result = await response.json();
+                if (result.code === 0) {
+                    sessionStorage.setItem('preload_orders', JSON.stringify(result.data));
+                    console.log("订单页面预加载成功");
+                }
+            }
+        } catch (e) { console.log("订单页面预加载失败", e); }
 
+        // 2. 预加载售后第一页
+        try {
+            if (!sessionStorage.getItem('preload_shouhou')) {
+                const response = await fetchWithControl(WORKER_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ path: "/api/open/trade/refund/list", body: { page_no: 1, page_size: 20 } }) 
+                }, 10000, true);
+                const result = await response.json();
+                if (result.code === 0) {
+                    sessionStorage.setItem('preload_shouhou', JSON.stringify(result.data));
+                    console.log("售后页面预加载成功");
+                }
+            }
+        } catch (e) { console.log("售后页面预加载失败", e); }
+
+        // 3. 预加载卡密第一页
+        try {
+            if (!sessionStorage.getItem('preload_kami')) {
+                const response = await fetchWithControl(WORKER_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ path: "/api/open/kami/kind/list", body: { page_no: 1, page_size: 20 } }) 
+                }, 10000, true);
+                const result = await response.json();
+                if (result.code === 0) {
+                    sessionStorage.setItem('preload_kami', JSON.stringify(result.data));
+                    console.log("卡密页面预加载成功");
+                }
+            }
+        } catch (e) { console.log("卡密页面预加载失败", e); }
+
+        console.log("所有页面预加载完成！");
+    }
+
+    // ================= 图片预览 =================
     function renderImagePreview() {
         const imagesText = document.getElementById('editImages').value;
         const container = document.getElementById('imagePreviewContainer');
         container.innerHTML = '';
-        
         const images = imagesText.split('\n').map(line => line.trim()).filter(url => url !== '');
-        
         if (images.length === 0) {
             container.innerHTML = '<div style="color: #aaa; font-size: 12px; line-height: 50px; text-align: center; width: 100%;">暂无图片</div>';
             return;
         }
-        
         images.forEach((url, index) => {
             let fullUrl = url;
-            if (!url.startsWith('http')) {
-                fullUrl = 'https://img.alicdn.com/' + url;
-            }
-            
+            if (!url.startsWith('http')) fullUrl = 'https://img.alicdn.com/' + url;
             const div = document.createElement('div');
             div.className = 'image-preview-item';
             div.innerHTML = `
@@ -791,7 +831,6 @@
     });
 
     // ================= 商品列表逻辑 =================
-
     function renderProductRow(product, isUpdate = false) {
         const priceYuan = product.price ? (product.price / 100).toFixed(2) : '-';
         const stock = product.stock !== undefined ? product.stock : '-';
@@ -809,9 +848,7 @@
             else if (product.publish_shop && product.publish_shop[0] && product.publish_shop[0].images) imgUrl = product.publish_shop[0].images[0];
         }
         
-        if (imgUrl && !imgUrl.startsWith('http')) {
-            imgUrl = 'https://img.alicdn.com/' + imgUrl;
-        }
+        if (imgUrl && !imgUrl.startsWith('http')) imgUrl = 'https://img.alicdn.com/' + imgUrl;
 
         let statusActionBtn = '';
         if (product.product_status === 22) {
@@ -890,6 +927,9 @@
                 currentProductData.forEach(product => renderProductRow(product));
                 prefetchProductDetails(currentProductData);
                 
+                // 🚀 商品列表加载完后，开始静默预加载其他页面的数据
+                setTimeout(preloadOtherPages, 3000);
+                
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
         } catch (error) { 
             productStatusMsg.innerText = "请求出错：" + error.message; 
@@ -901,19 +941,16 @@
 
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
-        
         const sortedProducts = [...products].sort((a, b) => {
             const aWeight = (a.product_status === 22) ? 0 : 1;
             const bWeight = (b.product_status === 22) ? 0 : 1;
             return aWeight - bWeight;
         });
-        
         const prefetchLimit = 3;
         const chunks = [];
         for (let i = 0; i < sortedProducts.length; i += prefetchLimit) {
             chunks.push(sortedProducts.slice(i, i + prefetchLimit));
         }
-
         for (let chunk of chunks) {
             await Promise.all(chunk.map(async (product) => {
                 if (!productDetailCache[product.product_id]) {
@@ -923,7 +960,6 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: product.product_id } })
                         }, 10000, true);
-                        
                         const result = await response.json();
                         if (result.code === 0 && result.data) {
                             productDetailCache[product.product_id] = result.data;
@@ -982,7 +1018,6 @@
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
 
         const product = currentProductData.find(p => p.product_id === productId);
-        
         document.getElementById('editProductId').value = productId;
         document.getElementById('editTitle').value = product ? (product.title || '') : '';
         document.getElementById('editPrice').value = product && product.price ? (product.price / 100).toFixed(2) : '';
@@ -1013,7 +1048,6 @@
             if (result.code === 0 && result.data) {
                 productDetailCache[productId] = result.data;
                 if (result.data.sku_items) skuCache[productId] = result.data.sku_items;
-                
                 if (document.getElementById('editProductModal').style.display === 'flex') {
                     renderDetailToModal(result.data);
                 }
@@ -1043,24 +1077,22 @@
         const images = imagesText.split('\n').map(line => line.trim()).filter(url => url !== '');
 
         if (!title || !priceYuan || isNaN(stock) || !content) {
-            restoreButton(btn);
-            return alert("请完整填写所有必填项！");
+            restoreButton(btn); return alert("请完整填写所有必填项！");
         }
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
         if (images.length === 0) { restoreButton(btn); return alert("商品图片至少需要保留1张！"); }
         if (images.length > 9) { restoreButton(btn); return alert("商品图片最多只能传9张！"); }
 
         const priceFen = Math.round(parseFloat(priceYuan) * 100); 
-
         const skuItems = [];
         const skuContainer = document.getElementById('skuListWrapper');
         if (document.getElementById('editSkuContainer').style.display !== 'none') {
-            const skuItemsDom = skuContainer.querySelectorAll('.sku-edit-item');
-            skuItemsDom.forEach(item => {
-                const skuText = item.getAttribute('data-sku-text');
-                const skuPrice = Math.round(parseFloat(item.querySelector('.sku-price-input').value) * 100);
-                const skuStock = parseInt(item.querySelector('.sku-stock-input').value);
-                skuItems.push({ sku_text: skuText, price: skuPrice, stock: skuStock });
+            skuContainer.querySelectorAll('.sku-edit-item').forEach(item => {
+                skuItems.push({ 
+                    sku_text: item.getAttribute('data-sku-text'), 
+                    price: Math.round(parseFloat(item.querySelector('.sku-price-input').value) * 100), 
+                    stock: parseInt(item.querySelector('.sku-stock-input').value) 
+                });
             });
         }
 
@@ -1068,137 +1100,78 @@
             product_id: productId,
             price: priceFen,
             stock: stock,
-            publish_shop: [{ 
-                user_name: userName, 
-                title: title, 
-                content: content,
-                images: images 
-            }]
+            publish_shop: [{ user_name: userName, title: title, content: content, images: images }]
         };
         if (skuItems.length > 0) requestBody.sku_items = skuItems;
 
         try {
             const response = await fetchWithControl(WORKER_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
             });
             const result = await response.json();
-            
             if (result.code === 0) {
                 alert("商品和 SKU 修改成功！");
                 closeEditProductModal();
-                
                 const product = currentProductData.find(p => p.product_id === productId);
                 if (product) {
-                    product.title = title;
-                    product.price = priceFen;
-                    product.stock = stock;
+                    product.title = title; product.price = priceFen; product.stock = stock;
                     if (!productDetailCache[productId]) productDetailCache[productId] = {};
                     productDetailCache[productId].content = content;
                     if (!productDetailCache[productId].publish_shop) productDetailCache[productId].publish_shop = [{}];
                     productDetailCache[productId].publish_shop[0].images = images;
-                    
-                    if (skuItems.length > 0) {
-                        productDetailCache[productId].sku_items = skuItems;
-                        skuCache[productId] = skuItems;
-                    }
+                    if (skuItems.length > 0) { productDetailCache[productId].sku_items = skuItems; skuCache[productId] = skuItems; }
                     renderProductRow(product, true);
                 }
-            } else {
-                alert("修改失败：" + result.msg);
-            }
-        } catch (error) {
-            alert("请求出错：" + error.message);
-        } finally {
-            if (btn) restoreButton(btn);
-        }
+            } else { alert("修改失败：" + result.msg); }
+        } catch (error) { alert("请求出错：" + error.message); } finally { if (btn) restoreButton(btn); }
     }
 
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
-
         btn.classList.remove('btn-loading');
         btn.disabled = false;
-
         const mainRow = btn.closest('tr');
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
         let nextRow = mainRow.nextElementSibling;
-        while (nextRow && nextRow.classList.contains('sku-row')) {
-            let rowToDelete = nextRow;
-            nextRow = nextRow.nextElementSibling;
-            rowToDelete.remove();
-        }
-
-        btn.innerText = "展开规格";
-        btn.setAttribute('data-expanded', 'false');
-
-        if (isExpanded) {
-            restoreButton(btn);
-            return;
-        }
+        while (nextRow && nextRow.classList.contains('sku-row')) { let rowToDelete = nextRow; nextRow = nextRow.nextElementSibling; rowToDelete.remove(); }
+        btn.innerText = "展开规格"; btn.setAttribute('data-expanded', 'false');
+        if (isExpanded) { restoreButton(btn); return; }
 
         document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
-            if (otherBtn !== btn) {
-                otherBtn.innerText = "展开规格";
-                otherBtn.setAttribute('data-expanded', 'false');
-                restoreButton(otherBtn);
-            }
+            if (otherBtn !== btn) { otherBtn.innerText = "展开规格"; otherBtn.setAttribute('data-expanded', 'false'); restoreButton(otherBtn); }
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
         if (skuCache[productId]) {
             renderSkuRows(mainRow, skuCache[productId], productId);
-            btn.innerText = "收起规格";
-            btn.setAttribute('data-expanded', 'true');
-            restoreButton(btn);
-            return;
+            btn.innerText = "收起规格"; btn.setAttribute('data-expanded', 'true'); restoreButton(btn); return;
         }
 
-        btn.innerText = "加载中...";
-        btn.disabled = true;
-        btn.classList.add('btn-loading');
-
+        btn.innerText = "加载中..."; btn.disabled = true; btn.classList.add('btn-loading');
         try {
-            const response = await fetchWithControl(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
-            });
+            const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
             const result = await response.json();
             if (result.code === 0 && result.data.sku_items) {
-                skuCache[productId] = result.data.sku_items;
-                productDetailCache[productId] = result.data;
-
+                skuCache[productId] = result.data.sku_items; productDetailCache[productId] = result.data;
                 renderSkuRows(mainRow, result.data.sku_items, productId);
-                btn.innerText = "收起规格";
-                btn.setAttribute('data-expanded', 'true');
-            } else {
-                alert("该商品暂无规格数据");
-            }
-        } catch (error) {
-            alert("获取规格失败：" + error.message);
-        } finally {
-            btn.disabled = false;
-            btn.classList.remove('btn-loading');
-            delete btn.dataset.originalText;
-            if (btn.getAttribute('data-expanded') !== 'true') {
-                btn.innerText = "展开规格";
-            }
+                btn.innerText = "收起规格"; btn.setAttribute('data-expanded', 'true');
+            } else { alert("该商品暂无规格数据"); }
+        } catch (error) { alert("获取规格失败：" + error.message); } finally {
+            btn.disabled = false; btn.classList.remove('btn-loading'); delete btn.dataset.originalText;
+            if (btn.getAttribute('data-expanded') !== 'true') { btn.innerText = "展开规格"; }
         }
     }
 
     function renderSkuRows(mainRow, skuItems, productId) {
         const fragment = document.createDocumentFragment();
         skuItems.forEach(sku => {
-            const skuTr = document.createElement('tr');
-            skuTr.className = 'sku-row';
-            const priceInYuan = (sku.price / 100).toFixed(2);
+            const skuTr = document.createElement('tr'); skuTr.className = 'sku-row';
             skuTr.innerHTML = `
                 <td data-label="SKU_ID">└─ ${sku.sku_id}</td>
                 <td data-label="规格" data-sku-text="${sku.sku_text}">${sku.sku_text}</td>
-                <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${priceInYuan}"></td>
+                <td data-label="价格"><input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${(sku.price / 100).toFixed(2)}"></td>
                 <td data-label="库存"><input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></td>
                 <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id}, this)">保存</button></td>
             `;
@@ -1208,85 +1181,36 @@
     }
 
     async function updateSkuData(productId, skuId, saveBtn) {
-        const stockInput = document.getElementById(`stock_${skuId}`);
-        const priceInput = document.getElementById(`price_${skuId}`);
-        const newStockStr = stockInput.value;
-        const newPriceYuanStr = priceInput.value;
-        
-        if (newStockStr === '' || newPriceYuanStr === '') {
-            restoreButton(saveBtn);
-            return alert("请输入价格和库存");
-        }
-        
-        const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100);
-        const newStock = parseInt(newStockStr);
-
+        const stockInput = document.getElementById(`stock_${skuId}`); const priceInput = document.getElementById(`price_${skuId}`);
+        const newStockStr = stockInput.value; const newPriceYuanStr = priceInput.value;
+        if (newStockStr === '' || newPriceYuanStr === '') { restoreButton(saveBtn); return alert("请输入价格和库存"); }
+        const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100); const newStock = parseInt(newStockStr);
         if(saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
-
         try {
             let skuItems = skuCache[productId];
-            
             if (!skuItems) {
-                const detailResponse = await fetchWithControl(WORKER_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) 
-                });
+                const detailResponse = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
                 const detailResult = await detailResponse.json();
-                if (detailResult.code !== 0 || !detailResult.data.sku_items) {
-                    throw new Error("获取原规格失败，无法保存");
-                }
-                skuItems = detailResult.data.sku_items;
-                skuCache[productId] = skuItems;
+                if (detailResult.code !== 0 || !detailResult.data.sku_items) throw new Error("获取原规格失败");
+                skuItems = detailResult.data.sku_items; skuCache[productId] = skuItems;
             }
-
-            const updatedSkuItems = skuItems.map(sku => {
-                if (sku.sku_id === skuId) {
-                    return { ...sku, price: newPriceFen, stock: newStock };
-                }
-                return sku;
-            });
-            
-            skuCache[productId] = updatedSkuItems;
-            if (productDetailCache[productId]) productDetailCache[productId].sku_items = updatedSkuItems;
-
-            const requestBody = {
-                product_id: productId,
-                sku_items: updatedSkuItems.map(sku => ({
-                    sku_text: sku.sku_text,
-                    price: sku.price,
-                    stock: sku.stock
-                }))
-            };
-
-            const response = await fetchWithControl(WORKER_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
-            });
+            const updatedSkuItems = skuItems.map(sku => sku.sku_id === skuId ? { ...sku, price: newPriceFen, stock: newStock } : sku);
+            skuCache[productId] = updatedSkuItems; if (productDetailCache[productId]) productDetailCache[productId].sku_items = updatedSkuItems;
+            const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/edit", body: { product_id: productId, sku_items: updatedSkuItems.map(s => ({ sku_text: s.sku_text, price: s.price, stock: s.stock })) } }) });
             const result = await response.json();
-            
-            if (result.code === 0) { 
-                alert("SKU 修改成功！"); 
-            } else { 
-                alert("修改失败：" + result.msg); 
-            }
-        } catch (error) {
-            alert("请求出错：" + error.message);
-        } finally {
-            if(saveBtn) restoreButton(saveBtn);
-        }
+            if (result.code === 0) { alert("SKU 修改成功！"); } else { alert("修改失败：" + result.msg); }
+        } catch (error) { alert("请求出错：" + error.message); } finally { if(saveBtn) restoreButton(saveBtn); }
     }
 
     async function publishProduct(productId, btn) {
         const userName = userNameDisplay.textContent.trim();
-        if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称，请刷新页面！"); }
+        if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称！"); }
         if (!confirm(`确定将商品 ${productId} 上架？`)) { restoreButton(btn); return; }
         btn.innerText = "上架中..."; btn.disabled = true;
         try {
             const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/publish", body: { product_id: parseInt(productId), user_name: [userName] } }) });
             const result = await response.json();
-            if (result.code === 0) { alert("上架指令发送成功！稍后刷新查看"); loadProducts(); } else { alert("上架失败：" + result.msg); }
+            if (result.code === 0) { alert("上架指令发送成功！"); sessionStorage.removeItem('preload_orders'); loadProducts(); } else { alert("上架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
 
@@ -1296,7 +1220,7 @@
         try {
             const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: parseInt(productId) } }) });
             const result = await response.json();
-            if (result.code === 0) { alert("下架指令发送成功！稍后刷新查看"); loadProducts(); } else { alert("下架失败：" + result.msg); }
+            if (result.code === 0) { alert("下架指令发送成功！"); sessionStorage.removeItem('preload_orders'); loadProducts(); } else { alert("下架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
 

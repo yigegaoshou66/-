@@ -83,6 +83,7 @@
             border: 1px solid var(--glass-border);
             box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px rgba(0,0,0,0.06);
             transition: 0.15s; white-space: nowrap; 
+            cursor: pointer;
         }
         .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
@@ -375,7 +376,7 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="index.html" class="back-btn">返回</a>
+        <a href="index.html" class="back-btn" onclick="handleBack(event)">返回</a>
         <h1>闲管家 · 订单管理助手</h1>
     </div>
     
@@ -422,6 +423,19 @@
     const WORKER_URL = "https://api.1113630283.online";
     let isRequesting = false;
     let currentStatusFilter = "";
+
+    // ================= 🚀 新增：浏览器原生返回（不重新加载） =================
+    function handleBack(event) {
+        event.preventDefault(); // 阻止 <a> 标签默认的 href 跳转
+        if (window.history.length > 1) {
+            // 如果存在历史记录，则调用浏览器返回（利用浏览器的往返缓存，不会重新加载首页）
+            window.history.back();
+        } else {
+            // 如果用户是直接在地址栏打开的这个页面，没有历史记录，则直接跳转回首页
+            window.location.href = 'index.html';
+        }
+    }
+    // ======================================================================
 
     function setupCustomSelect(triggerId, optionsId, onChange) {
         const trigger = document.getElementById(triggerId);
@@ -528,10 +542,33 @@
 
     async function loadOrders(pageNo = 1) {
         currentPage = pageNo;
-        statusMsg.innerText = "正在加载订单列表...";
         tableBody.innerHTML = "";
         pageInfo.innerText = `第 ${currentPage} 页`;
         
+        // 1. 优先从缓存加载（仅限第一页且无筛选条件）
+        if (pageNo === 1 && !currentStatusFilter) {
+            const cached = sessionStorage.getItem('preload_orders');
+            if (cached) {
+                try {
+                    const data = JSON.parse(cached);
+                    const orders = data.list || [];
+                    if (orders.length > 0) {
+                        statusMsg.innerText = "加载成功（页面数据已秒开）";
+                        renderOrders(orders);
+                        prevBtn.disabled = true;
+                        nextBtn.disabled = (orders.length < pageSize);
+                    }
+                } catch (e) {
+                    console.error("解析订单缓存失败", e);
+                }
+            } else {
+                statusMsg.innerText = "正在加载订单列表...";
+            }
+        } else {
+            statusMsg.innerText = "正在加载订单列表...";
+        }
+        
+        // 2. 无论是否有缓存，都发起真实请求获取最新数据
         const bodyParams = { page_no: currentPage, page_size: pageSize };
         if (currentStatusFilter) bodyParams.order_status = parseInt(currentStatusFilter);
 
@@ -540,6 +577,12 @@
             const result = await response.json();
             if (result.code === 0) {
                 const orders = result.data.list || [];
+                
+                // 更新缓存
+                if (pageNo === 1 && !currentStatusFilter) {
+                    sessionStorage.setItem('preload_orders', JSON.stringify(result.data));
+                }
+
                 if (orders.length === 0) {
                     statusMsg.innerText = "暂无订单数据。";
                     tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999; padding:40px;">暂无订单数据</td></tr>`;

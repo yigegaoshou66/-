@@ -75,6 +75,7 @@
             border: 1px solid var(--glass-border);
             box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px rgba(0,0,0,0.06);
             transition: 0.15s; white-space: nowrap; 
+            cursor: pointer;
         }
         .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
@@ -367,7 +368,7 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="index.html" class="back-btn">返回</a>
+        <a href="index.html" class="back-btn" onclick="handleBack(event)">返回</a>
         <h1>闲管家 · 售后管理</h1>
     </div>
 
@@ -482,6 +483,19 @@
     let isRequesting = false;
     let currentRefundStatus = "";
     let currentRefundType = "";
+
+    // ================= 🚀 新增：浏览器原生返回（不重新加载） =================
+    function handleBack(event) {
+        event.preventDefault(); // 阻止 <a> 标签默认的 href 跳转
+        if (window.history.length > 1) {
+            // 如果存在历史记录，则调用浏览器返回（利用浏览器的往返缓存，不会重新加载首页）
+            window.history.back();
+        } else {
+            // 如果用户是直接在地址栏打开的这个页面，没有历史记录，则直接跳转回首页
+            window.location.href = 'index.html';
+        }
+    }
+    // ======================================================================
 
     function setupCustomSelect(triggerId, optionsId, onChange) {
         const trigger = document.getElementById(triggerId);
@@ -610,10 +624,33 @@
 
     async function loadRefunds(pageNo = 1) {
         currentPage = pageNo;
-        statusMsg.innerText = "正在加载售后列表...";
         tableBody.innerHTML = "";
         pageInfo.innerText = `第 ${currentPage} 页`;
         
+        // 1. 优先从缓存加载（仅限第一页且无筛选条件）
+        if (pageNo === 1 && !currentRefundStatus && !currentRefundType) {
+            const cached = sessionStorage.getItem('preload_shouhou');
+            if (cached) {
+                try {
+                    const data = JSON.parse(cached);
+                    const list = data.list || [];
+                    if (list.length > 0) {
+                        statusMsg.innerText = "加载成功（页面数据已秒开）";
+                        renderList(list);
+                        prevBtn.disabled = true;
+                        nextBtn.disabled = !data.has_next_page;
+                    }
+                } catch (e) {
+                    console.error("解析售后缓存失败", e);
+                }
+            } else {
+                statusMsg.innerText = "正在加载售后列表...";
+            }
+        } else {
+            statusMsg.innerText = "正在加载售后列表...";
+        }
+        
+        // 2. 无论是否有缓存，都发起真实请求获取最新数据
         const bodyParams = { page_no: currentPage, page_size: pageSize };
         if (currentRefundStatus) bodyParams.refund_status = parseInt(currentRefundStatus);
         if (currentRefundType) bodyParams.refund_type = parseInt(currentRefundType);
@@ -623,6 +660,12 @@
             const result = await response.json();
             if (result.code === 0) {
                 const list = result.data.list || [];
+                
+                // 更新缓存
+                if (pageNo === 1 && !currentRefundStatus && !currentRefundType) {
+                    sessionStorage.setItem('preload_shouhou', JSON.stringify(result.data));
+                }
+
                 if (list.length === 0) {
                     statusMsg.innerText = "暂无售后订单数据。";
                     tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999; padding:40px;">暂无售后订单数据</td></tr>`;
@@ -758,6 +801,7 @@
             const result = await response.json();
             if (result.code === 0) {
                 alert("同意退款操作成功！");
+                sessionStorage.removeItem('preload_shouhou'); // 清除缓存
                 closeAgreeModal();
                 loadRefunds(currentPage);
             } else {
@@ -807,6 +851,7 @@
             const result = await response.json();
             if (result.code === 0) {
                 alert("拒绝退款操作成功！");
+                sessionStorage.removeItem('preload_shouhou'); // 清除缓存
                 closeRefuseModal();
                 loadRefunds(currentPage);
             } else {

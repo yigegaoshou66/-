@@ -85,6 +85,7 @@
                 inset 0 1px 0 var(--glass-highlight),
                 0 4px 12px rgba(0,0,0,0.06);
             transition: 0.15s; white-space: nowrap; 
+            cursor: pointer;
         }
         .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
@@ -329,7 +330,7 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="index.html" class="back-btn">返回</a>
+        <a href="index.html" class="back-btn" onclick="handleBack(event)">返回</a>
         <h1>闲管家 · 卡密管理</h1>
     </div>
 
@@ -472,6 +473,19 @@
 
     let isRequesting = false;
 
+    // ================= 🚀 新增：浏览器原生返回（不重新加载） =================
+    function handleBack(event) {
+        event.preventDefault(); // 阻止 <a> 标签默认的 href 跳转
+        if (window.history.length > 1) {
+            // 如果存在历史记录，则调用浏览器返回（利用浏览器的往返缓存，不会重新加载首页）
+            window.history.back();
+        } else {
+            // 如果用户是直接在地址栏打开的这个页面，没有历史记录，则直接跳转回首页
+            window.location.href = 'index.html';
+        }
+    }
+    // ======================================================================
+
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.back-btn');
@@ -532,17 +546,12 @@
 
         function updateState() {
             const hasValue = nameInput.value.trim() !== '' || typeSelect.value !== '' || categoryInput.value.trim() !== '';
-            if (hasValue) {
-                searchBtn.disabled = false; 
-            } else {
-                searchBtn.disabled = true;  
-            }
+            searchBtn.disabled = !hasValue;
         }
 
         nameInput.addEventListener('input', updateState);
         typeSelect.addEventListener('change', updateState);
         categoryInput.addEventListener('input', updateState);
-        
         updateState(); 
     }
     initSearchBtnState();
@@ -625,42 +634,79 @@
 
     async function loadKinds(pageNo = 1) {
         currentKindPage = pageNo;
-        document.getElementById('kindStatusMsg').innerText = "正在加载卡种列表...";
         document.getElementById('kindTableBody').innerHTML = "";
         document.getElementById('kindPageInfo').innerText = `第 ${currentKindPage} 页`;
+        
+        // 1. 尝试从缓存加载
+        if (pageNo === 1 && !document.getElementById('kindNameFilter').value && !document.getElementById('kindTypeFilter').value && !document.getElementById('kindCategoryFilter').value) {
+            const cached = sessionStorage.getItem('preload_kami');
+            if (cached) {
+                try {
+                    const data = JSON.parse(cached);
+                    const kinds = data.list || [];
+                    if (kinds.length > 0) {
+                        document.getElementById('kindStatusMsg').innerText = "加载成功（页面数据已秒开）";
+                        renderKinds(kinds);
+                        document.getElementById('kindPrevBtn').disabled = true;
+                        document.getElementById('kindNextBtn').disabled = (kinds.length < kindPageSize);
+                    }
+                } catch (e) {
+                    console.error("解析卡密缓存失败", e);
+                }
+            } else {
+                document.getElementById('kindStatusMsg').innerText = "正在加载卡种列表...";
+            }
+        } else {
+            document.getElementById('kindStatusMsg').innerText = "正在加载卡种列表...";
+        }
+        
+        // 2. 发起真实请求
         const bodyParams = { page_no: currentKindPage, page_size: kindPageSize };
         if (document.getElementById('kindNameFilter').value) bodyParams.kind_name = document.getElementById('kindNameFilter').value;
         if (document.getElementById('kindTypeFilter').value) bodyParams.kind_type = parseInt(document.getElementById('kindTypeFilter').value);
         if (document.getElementById('kindCategoryFilter').value) bodyParams.kind_category = parseInt(document.getElementById('kindCategoryFilter').value);
+        
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/list", body: bodyParams }) });
             const result = await response.json();
             if (result.code === 0) {
                 const kinds = result.data.list || [];
                 currentKindData = kinds;
+                
+                // 更新缓存
+                if (pageNo === 1 && !document.getElementById('kindNameFilter').value && !document.getElementById('kindTypeFilter').value && !document.getElementById('kindCategoryFilter').value) {
+                    sessionStorage.setItem('preload_kami', JSON.stringify(result.data));
+                }
+
                 document.getElementById('kindStatusMsg').innerText = `成功加载 ${kinds.length} 个卡种。`;
-                kinds.forEach(kind => {
-                    const costYuan = kind.cost ? (parseFloat(kind.cost) / 100).toFixed(2) : '0.00';
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td data-label="卡种ID">${kind.kind_id}</td>
-                        <td data-label="名称">${kind.kind_name}</td>
-                        <td data-label="分类">${kind.kind_category_name || '-'}</td>
-                        <td data-label="库存">${kind.stock}</td>
-                        <td data-label="成本">${costYuan} 元</td>
-                        <td data-label="操作">
-                            <button class="btn-info" onclick="openKindInfoModal(${kind.kind_id})">详情</button>
-                            <button class="btn-stock" onclick="openAddStockModal(${kind.kind_id})">添加</button>
-                            <button class="btn-edit" onclick="editKind(${kind.kind_id})">编辑</button>
-                            <button class="btn-delete" onclick="deleteKind(${kind.kind_id})">删除</button>
-                        </td>
-                    `;
-                    document.getElementById('kindTableBody').appendChild(tr);
-                });
+                renderKinds(kinds);
                 document.getElementById('kindPrevBtn').disabled = (currentKindPage <= 1);
                 document.getElementById('kindNextBtn').disabled = (kinds.length < kindPageSize);
             } else { document.getElementById('kindStatusMsg').innerText = "加载失败：" + result.msg; }
         } catch (error) { document.getElementById('kindStatusMsg').innerText = "请求出错：" + error.message; }
+    }
+
+    function renderKinds(kinds) {
+        const tbody = document.getElementById('kindTableBody');
+        tbody.innerHTML = "";
+        kinds.forEach(kind => {
+            const costYuan = kind.cost ? (parseFloat(kind.cost) / 100).toFixed(2) : '0.00';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="卡种ID">${kind.kind_id}</td>
+                <td data-label="名称">${kind.kind_name}</td>
+                <td data-label="分类">${kind.kind_category_name || '-'}</td>
+                <td data-label="库存">${kind.stock}</td>
+                <td data-label="成本">${costYuan} 元</td>
+                <td data-label="操作">
+                    <button class="btn-info" onclick="openKindInfoModal(${kind.kind_id})">详情</button>
+                    <button class="btn-stock" onclick="openAddStockModal(${kind.kind_id})">添加</button>
+                    <button class="btn-edit" onclick="editKind(${kind.kind_id})">编辑</button>
+                    <button class="btn-delete" onclick="deleteKind(${kind.kind_id})">删除</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
     function changeKindPage(delta) { const newPage = currentKindPage + delta; if (newPage < 1) return; loadKinds(newPage); }
@@ -722,7 +768,7 @@
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/edit", body: bodyData }) });
             const result = await response.json();
-            if (result.code === 0) { alert("修改成功！"); closeKindModal(); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
+            if (result.code === 0) { alert("修改成功！"); sessionStorage.removeItem('preload_kami'); closeKindModal(); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
         } catch (error) { alert("出错：" + error.message); }
     }
 
@@ -731,7 +777,7 @@
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/kami/kind/delete", body: { kind_id: [kindId] } }) });
             const result = await response.json();
-            if (result.code === 0) { alert("删除成功！"); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
+            if (result.code === 0) { alert("删除成功！"); sessionStorage.removeItem('preload_kami'); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
         } catch (error) { alert("出错：" + error.message); }
     }
 
@@ -774,7 +820,7 @@
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
             const result = await response.json();
-            if (result.code === 0) { alert("添加成功！"); closeStockModal(); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
+            if (result.code === 0) { alert("添加成功！"); sessionStorage.removeItem('preload_kami'); closeStockModal(); loadKinds(currentKindPage); } else { alert("失败：" + result.msg); }
         } catch (error) { alert("出错：" + error.message); }
     }
 
