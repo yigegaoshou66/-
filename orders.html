@@ -87,6 +87,92 @@
         }
         .back-btn:active { transform: translateY(-50%) scale(0.92); }
 
+        /* ===================== 紧凑统计横条 ===================== */
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: var(--glass-light);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .stats-bar::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 15%; right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
+        }
+        .stats-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+            flex: 1;
+        }
+        .stats-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .stats-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .stats-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--ios-green);
+            letter-spacing: -0.8px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+        }
+        .stats-count {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .stats-right {
+            flex-shrink: 0;
+        }
+        .stats-date-input {
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.95);
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 600;
+            outline: none;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 130px;
+            text-align: center;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .stats-date-input:focus {
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+        }
+        /* ============================================================== */
+
         .top-bar { 
             display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; 
             padding: 14px 18px; 
@@ -321,6 +407,10 @@
             body { padding: 32px; }
             .container { padding: 0; max-width: 1200px; }
 
+            .stats-bar { padding: 14px 22px; }
+            .stats-amount { font-size: 28px; }
+            .stats-date-input { width: 150px; font-size: 14px; }
+
             .top-bar { flex-direction: row; align-items: center; flex-wrap: wrap; padding: 18px; margin-bottom: 24px; }
             .top-bar label { display: block; white-space: nowrap; font-size: 14px; }
             .custom-select-wrapper { flex: 1; min-width: 200px; width: auto; }
@@ -379,7 +469,22 @@
         <a href="index.html" class="back-btn" onclick="handleBack(event)">返回</a>
         <h1>闲管家 · 订单管理助手</h1>
     </div>
-    
+
+    <!-- ===================== 紧凑统计横条 ===================== -->
+    <div class="stats-bar">
+        <div class="stats-left">
+            <div class="stats-label" id="statsLabel">今日销售额</div>
+            <div class="stats-value-row">
+                <span class="stats-amount" id="statsAmount">--</span>
+                <span class="stats-count" id="statsCount">加载中...</span>
+            </div>
+        </div>
+        <div class="stats-right">
+            <input type="date" id="statsDatePicker" class="stats-date-input">
+        </div>
+    </div>
+    <!-- ============================================================== -->
+
     <div class="top-bar">
         <label>状态筛选：</label>
         <div class="custom-select-wrapper" id="orderStatusWrapper">
@@ -394,7 +499,7 @@
                 <div class="custom-option" data-value="24">已关闭</div>
             </div>
         </div>
-        <button onclick="loadOrders(1)">刷新订单</button>
+        <button onclick="refreshAll()">刷新订单</button>
     </div>
 
     <div id="statusMsg" class="status-msg">正在加载订单列表...</div>
@@ -423,20 +528,25 @@
     const WORKER_URL = "https://api.1113630283.online";
     let isRequesting = false;
     let currentStatusFilter = "";
+    let isStatsLoading = false;
+    let cachedDailyMap = null;    // 缓存的每日统计数据
 
-    // ================= 🚀 新增：浏览器原生返回（不重新加载） =================
+    // ================= 浏览器原生返回 =================
     function handleBack(event) {
-        event.preventDefault(); // 阻止 <a> 标签默认的 href 跳转
+        event.preventDefault();
         if (window.history.length > 1) {
-            // 如果存在历史记录，则调用浏览器返回（利用浏览器的往返缓存，不会重新加载首页）
             window.history.back();
         } else {
-            // 如果用户是直接在地址栏打开的这个页面，没有历史记录，则直接跳转回首页
             window.location.href = 'index.html';
         }
     }
-    // ======================================================================
 
+    // ================= 日期工具 =================
+    function formatDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    // ================= 自定义下拉框 =================
     function setupCustomSelect(triggerId, optionsId, onChange) {
         const trigger = document.getElementById(triggerId);
         const optionsContainer = document.getElementById(optionsId);
@@ -540,12 +650,20 @@
     const nextBtn = document.getElementById('nextBtn');
     const statusMap = { 11: "待付款", 12: "待发货", 21: "已发货", 22: "已完成", 23: "已退款", 24: "已关闭" };
 
+    // ================= 刷新全部 =================
+    function refreshAll() {
+        sessionStorage.removeItem('preload_orders');
+        cachedDailyMap = null;   // 清空统计缓存，强制重新拉取
+        loadOrders(1);
+        loadDailyStats(true);
+    }
+
+    // ================= 订单列表加载 =================
     async function loadOrders(pageNo = 1) {
         currentPage = pageNo;
         tableBody.innerHTML = "";
         pageInfo.innerText = `第 ${currentPage} 页`;
         
-        // 1. 优先从缓存加载（仅限第一页且无筛选条件）
         if (pageNo === 1 && !currentStatusFilter) {
             const cached = sessionStorage.getItem('preload_orders');
             if (cached) {
@@ -568,17 +686,16 @@
             statusMsg.innerText = "正在加载订单列表...";
         }
         
-        // 2. 无论是否有缓存，都发起真实请求获取最新数据
         const bodyParams = { page_no: currentPage, page_size: pageSize };
         if (currentStatusFilter) bodyParams.order_status = parseInt(currentStatusFilter);
 
+        isRequesting = true;
         try {
             const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/order/list", body: bodyParams }) });
             const result = await response.json();
             if (result.code === 0) {
                 const orders = result.data.list || [];
                 
-                // 更新缓存
                 if (pageNo === 1 && !currentStatusFilter) {
                     sessionStorage.setItem('preload_orders', JSON.stringify(result.data));
                 }
@@ -594,6 +711,7 @@
                 nextBtn.disabled = (orders.length < pageSize); 
             } else statusMsg.innerText = "加载失败：" + result.msg;
         } catch (error) { statusMsg.innerText = "请求出错：" + error.message; }
+        finally { isRequesting = false; }
     }
 
     function renderOrders(orders) {
@@ -630,8 +748,139 @@
         if (newPage < 1) return; 
         loadOrders(newPage); 
     }
-    
+
+    // ================= 每日销售额统计 =================
+    async function loadDailyStats(forceRefresh = false) {
+        if (isStatsLoading) return;
+        
+        // 如果已有缓存且不是强制刷新，直接渲染
+        if (cachedDailyMap && !forceRefresh) {
+            renderStatsBar();
+            return;
+        }
+        
+        isStatsLoading = true;
+
+        const amountEl = document.getElementById('statsAmount');
+        const countEl = document.getElementById('statsCount');
+        amountEl.textContent = '--';
+        countEl.textContent = '正在统计...';
+
+        const allOrders = [];
+        const maxPages = 15;
+        const pageSizeStats = 20;
+        const statsWindowDays = 7;
+
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (statsWindowDays - 1));
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+        const sevenDaysAgoTs = Math.floor(sevenDaysAgo.getTime() / 1000);
+
+        // 逐页拉取
+        for (let page = 1; page <= maxPages; page++) {
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: "/api/open/order/list", body: { page_no: page, page_size: pageSizeStats } })
+                });
+                const result = await response.json();
+                if (result.code !== 0) break;
+
+                const orders = result.data.list || [];
+                if (orders.length === 0) break;
+
+                let minTsInPage = Infinity;
+                orders.forEach(order => {
+                    const ts = order.create_time || order.order_time;
+                    if (ts && ts < minTsInPage) minTsInPage = ts;
+                    allOrders.push(order);
+                });
+
+                if (minTsInPage < sevenDaysAgoTs) break;
+                if (orders.length < pageSizeStats) break;
+
+                await new Promise(r => setTimeout(r, 50));
+            } catch (e) {
+                console.error('加载统计数据失败', e);
+                break;
+            }
+        }
+
+        // 按日期分组
+        const dailyMap = {};
+        allOrders.forEach(order => {
+            // 排除已退款、已关闭
+            if (order.order_status === 23 || order.order_status === 24) return;
+
+            const ts = order.create_time || order.order_time;
+            if (!ts) return;
+
+            const tsMs = ts > 9999999999 ? ts : ts * 1000;
+            const date = new Date(tsMs);
+            const dateKey = formatDateKey(date);
+
+            if (!dailyMap[dateKey]) {
+                dailyMap[dateKey] = { amount: 0, count: 0 };
+            }
+            dailyMap[dateKey].amount += (order.total_amount || 0);
+            dailyMap[dateKey].count += 1;
+        });
+
+        cachedDailyMap = dailyMap;
+        isStatsLoading = false;
+
+        renderStatsBar();
+    }
+
+    // 根据日期选择器渲染统计条
+    function renderStatsBar() {
+        const datePicker = document.getElementById('statsDatePicker');
+        const labelEl = document.getElementById('statsLabel');
+        const amountEl = document.getElementById('statsAmount');
+        const countEl = document.getElementById('statsCount');
+
+        const selectedDate = datePicker.value;
+        if (!selectedDate) return;
+
+        const todayKey = formatDateKey(new Date());
+        const isToday = selectedDate === todayKey;
+
+        // 标签
+        if (isToday) {
+            labelEl.textContent = '今日销售额';
+        } else {
+            const mmdd = selectedDate.substring(5).replace('-', '月') + '日';
+            labelEl.textContent = mmdd + ' 销售额';
+        }
+
+        // 数值
+        const data = (cachedDailyMap && cachedDailyMap[selectedDate]) || { amount: 0, count: 0 };
+        amountEl.textContent = `¥${(data.amount / 100).toFixed(2)}`;
+        countEl.textContent = `${data.count} 笔订单`;
+    }
+
+    // ================= 日期选择器初始化 =================
+    function initDatePicker() {
+        const picker = document.getElementById('statsDatePicker');
+        const todayKey = formatDateKey(new Date());
+        picker.value = todayKey;
+        picker.max = todayKey;   // 不能选未来日期
+
+        picker.addEventListener('change', () => {
+            // 如果还没拉过数据，先拉一次
+            if (!cachedDailyMap && !isStatsLoading) {
+                loadDailyStats(true);
+            } else {
+                renderStatsBar();
+            }
+        });
+    }
+
+    // ================= 启动 =================
+    initDatePicker();
     loadOrders(1);
+    loadDailyStats();
 </script>
 </body>
 </html>
