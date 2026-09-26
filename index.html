@@ -456,8 +456,126 @@
             font-weight: bold;
         }
 
+        /* ===== 查看属性弹窗内容样式 ===== */
+        .viewer-section {
+            margin-bottom: 22px;
+        }
+        .viewer-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ios-blue);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .viewer-section-title::before {
+            content: "";
+            width: 3px;
+            height: 14px;
+            background: var(--ios-blue);
+            border-radius: 2px;
+        }
+        .viewer-content-box {
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(60,60,67,0.08);
+            border-radius: 14px;
+            padding: 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 260px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .viewer-content-box.empty {
+            color: var(--text-tertiary);
+            text-align: center;
+            padding: 24px;
+        }
+        .viewer-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .viewer-thumb {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            background: #f0f0f0;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .viewer-thumb:hover { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+        .viewer-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .viewer-thumb .index-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.55);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .viewer-sku-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .viewer-sku-item {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(60,60,67,0.08);
+            border-left: 3px solid var(--ios-blue);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .viewer-sku-item .sku-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+            min-width: 0;
+            word-break: break-word;
+        }
+        .viewer-sku-item .sku-meta {
+            display: flex;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+        .viewer-sku-item .sku-meta span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .viewer-sku-item .sku-meta b {
+            color: var(--ios-orange);
+            font-weight: 700;
+        }
+        .viewer-sku-item .sku-meta .stock-num {
+            color: var(--ios-green);
+        }
+
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
+            .viewer-thumb { width: 80px; height: 80px; }
         }
         button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
         .btn-loading { pointer-events: none; opacity: 0.8; }
@@ -552,6 +670,8 @@
             @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
             .sku-edit-item .sku-inputs input { font-size: 15px; }
             .image-preview-item { width: 80px; height: 80px; }
+            .viewer-thumb { width: 120px; height: 120px; }
+            #imageViewerModal .modal-content { max-width: 800px; }
         }
     </style>
 </head>
@@ -627,6 +747,40 @@
     </div>
 </div>
 
+<!-- 查看商品属性模态框 -->
+<div id="imageViewerModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="imageViewerTitle">商品属性</h2>
+
+        <!-- 商品描述 -->
+        <div class="viewer-section">
+            <div class="viewer-section-title">商品描述</div>
+            <div class="viewer-content-box" id="viewerContentBox">加载中...</div>
+        </div>
+
+        <!-- 商品图片 -->
+        <div class="viewer-section">
+            <div class="viewer-section-title">商品图片 <span id="viewerImageCount" style="font-weight:400; color: var(--text-secondary); font-size:12px;"></span></div>
+            <div class="viewer-grid" id="imageGrid"></div>
+        </div>
+
+        <!-- SKU 规格 -->
+        <div class="viewer-section" id="viewerSkuSection" style="display:none;">
+            <div class="viewer-section-title">规格列表 <span id="viewerSkuCount" style="font-weight:400; color: var(--text-secondary); font-size:12px;"></span></div>
+            <div class="viewer-sku-list" id="viewerSkuList"></div>
+        </div>
+
+        <div class="modal-footer">
+            <button style="background: var(--ios-gray);" onclick="closeImageViewer()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 全屏放大图片层 -->
+<div id="imageZoomOverlay" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); z-index: 2000; justify-content: center; align-items: center; cursor: zoom-out;" onclick="closeZoom()">
+    <img id="zoomedImage" src="" style="max-width: 95%; max-height: 95%; object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.8); border-radius: 6px;">
+</div>
+
 <script>
     const WORKER_URL = "https://api.1113630283.online";
     let isNavigating = false;
@@ -686,6 +840,8 @@
 
         if (btn) {
             if (btn.disabled) return;
+            if (btn.classList.contains('no-global-loading')) return;
+            if (btn.closest('#imageZoomOverlay') || btn.closest('#imageViewerModal')) return;
             if (!btn.dataset.originalText) {
                 btn.dataset.originalText = btn.innerText;
             }
@@ -720,6 +876,12 @@
         }
     });
 
+    document.getElementById('imageViewerModal').addEventListener('mousedown', function(e) {
+        if (e.target === this) {
+            closeImageViewer();
+        }
+    });
+
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.sku-row') && !e.target.closest('button[onclick^="toggleSkuList"]')) {
             const expandedRows = document.querySelectorAll('.sku-row');
@@ -742,7 +904,6 @@
     async function preloadOtherPages() {
         console.log("开始后台静默预加载其他页面数据...");
         
-        // 1. 预加载订单第一页
         try {
             if (!sessionStorage.getItem('preload_orders')) {
                 const response = await fetchWithControl(WORKER_URL, { 
@@ -758,7 +919,6 @@
             }
         } catch (e) { console.log("订单页面预加载失败", e); }
 
-        // 2. 预加载售后第一页
         try {
             if (!sessionStorage.getItem('preload_shouhou')) {
                 const response = await fetchWithControl(WORKER_URL, { 
@@ -774,7 +934,6 @@
             }
         } catch (e) { console.log("售后页面预加载失败", e); }
 
-        // 3. 预加载卡密第一页
         try {
             if (!sessionStorage.getItem('preload_kami')) {
                 const response = await fetchWithControl(WORKER_URL, { 
@@ -793,7 +952,7 @@
         console.log("所有页面预加载完成！");
     }
 
-    // ================= 图片预览 =================
+    // ================= 图片预览（编辑弹窗） =================
     function renderImagePreview() {
         const imagesText = document.getElementById('editImages').value;
         const container = document.getElementById('imagePreviewContainer');
@@ -888,6 +1047,7 @@
             <td data-label="状态 / 操作" style="justify-content: flex-start; gap: 8px;">
                 ${statusActionBtn}
                 <button class="btn-edit" onclick="openEditProductModal(${product.product_id}, this)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">编辑</button>
+                <button class="no-global-loading" onclick="viewProductImages(${product.product_id}, this)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px; background: var(--ios-blue);">查看属性</button>
                 <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
             </td>
         `;
@@ -927,7 +1087,6 @@
                 currentProductData.forEach(product => renderProductRow(product));
                 prefetchProductDetails(currentProductData);
                 
-                // 🚀 商品列表加载完后，开始静默预加载其他页面的数据
                 setTimeout(preloadOtherPages, 3000);
                 
             } else { productStatusMsg.innerText = "加载失败：" + result.msg; }
@@ -1223,6 +1382,142 @@
             if (result.code === 0) { alert("下架指令发送成功！"); sessionStorage.removeItem('preload_orders'); loadProducts(); } else { alert("下架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
+
+    // ================= 查看商品属性（描述 + 图片 + 规格） =================
+    async function viewProductImages(productId, btn) {
+        const originalText = btn ? btn.innerText : '查看属性';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = '加载中...';
+        }
+        try {
+            let detailData = productDetailCache[productId];
+            if (!detailData) {
+                const response = await fetchWithControl(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+                });
+                const result = await response.json();
+                if (result.code === 0 && result.data) {
+                    detailData = result.data;
+                    productDetailCache[productId] = detailData;
+                    if (detailData.sku_items) skuCache[productId] = detailData.sku_items;
+                } else {
+                    throw new Error(result.msg || '获取详情失败');
+                }
+            }
+
+            const product = currentProductData.find(p => p.product_id === productId);
+            const titleEl = document.getElementById('imageViewerTitle');
+            titleEl.innerText = product ? `商品属性 · ${product.title || '无标题'}` : '商品属性';
+
+            // ============ 1. 商品描述 ============
+            let content = detailData.content;
+            if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
+                content = detailData.publish_shop[0].content;
+            }
+            const contentBox = document.getElementById('viewerContentBox');
+            if (content && content.trim()) {
+                contentBox.classList.remove('empty');
+                contentBox.textContent = content;
+            } else {
+                contentBox.classList.add('empty');
+                contentBox.textContent = '暂无商品描述';
+            }
+
+            // ============ 2. 商品图片 ============
+            let images = [];
+            if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images && detailData.publish_shop[0].images.length > 0) {
+                images = detailData.publish_shop[0].images;
+            } else if (detailData.images && detailData.images.length > 0) {
+                images = detailData.images;
+            } else if (detailData.image) {
+                images = [detailData.image];
+            }
+
+            const imageCountEl = document.getElementById('viewerImageCount');
+            imageCountEl.textContent = images.length > 0 ? `（共 ${images.length} 张，点击可放大）` : '';
+
+            const grid = document.getElementById('imageGrid');
+            grid.innerHTML = '';
+            if (images.length === 0) {
+                grid.innerHTML = '<div style="color:#aaa; padding: 20px; text-align:center; width:100%; font-size:13px;">暂无图片</div>';
+            } else {
+                images.forEach((imgUrl, index) => {
+                    let fullUrl = imgUrl;
+                    if (!fullUrl.startsWith('http')) fullUrl = 'https://img.alicdn.com/' + fullUrl;
+                    const thumb = document.createElement('div');
+                    thumb.className = 'viewer-thumb';
+                    thumb.innerHTML = `
+                        <img src="${fullUrl}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">
+                        <span class="index-badge">${index + 1}/${images.length}</span>
+                    `;
+                    thumb.addEventListener('click', () => zoomImage(fullUrl));
+                    grid.appendChild(thumb);
+                });
+            }
+
+            // ============ 3. SKU 规格列表 ============
+            const skuSection = document.getElementById('viewerSkuSection');
+            const skuListEl = document.getElementById('viewerSkuList');
+            const skuCountEl = document.getElementById('viewerSkuCount');
+            const skuItems = detailData.sku_items || [];
+
+            if (skuItems.length > 0) {
+                skuSection.style.display = 'block';
+                skuCountEl.textContent = `（共 ${skuItems.length} 个规格）`;
+                let skuHtml = '';
+                skuItems.forEach(sku => {
+                    const priceYuan = (sku.price / 100).toFixed(2);
+                    skuHtml += `
+                        <div class="viewer-sku-item">
+                            <div class="sku-text">${sku.sku_text || '默认规格'}</div>
+                            <div class="sku-meta">
+                                <span>价格 <b>¥${priceYuan}</b></span>
+                                <span>库存 <b class="stock-num">${sku.stock !== undefined ? sku.stock : '-'}</b></span>
+                            </div>
+                        </div>
+                    `;
+                });
+                skuListEl.innerHTML = skuHtml;
+            } else {
+                skuSection.style.display = 'none';
+            }
+
+            document.getElementById('imageViewerModal').style.display = 'flex';
+        } catch (error) {
+            alert('获取商品属性失败：' + error.message);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+    }
+
+    function zoomImage(url) {
+        document.getElementById('zoomedImage').src = url;
+        document.getElementById('imageZoomOverlay').style.display = 'flex';
+    }
+
+    function closeZoom() {
+        document.getElementById('imageZoomOverlay').style.display = 'none';
+        document.getElementById('zoomedImage').src = '';
+    }
+
+    function closeImageViewer() {
+        document.getElementById('imageViewerModal').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const zoomOverlay = document.getElementById('imageZoomOverlay');
+            if (zoomOverlay.style.display === 'flex') { closeZoom(); return; }
+            const viewer = document.getElementById('imageViewerModal');
+            if (viewer.style.display === 'flex') { closeImageViewer(); return; }
+        }
+    });
 
     loadProducts();
 </script>
