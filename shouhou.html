@@ -622,6 +622,54 @@
     const refundTypeMap = { 1: "仅退款", 2: "退货退款" };
     const goodsStatusMap = { 1: "未收到货", 2: "已收到货", 3: "已寄回", 4: "未发货", 5: "卖家确认收货", 6: "已发货" };
 
+    // ================= 🚀 新增：用订单号反查买家昵称 =================
+    let _buyerNickCache = null;
+
+    async function getBuyerNickByOrderNo(orderNo) {
+        if (!orderNo) return '';
+
+        // 1. 内存缓存命中
+        if (_buyerNickCache && _buyerNickCache[orderNo]) return _buyerNickCache[orderNo];
+
+        // 2. 复用订单页/首页的预加载缓存
+        if (!_buyerNickCache) {
+            _buyerNickCache = {};
+            try {
+                const cached = sessionStorage.getItem('preload_orders');
+                if (cached) {
+                    (JSON.parse(cached).list || []).forEach(o => {
+                        if (o.order_no) _buyerNickCache[o.order_no] = o.buyer_nick || '';
+                    });
+                }
+            } catch (e) { /* 忽略 */ }
+        }
+        if (_buyerNickCache[orderNo]) return _buyerNickCache[orderNo];
+
+        // 3. 调订单列表接口反查（优先带 order_no 过滤，接口不支持时退化为分页扫描）
+        for (let p = 1; p <= 2; p++) {
+            try {
+                const resp = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path: "/api/open/order/list",
+                        body: { page_no: p, page_size: 50, order_no: orderNo }
+                    })
+                });
+                const r = await resp.json();
+                if (r.code !== 0) break;
+                const list = (r.data && r.data.list) || [];
+                list.forEach(o => {
+                    if (o.order_no) _buyerNickCache[o.order_no] = o.buyer_nick || '';
+                });
+                if (_buyerNickCache[orderNo]) return _buyerNickCache[orderNo];
+                if (!r.data.has_next_page || list.length < 50) break;
+            } catch (e) { break; }
+        }
+        return '';
+    }
+    // =================================================================
+
     async function loadRefunds(pageNo = 1) {
         currentPage = pageNo;
         tableBody.innerHTML = "";
@@ -736,9 +784,13 @@
                 const applyTimeStr = d.apply_time ? new Date(d.apply_time * 1000).toLocaleString('zh-CN') : '未知时间';
                 const refundTimeStr = d.refund_time ? new Date(d.refund_time * 1000).toLocaleString('zh-CN') : '-';
 
+                // 详情接口若自带买家字段则直接用，否则留占位后续反查
+                const nickFromDetail = d.buyer_nick || d.buyer_name || d.nick || '';
+
                 document.getElementById('detailContent').innerHTML = `
                     <div class="info-item"><div class="label">退款单号</div><div class="value">${d.refund_no}</div></div>
                     <div class="info-item"><div class="label">订单号</div><div class="value">${d.order_no}</div></div>
+                    <div class="info-item"><div class="label">买家昵称</div><div class="value" id="detailBuyerNick">${nickFromDetail || '加载中…'}</div></div>
                     <div class="info-item"><div class="label">退款原因</div><div class="value">${d.refund_reason || '无'}</div></div>
                     <div class="info-item"><div class="label">退款状态</div><div class="value" style="color: var(--ios-blue);">${refundStatusText}</div></div>
                     <div class="info-item"><div class="label">退款类型</div><div class="value">${refundTypeText}</div></div>
@@ -750,6 +802,14 @@
                     <div class="info-item"><div class="label">退货快递单号</div><div class="value">${d.waybill_no || '-'}</div></div>
                     <div class="info-item"><div class="label">快递公司</div><div class="value">${d.express_code || '-'}</div></div>
                 `;
+
+                // 异步补全买家昵称（用订单号反查订单列表）
+                if (!nickFromDetail) {
+                    getBuyerNickByOrderNo(d.order_no).then(nick => {
+                        const el = document.getElementById('detailBuyerNick');
+                        if (el) el.textContent = nick || '未获取到';
+                    });
+                }
             } else {
                 document.getElementById('detailContent').innerHTML = `<div style="color:red;">失败：${refundResult.msg}</div>`;
             }
