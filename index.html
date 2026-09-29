@@ -1236,21 +1236,24 @@
 
     async function loadProducts(useCache = true) {
         const refreshBtn = document.querySelector('.top-bar button');
+        const CACHE_EXPIRE = 5 * 60 * 1000; // 缓存有效期5分钟
         
-        // 如果不使用缓存，清空缓存
+        // 强制刷新时清空缓存
         if (!useCache) {
             sessionStorage.removeItem('preload_product_list');
+            sessionStorage.removeItem('preload_product_list_time');
         }
 
-        // 1. 尝试读取缓存，快速渲染
+        // 1. 尝试读取缓存，快速渲染，且判断过期
         if (useCache) {
             const cached = sessionStorage.getItem('preload_product_list');
-            if (cached) {
+            const cacheTime = sessionStorage.getItem('preload_product_list_time');
+            if (cached && cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_EXPIRE)) {
                 try {
                     const data = JSON.parse(cached);
                     const list = data.list || [];
                     if (list.length > 0) {
-                        productStatusMsg.innerText = "已显示缓存数据，正在更新...";
+                        productStatusMsg.innerText = "已显示缓存数据";
                         currentProductData = list;
                         // 按上架状态排序
                         currentProductData.sort((a, b) => {
@@ -1260,6 +1263,10 @@
                         });
                         productTableBody.innerHTML = "";
                         currentProductData.forEach(product => renderProductRow(product));
+                        
+                        // 缓存有效，直接返回，不再发起网络请求，解决排队问题
+                        if (refreshBtn) restoreButton(refreshBtn);
+                        return;
                     }
                 } catch (e) {
                     console.error("解析商品缓存失败", e);
@@ -1284,8 +1291,9 @@
                 productStatusMsg.innerText = "加载成功！";
                 currentProductData = result.data.list || [];
                 
-                // 更新缓存
+                // 更新缓存和时间戳
                 sessionStorage.setItem('preload_product_list', JSON.stringify(result.data));
+                sessionStorage.setItem('preload_product_list_time', Date.now().toString());
 
                 Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
                 Object.keys(skuCache).forEach(k => delete skuCache[k]);
@@ -1298,44 +1306,54 @@
 
                 productTableBody.innerHTML = "";
                 currentProductData.forEach(product => renderProductRow(product));
+                
+                // 执行并发预加载
                 prefetchProductDetails(currentProductData);
                 
-                // 延迟到 8 秒后执行，避开图片和接口的并发高峰
-                setTimeout(preloadOtherPages, 8000);
+                // 延迟到浏览器空闲时执行其他页面的预加载，避开首屏请求高峰
+                if (window.requestIdleCallback) {
+                    window.requestIdleCallback(() => preloadOtherPages(), { timeout: 5000 });
+                } else {
+                    setTimeout(preloadOtherPages, 5000);
+                }
                 
             } else { 
                 productStatusMsg.innerText = "加载失败：" + result.msg; 
             }
         } catch (error) { 
             productStatusMsg.innerText = "请求出错：" + error.message; 
-            // 如果请求失败但有缓存，保留缓存显示
         } finally {
             if (refreshBtn) restoreButton(refreshBtn);
         }
     }
 
+    // 优化后的并发预加载
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
+        
+        // 排序：优先预加载已上架的商品
         const sortedProducts = [...products].sort((a, b) => {
             const aWeight = (a.product_status === 22) ? 0 : 1;
             const bWeight = (b.product_status === 22) ? 0 : 1;
             return aWeight - bWeight;
         });
-        // 降低并发压力，每次只预加载 1 个商品详情
-        const prefetchLimit = 1;
-        const chunks = [];
-        for (let i = 0; i < sortedProducts.length; i += prefetchLimit) {
-            chunks.push(sortedProducts.slice(i, i + prefetchLimit));
-        }
-        for (let chunk of chunks) {
-            await Promise.all(chunk.map(async (product) => {
+
+        // 设置真正的并发数（避免浏览器同域名连接数限制导致的排队，3个是比较平滑的值）
+        const CONCURRENT_LIMIT = 3; 
+        let index = 0;
+
+        // 并发工作线程
+        async function worker() {
+            while (index < sortedProducts.length) {
+                const product = sortedProducts[index++];
                 if (!productDetailCache[product.product_id]) {
                     try {
                         const response = await fetchWithControl(WORKER_URL, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: product.product_id } })
-                        }, 10000, true);
+                        }, 10000, true); // isBackground = true，绕过前台并发限制，但不占用主动请求名额
+                        
                         const result = await response.json();
                         if (result.code === 0 && result.data) {
                             productDetailCache[product.product_id] = result.data;
@@ -1349,9 +1367,13 @@
                         console.log(`静默预加载商品 ${product.product_id} 失败:`, e);
                     }
                 }
-            }));
-            await new Promise(r => setTimeout(r, 200));
+            }
         }
+
+        // 同时启动 3 个并发工作线程
+        const workers = Array.from({ length: CONCURRENT_LIMIT }, worker);
+        await Promise.all(workers);
+        console.log("所有商品详情预加载完成！");
     }
 
     /* ================= 弹窗：模式切换 ================= */
@@ -1721,6 +1743,7 @@
 
                 // 清空商品列表缓存，下次进入会重新获取
                 sessionStorage.removeItem('preload_product_list');
+                sessionStorage.removeItem('preload_product_list_time');
 
                 if (!silentSuccess) alert("商品和 SKU 修改成功！");
                 return true;
@@ -1816,6 +1839,7 @@
                 alert("SKU 修改成功！"); 
                 // 清空缓存，下次返回重新获取
                 sessionStorage.removeItem('preload_product_list');
+                sessionStorage.removeItem('preload_product_list_time');
             } else { alert("修改失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { if(saveBtn) restoreButton(saveBtn); }
     }
@@ -1833,6 +1857,7 @@
                 alert("上架指令发送成功！"); 
                 sessionStorage.removeItem('preload_orders'); 
                 sessionStorage.removeItem('preload_product_list');
+                sessionStorage.removeItem('preload_product_list_time');
                 loadProducts(false); 
             } else { alert("上架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
@@ -1848,6 +1873,7 @@
                 alert("下架指令发送成功！"); 
                 sessionStorage.removeItem('preload_orders'); 
                 sessionStorage.removeItem('preload_product_list');
+                sessionStorage.removeItem('preload_product_list_time');
                 loadProducts(false); 
             } else { alert("下架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
