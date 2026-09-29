@@ -869,7 +869,6 @@
             <span class="store-label">当前店铺：</span>
             <span class="store-name" id="userNameDisplay">叶刘军</span>
         </div>
-        <!-- ⚠️ 修改：右上角刷新按钮，调用 refreshAllData -->
         <div class="logout-btn"><button onclick="refreshAllData(this)">刷新</button></div>
     </div>
 
@@ -1025,6 +1024,7 @@
         }
     }
 
+    // ======= 全局点击事件：按钮防抖与状态恢复 =======
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.entry-links a, .back-btn');
@@ -1035,15 +1035,10 @@
             if (isNavigating) { e.stopImmediatePropagation(); e.preventDefault(); return; }
             isNavigating = true;
             link.style.pointerEvents = 'none';
-            link.style.opacity = '0.5';
-            link.style.transform = 'scale(0.9)';
-            link.style.transition = 'all 0.1s ease'; 
             setTimeout(() => {
                 isNavigating = false;
                 link.style.pointerEvents = '';
-                link.style.opacity = '';
-                link.style.transform = '';
-            }, 2000);
+            }, 1000);
             return;
         }
 
@@ -1171,19 +1166,22 @@
 
     /* ================= 全局强制刷新 ================= */
     async function refreshAllData(btn) {
-        if (btn) { btn.disabled = true; btn.innerText = '刷新中...'; }
-        
-        // 1. 清空前端所有本地缓存
-        sessionStorage.removeItem('preload_product_list');
-        sessionStorage.removeItem('preload_product_list_time');
-        sessionStorage.removeItem('preload_orders');
-        Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
-        Object.keys(skuCache).forEach(k => delete skuCache[k]);
-        
-        // 2. 强制向 Worker 请求最新数据，并带上暗号
-        await loadProducts(false, true);
-        
-        if (btn) { btn.disabled = false; btn.innerText = '刷新'; }
+        try {
+            // 1. 清空前端所有本地缓存
+            sessionStorage.removeItem('preload_product_list');
+            sessionStorage.removeItem('preload_product_list_time');
+            sessionStorage.removeItem('preload_orders');
+            Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
+            Object.keys(skuCache).forEach(k => delete skuCache[k]);
+            
+            // 2. 强制向 Worker 请求最新数据，并带上暗号
+            await loadProducts(false, true);
+        } catch (e) {
+            console.error("刷新失败", e);
+        } finally {
+            // ⚠️ 重点修复：使用 restoreButton 清除 btn-loading 类，否则旋转图标永远不会消失
+            if (btn) restoreButton(btn);
+        }
     }
 
     /* ================= 商品列表渲染 ================= */
@@ -1932,12 +1930,20 @@
 
     /* ================= 启动：支持 BFCache 恢复 ================= */
     window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-            // 从 BFCache 恢复，页面状态已保留，无需重新加载
-            console.log('从 BFCache 恢复，跳过商品加载');
-        } else {
+        // ⚠️ 强制重置导航按钮状态
+        isNavigating = false;
+        document.querySelectorAll('.entry-links a, .back-btn').forEach(el => {
+            el.style.pointerEvents = '';
+            el.style.opacity = '';
+            el.style.transform = '';
+        });
+
+        if (!event.persisted) {
             // 首次加载或正常刷新
             loadProducts(true);
+        } else {
+            // 从 BFCache 恢复，页面状态已保留，无需重新加载
+            console.log('从 BFCache 恢复，跳过商品加载');
         }
     });
 </script>
