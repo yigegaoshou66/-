@@ -132,9 +132,13 @@
                 inset 0 1px 0 var(--glass-highlight),
                 inset 0 -1px 0 rgba(255, 255, 255, 0.5),
                 0 4px 16px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s;
+            /* 缩短 transition，让按下立即有反应 */
+            transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
             position: relative;
             overflow: hidden;
+            /* 移动端原生点击高亮 */
+            -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2);
+            touch-action: manipulation;
         }
         .entry-links a::before {
             content: "";
@@ -143,10 +147,25 @@
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
         }
-        .entry-links a:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.75); }
+        .entry-links a:active { 
+            transform: scale(0.94); 
+            background: rgba(255, 255, 255, 0.9); 
+            transition: transform 0.03s ease, background 0.03s ease;
+        }
         .entry-order { color: #007AFF; }
         .entry-after { color: #FF9500; }
         .entry-kami { color: #6F42C1; }
+
+        /* 点击导航后的锁定态：立即生效，等待 pageshow 统一清理 */
+        .entry-links a.nav-locked,
+        .back-btn.nav-locked {
+            pointer-events: none;
+            transform: scale(0.94);
+            transition: transform 0.03s ease;
+        }
+        .back-btn.nav-locked {
+            transform: translateY(-50%) scale(0.9);
+        }
 
         .top-bar { margin-bottom: 20px; }
         .top-bar button { 
@@ -1032,13 +1051,11 @@
         if (!btn && !link) return;
 
         if (link) {
-            if (isNavigating) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-            isNavigating = true;
-            link.style.pointerEvents = 'none';
-            setTimeout(() => {
-                isNavigating = false;
-                link.style.pointerEvents = '';
-            }, 1000);
+            if (link.classList.contains('nav-locked')) {
+                e.stopImmediatePropagation(); e.preventDefault(); return;
+            }
+            link.classList.add('nav-locked');
+            // 不再设置定时器，交给 pageshow 统一清理
             return;
         }
 
@@ -1930,13 +1947,9 @@
 
     /* ================= 启动：支持 BFCache 恢复 ================= */
     window.addEventListener('pageshow', function(event) {
-        // ⚠️ 强制重置导航按钮状态
+        // ⚠️ 强制重置导航按钮状态（清理类，而不是内联样式）
         isNavigating = false;
-        document.querySelectorAll('.entry-links a, .back-btn').forEach(el => {
-            el.style.pointerEvents = '';
-            el.style.opacity = '';
-            el.style.transform = '';
-        });
+        document.querySelectorAll('.nav-locked').forEach(el => el.classList.remove('nav-locked'));
 
         if (!event.persisted) {
             // 首次加载或正常刷新
