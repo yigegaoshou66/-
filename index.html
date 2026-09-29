@@ -869,7 +869,8 @@
             <span class="store-label">当前店铺：</span>
             <span class="store-name" id="userNameDisplay">叶刘军</span>
         </div>
-        <div class="logout-btn"><button onclick="location.reload()">刷新</button></div>
+        <!-- ⚠️ 修改：右上角刷新按钮，调用 refreshAllData -->
+        <div class="logout-btn"><button onclick="refreshAllData(this)">刷新</button></div>
     </div>
 
     <div class="entry-links">
@@ -880,7 +881,7 @@
 
     <div id="product-page">
         <div class="top-bar">
-            <button onclick="loadProducts(false)">刷新商品列表</button>
+            <button onclick="loadProducts(false, true)">刷新商品列表</button>
         </div>
         <div id="productStatusMsg" class="status-msg">正在加载商品列表...</div>
 
@@ -1168,6 +1169,23 @@
         editFormDirty = true;
     });
 
+    /* ================= 全局强制刷新 ================= */
+    async function refreshAllData(btn) {
+        if (btn) { btn.disabled = true; btn.innerText = '刷新中...'; }
+        
+        // 1. 清空前端所有本地缓存
+        sessionStorage.removeItem('preload_product_list');
+        sessionStorage.removeItem('preload_product_list_time');
+        sessionStorage.removeItem('preload_orders');
+        Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
+        Object.keys(skuCache).forEach(k => delete skuCache[k]);
+        
+        // 2. 强制向 Worker 请求最新数据，并带上暗号
+        await loadProducts(false, true);
+        
+        if (btn) { btn.disabled = false; btn.innerText = '刷新'; }
+    }
+
     /* ================= 商品列表渲染 ================= */
     function renderProductRow(product, isUpdate = false) {
         let imgUrl = '';
@@ -1234,7 +1252,8 @@
         }
     }
 
-    async function loadProducts(useCache = true) {
+    // ⚠️ 修改 loadProducts 函数，支持 forceWorkerRefresh
+    async function loadProducts(useCache = true, bypassWorkerCache = false) {
         const refreshBtn = document.querySelector('.top-bar button');
         const CACHE_EXPIRE = 5 * 60 * 1000; // 缓存有效期5分钟
         
@@ -1281,9 +1300,15 @@
 
         // 2. 发起真实请求
         try {
+            // 构造请求头，如果需要绕过 Worker 缓存，就带上暗号
+            const headers = { 'Content-Type': 'application/json' };
+            if (bypassWorkerCache) {
+                headers['X-Force-Refresh'] = 'true'; // ⚠️ 发送暗号
+            }
+
             const response = await fetchWithControl(WORKER_URL, { 
                 method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
+                headers: headers, 
                 body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } }) 
             });
             const result = await response.json();
@@ -1327,7 +1352,6 @@
         }
     }
 
-    // 优化后的并发预加载
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
         
@@ -1370,7 +1394,7 @@
             }
         }
 
-        // 同时启动 3 个并发工作线程
+        // 启动 3 个并发线程
         const workers = Array.from({ length: CONCURRENT_LIMIT }, worker);
         await Promise.all(workers);
         console.log("所有商品详情预加载完成！");
@@ -1745,6 +1769,9 @@
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
 
+                // ⚠️ 强制刷新列表，绕过 Worker 缓存获取最新数据
+                loadProducts(false, true);
+
                 if (!silentSuccess) alert("商品和 SKU 修改成功！");
                 return true;
             } else {
@@ -1840,6 +1867,8 @@
                 // 清空缓存，下次返回重新获取
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
+                // ⚠️ 强制刷新列表
+                loadProducts(false, true);
             } else { alert("修改失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { if(saveBtn) restoreButton(saveBtn); }
     }
@@ -1858,7 +1887,8 @@
                 sessionStorage.removeItem('preload_orders'); 
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
-                loadProducts(false); 
+                // ⚠️ 修改：传 true，强制绕过 Worker 缓存获取最新数据
+                loadProducts(false, true); 
             } else { alert("上架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
@@ -1874,7 +1904,8 @@
                 sessionStorage.removeItem('preload_orders'); 
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
-                loadProducts(false); 
+                // ⚠️ 修改：传 true，强制绕过 Worker 缓存获取最新数据
+                loadProducts(false, true); 
             } else { alert("下架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
