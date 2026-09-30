@@ -91,20 +91,6 @@
             pointer-events: none; transform: scale(0.94); transition: transform 0.03s ease;
         }
         .back-btn.nav-locked { transform: translateY(-50%) scale(0.9); }
-        .top-bar { margin-bottom: 20px; }
-        .top-bar button { 
-            width: 100%; padding: 18px; font-size: 16px; font-weight: 600;
-            background: linear-gradient(180deg, rgba(10, 132, 255, 0.95) 0%, rgba(0, 100, 220, 0.95) 100%);
-            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
-            color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 22px; cursor: pointer;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 8px 24px rgba(10, 132, 255, 0.3);
-            transition: all 0.15s; letter-spacing: -0.2px; position: relative; overflow: hidden; margin-bottom: 0;
-        }
-        .top-bar button::before {
-            content: ""; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
-        }
-        .top-bar button:active { transform: scale(0.98); }
         button { 
             padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600;
             background: var(--ios-blue);
@@ -196,7 +182,7 @@
         .status-btn-off { background: var(--ios-red) !important; color: #fff !important; }
         .status-btn-sold { background: var(--ios-gray) !important; color: #fff !important; }
         .status-btn-unknown { background: var(--ios-orange) !important; color: #fff !important; }
-        .status-msg { margin-top: 12px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
+        .status-msg { margin-top: 20px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
         .modal-content { 
             background: rgba(255, 255, 255, 0.92);
@@ -356,7 +342,6 @@
             .logout-btn button { padding: 14px 28px; font-size: 15px; }
             .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
             .entry-links a { padding: 16px; font-size: 15px; }
-            .top-bar button { width: auto; margin-bottom: 0; padding: 12px 24px; font-size: 14px; float: right; }
             .table-wrapper {
                 overflow-x: auto; clear: both; border-radius: 22px; border: 1px solid var(--glass-border);
                 background: var(--glass-light);
@@ -436,7 +421,9 @@
             <span class="store-label">当前店铺：</span>
             <span class="store-name" id="userNameDisplay">叶刘军</span>
         </div>
-        <div class="logout-btn"><button onclick="refreshAllData(this)">刷新</button></div>
+        <div class="logout-btn">
+            <button id="globalRefreshBtn" onclick="refreshAllData(this)">刷新</button>
+        </div>
     </div>
 
     <div class="entry-links">
@@ -446,9 +433,6 @@
     </div>
 
     <div id="product-page">
-        <div class="top-bar">
-            <button onclick="loadProducts(false, true)">刷新商品列表</button>
-        </div>
         <div id="productStatusMsg" class="status-msg">正在加载商品列表...</div>
 
         <div class="table-wrapper">
@@ -779,7 +763,8 @@
     }
 
     async function loadProducts(useCache = true, bypassWorkerCache = false) {
-        const refreshBtn = document.querySelector('.top-bar button');
+        // ★ 刷新按钮已整合到右上角，这里改为按 id 查找
+        const refreshBtn = document.getElementById('globalRefreshBtn');
         const CACHE_EXPIRE = 5 * 60 * 1000;
 
         if (!useCache) {
@@ -1212,7 +1197,6 @@
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
 
-                // 所有 detail/list 均带 X-Force-Refresh，可立即刷新
                 loadProducts(false, true);
 
                 if (!silentSuccess) alert("商品和 SKU 修改成功！");
@@ -1248,7 +1232,6 @@
 
         btn.innerText = "加载中..."; btn.disabled = true; btn.classList.add('btn-loading');
         try {
-            // 每次都强制拉取最新 detail，避免使用过期的 skuCache
             const response = await fetchWithControl(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
@@ -1293,14 +1276,6 @@
         mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
     }
 
-    /* =========================================================
-       表格 SKU 保存（彻底修复版）
-       关键点：
-       1. 每次都向服务端拉最新 detail（带 force），不依赖可能过期的 skuCache
-       2. sku_id 强制 Number()，与弹窗保存完全一致
-       3. 请求体与弹窗保存格式一致：product_id + price + stock + publish_shop + sku_items
-       4. 详细日志便于排查
-    ========================================================= */
     async function updateSkuData(productId, skuId, saveBtn) {
         const stockInput = document.getElementById(`stock_${skuId}`);
         const priceInput = document.getElementById(`price_${skuId}`);
@@ -1317,7 +1292,6 @@
         if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
 
         try {
-            // ---- 1. 强制拉最新 detail（防止使用过期 skuCache） ----
             const detailResponse = await fetchWithControl(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
@@ -1331,7 +1305,6 @@
             const skuItems = detail.sku_items || [];
             if (skuItems.length === 0) throw new Error("该商品没有 SKU 数据");
 
-            // ---- 2. 更新目标 SKU ----
             let matched = false;
             const updatedSkuItems = skuItems.map(sku => {
                 if (Number(sku.sku_id) === Number(skuId)) {
@@ -1342,7 +1315,6 @@
             });
             if (!matched) throw new Error("未找到对应规格（sku_id 不匹配）");
 
-            // ---- 3. 组装 sku_items：类型与弹窗保存完全一致 ----
             const skuPayload = updatedSkuItems.map(s => ({
                 sku_id: Number(s.sku_id),
                 sku_text: String(s.sku_text || ''),
@@ -1351,7 +1323,6 @@
                 outer_id: String(s.outer_id || '')
             }));
 
-            // ---- 4. 商品级字段（与弹窗保存一致） ----
             const product = currentProductData.find(p => p.product_id === productId) || {};
             const ps = (detail.publish_shop && detail.publish_shop[0]) || {};
             const userName = userNameDisplay.textContent.trim();
@@ -1386,16 +1357,12 @@
                 sku_items: skuPayload
             };
 
-            console.log('[updateSkuData] 请求体:', JSON.stringify(requestBody, null, 2));
-
-            // ---- 5. 提交 ----
             const response = await fetchWithControl(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody })
             });
             const result = await response.json();
-            console.log('[updateSkuData] 服务端响应:', result);
 
             if (result.code === 0) {
                 skuCache[productId] = updatedSkuItems;
@@ -1406,7 +1373,6 @@
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
 
-                // 立即刷新：所有 detail/list 请求都带 X-Force-Refresh
                 loadProducts(false, true);
             } else {
                 alert("修改失败：" + (result.msg || JSON.stringify(result)));
