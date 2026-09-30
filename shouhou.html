@@ -398,7 +398,7 @@
         </div>
         
         <button onclick="loadRefunds(1)">查询</button>
-        <button onclick="loadRefunds(1)">刷新</button>
+        <button onclick="loadRefunds(1, true)">刷新</button>
     </div>
 
     <div id="statusMsg" class="status-msg">正在加载售后列表...</div>
@@ -480,22 +480,24 @@
 
 <script>
     const WORKER_URL = "https://api.1113630283.online";
+    // ★ 强制刷新请求头：让 Worker 绕过 360 秒边缘缓存，直连源站
+    const FORCE_REFRESH_HEADERS = {
+        'Content-Type': 'application/json',
+        'X-Force-Refresh': 'true'
+    };
+
     let isRequesting = false;
     let currentRefundStatus = "";
     let currentRefundType = "";
 
-    // ================= 🚀 新增：浏览器原生返回（不重新加载） =================
     function handleBack(event) {
-        event.preventDefault(); // 阻止 <a> 标签默认的 href 跳转
+        event.preventDefault();
         if (window.history.length > 1) {
-            // 如果存在历史记录，则调用浏览器返回（利用浏览器的往返缓存，不会重新加载首页）
             window.history.back();
         } else {
-            // 如果用户是直接在地址栏打开的这个页面，没有历史记录，则直接跳转回首页
             window.location.href = 'index.html';
         }
     }
-    // ======================================================================
 
     function setupCustomSelect(triggerId, optionsId, onChange) {
         const trigger = document.getElementById(triggerId);
@@ -622,16 +624,13 @@
     const refundTypeMap = { 1: "仅退款", 2: "退货退款" };
     const goodsStatusMap = { 1: "未收到货", 2: "已收到货", 3: "已寄回", 4: "未发货", 5: "卖家确认收货", 6: "已发货" };
 
-    // ================= 🚀 新增：用订单号反查买家昵称 =================
     let _buyerNickCache = null;
 
     async function getBuyerNickByOrderNo(orderNo) {
         if (!orderNo) return '';
 
-        // 1. 内存缓存命中
         if (_buyerNickCache && _buyerNickCache[orderNo]) return _buyerNickCache[orderNo];
 
-        // 2. 复用订单页/首页的预加载缓存
         if (!_buyerNickCache) {
             _buyerNickCache = {};
             try {
@@ -641,11 +640,10 @@
                         if (o.order_no) _buyerNickCache[o.order_no] = o.buyer_nick || '';
                     });
                 }
-            } catch (e) { /* 忽略 */ }
+            } catch (e) { }
         }
         if (_buyerNickCache[orderNo]) return _buyerNickCache[orderNo];
 
-        // 3. 调订单列表接口反查（优先带 order_no 过滤，接口不支持时退化为分页扫描）
         for (let p = 1; p <= 2; p++) {
             try {
                 const resp = await fetch(WORKER_URL, {
@@ -668,48 +666,53 @@
         }
         return '';
     }
-    // =================================================================
 
-    async function loadRefunds(pageNo = 1) {
+    /* =========================================================
+       加载售后列表
+       forceRefresh=true 时不做任何缓存短路，直接请求最新
+    ========================================================= */
+    async function loadRefunds(pageNo = 1, forceRefresh = false) {
         currentPage = pageNo;
-        tableBody.innerHTML = "";
         pageInfo.innerText = `第 ${currentPage} 页`;
-        
-        // 1. 优先从缓存加载（仅限第一页且无筛选条件）
-        if (pageNo === 1 && !currentRefundStatus && !currentRefundType) {
+        statusMsg.innerText = "正在加载售后列表...";
+
+        // 1. 缓存秒开（仅当非强制刷新 + 第一页 + 无筛选条件时）
+        let usedCache = false;
+        if (!forceRefresh && pageNo === 1 && !currentRefundStatus && !currentRefundType) {
             const cached = sessionStorage.getItem('preload_shouhou');
             if (cached) {
                 try {
                     const data = JSON.parse(cached);
                     const list = data.list || [];
                     if (list.length > 0) {
-                        statusMsg.innerText = "加载成功（页面数据已秒开）";
+                        statusMsg.innerText = "已显示缓存数据，正在同步最新...";
+                        tableBody.innerHTML = "";
                         renderList(list);
                         prevBtn.disabled = true;
                         nextBtn.disabled = !data.has_next_page;
+                        usedCache = true;
                     }
                 } catch (e) {
                     console.error("解析售后缓存失败", e);
                 }
-            } else {
-                statusMsg.innerText = "正在加载售后列表...";
             }
-        } else {
-            statusMsg.innerText = "正在加载售后列表...";
         }
-        
-        // 2. 无论是否有缓存，都发起真实请求获取最新数据
+
+        // 2. 真实请求（★ 全部带 X-Force-Refresh，绕过 Worker 边缘缓存）
         const bodyParams = { page_no: currentPage, page_size: pageSize };
         if (currentRefundStatus) bodyParams.refund_status = parseInt(currentRefundStatus);
         if (currentRefundType) bodyParams.refund_type = parseInt(currentRefundType);
 
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/list", body: bodyParams }) });
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: FORCE_REFRESH_HEADERS,
+                body: JSON.stringify({ path: "/api/open/trade/refund/list", body: bodyParams })
+            });
             const result = await response.json();
             if (result.code === 0) {
                 const list = result.data.list || [];
-                
-                // 更新缓存
+
                 if (pageNo === 1 && !currentRefundStatus && !currentRefundType) {
                     sessionStorage.setItem('preload_shouhou', JSON.stringify(result.data));
                 }
@@ -719,12 +722,19 @@
                     tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999; padding:40px;">暂无售后订单数据</td></tr>`;
                 } else {
                     statusMsg.innerText = `成功加载 ${list.length} 条售后订单。`;
+                    tableBody.innerHTML = "";
                     renderList(list);
                 }
                 prevBtn.disabled = (currentPage <= 1);
-                nextBtn.disabled = !result.data.has_next_page; 
-            } else statusMsg.innerText = "加载失败：" + result.msg;
-        } catch (error) { statusMsg.innerText = "请求出错：" + error.message; }
+                nextBtn.disabled = !result.data.has_next_page;
+            } else {
+                statusMsg.innerText = "加载失败：" + result.msg;
+                if (!usedCache) tableBody.innerHTML = "";
+            }
+        } catch (error) {
+            statusMsg.innerText = "请求出错：" + error.message;
+            if (!usedCache) tableBody.innerHTML = "";
+        }
     }
 
     function renderList(list) {
@@ -763,7 +773,7 @@
     function changePage(delta) { 
         const newPage = currentPage + delta; 
         if (newPage < 1) return; 
-        loadRefunds(newPage); 
+        loadRefunds(newPage, true);  // ★ 翻页也强制最新
     }
 
     async function openDetailModal(orderNo) {
@@ -771,7 +781,11 @@
         document.getElementById('detailModal').style.display = 'flex';
         
         try {
-            const refundResp = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/detail", body: { order_no: orderNo } }) });
+            const refundResp = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: FORCE_REFRESH_HEADERS,   // ★ 详情也强制最新
+                body: JSON.stringify({ path: "/api/open/trade/refund/detail", body: { order_no: orderNo } })
+            });
             const refundResult = await refundResp.json();
             
             if (refundResult.code === 0 && refundResult.data) {
@@ -784,7 +798,6 @@
                 const applyTimeStr = d.apply_time ? new Date(d.apply_time * 1000).toLocaleString('zh-CN') : '未知时间';
                 const refundTimeStr = d.refund_time ? new Date(d.refund_time * 1000).toLocaleString('zh-CN') : '-';
 
-                // 详情接口若自带买家字段则直接用，否则留占位后续反查
                 const nickFromDetail = d.buyer_nick || d.buyer_name || d.nick || '';
 
                 document.getElementById('detailContent').innerHTML = `
@@ -803,7 +816,6 @@
                     <div class="info-item"><div class="label">快递公司</div><div class="value">${d.express_code || '-'}</div></div>
                 `;
 
-                // 异步补全买家昵称（用订单号反查订单列表）
                 if (!nickFromDetail) {
                     getBuyerNickByOrderNo(d.order_no).then(nick => {
                         const el = document.getElementById('detailBuyerNick');
@@ -857,13 +869,18 @@
         }
 
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/operate/agree", body: requestBody }) });
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: "/api/open/trade/refund/operate/agree", body: requestBody })
+            });
             const result = await response.json();
             if (result.code === 0) {
                 alert("同意退款操作成功！");
-                sessionStorage.removeItem('preload_shouhou'); // 清除缓存
+                sessionStorage.removeItem('preload_shouhou');
                 closeAgreeModal();
-                loadRefunds(currentPage);
+                // ★ 强制刷新，绕过 Worker 缓存
+                loadRefunds(currentPage, true);
             } else {
                 alert("操作失败：" + result.msg);
             }
@@ -879,7 +896,11 @@
         document.getElementById('refuseModal').style.display = 'flex';
         
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/refused/reason", body: { order_no: orderNo } }) });
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: FORCE_REFRESH_HEADERS,   // ★ 拒绝原因列表也强制最新
+                body: JSON.stringify({ path: "/api/open/trade/refund/refused/reason", body: { order_no: orderNo } })
+            });
             const result = await response.json();
             if (result.code === 0 && result.data.refuse_reason) {
                 let options = '<option value="">请选择拒绝原因</option>';
@@ -907,13 +928,18 @@
         if (refuseExplain) requestBody.refuse_explain = refuseExplain;
 
         try {
-            const response = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/trade/refund/operate/refused", body: requestBody }) });
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: "/api/open/trade/refund/operate/refused", body: requestBody })
+            });
             const result = await response.json();
             if (result.code === 0) {
                 alert("拒绝退款操作成功！");
-                sessionStorage.removeItem('preload_shouhou'); // 清除缓存
+                sessionStorage.removeItem('preload_shouhou');
                 closeRefuseModal();
-                loadRefunds(currentPage);
+                // ★ 强制刷新
+                loadRefunds(currentPage, true);
             } else {
                 alert("操作失败：" + result.msg);
             }
@@ -922,7 +948,8 @@
         }
     }
 
-    loadRefunds(1);
+    // 首次进入：允许使用缓存（秒开），同时后台静默拉最新数据覆盖
+    loadRefunds(1, false);
 </script>
 </body>
 </html>
