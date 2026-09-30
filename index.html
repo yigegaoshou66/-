@@ -11,52 +11,33 @@
             --ios-red: #FF3B30;
             --ios-orange: #FF9500;
             --ios-gray: #8E8E93;
-            
             --text-primary: #1c1c1e;
             --text-secondary: rgba(60, 60, 67, 0.6);
             --text-tertiary: rgba(60, 60, 67, 0.35);
-            
             --glass-light: rgba(255, 255, 255, 0.55);
             --glass-light-strong: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(255, 255, 255, 0.9);
             --glass-highlight: rgba(255, 255, 255, 1);
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
         html, body { margin: 0; padding: 0; min-height: 100vh; }
-
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; 
-            padding: 16px; 
-            color: var(--text-primary); 
-            -webkit-font-smoothing: antialiased;
-            background: #F2F4F8;
-            position: relative;
-            overflow-x: hidden;
-            min-height: 100vh;
+            padding: 16px; color: var(--text-primary); -webkit-font-smoothing: antialiased;
+            background: #F2F4F8; position: relative; overflow-x: hidden; min-height: 100vh;
         }
-
         body::before {
-            content: "";
-            position: fixed;
-            inset: -100px;
-            z-index: 0;
+            content: ""; position: fixed; inset: -100px; z-index: 0;
             background: 
                 radial-gradient(circle at 15% 20%, rgba(255, 150, 150, 0.6) 0%, transparent 30%),
                 radial-gradient(circle at 85% 15%, rgba(120, 180, 255, 0.6) 0%, transparent 32%),
                 radial-gradient(circle at 70% 60%, rgba(150, 230, 180, 0.5) 0%, transparent 33%),
                 radial-gradient(circle at 20% 75%, rgba(255, 220, 130, 0.55) 0%, transparent 30%),
                 radial-gradient(circle at 50% 100%, rgba(200, 160, 240, 0.55) 0%, transparent 33%);
-            filter: blur(70px);
-            opacity: 0.9;
-            animation: blobsMove 25s ease-in-out infinite alternate;
+            filter: blur(70px); opacity: 0.9; animation: blobsMove 25s ease-in-out infinite alternate;
         }
         body::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            z-index: 0;
+            content: ""; position: fixed; inset: 0; z-index: 0;
             background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
             pointer-events: none;
         }
@@ -65,310 +46,144 @@
             50% { transform: translate(20px, -30px) scale(1.1); }
             100% { transform: translate(-20px, 20px) scale(1.05); }
         }
-
-        .container { 
-            position: relative;
-            z-index: 1;
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 20px;
-        }
-
-        .top-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 16px; 
-            gap: 12px;
-        }
+        .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
         .store-bar {
-            display: flex; align-items: center; gap: 8px;
-            padding: 14px 20px;
-            border-radius: 22px;
-            background: var(--glass-light);
-            backdrop-filter: blur(30px) saturate(180%);
+            display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-radius: 22px;
+            background: var(--glass-light); backdrop-filter: blur(30px) saturate(180%);
             -webkit-backdrop-filter: blur(30px) saturate(180%);
             border: 1px solid var(--glass-border);
-            box-shadow: 
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-                0 4px 16px rgba(0, 0, 0, 0.05);
-            overflow-x: auto; white-space: nowrap;
-            flex: 1;
-            min-width: 0;
+            box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(255, 255, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.05);
+            overflow-x: auto; white-space: nowrap; flex: 1; min-width: 0;
         }
         .store-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
         .store-name { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
-
         .logout-btn button { 
             width: auto; padding: 14px 20px; font-size: 14px; font-weight: 600;
             background: var(--glass-light-strong);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            color: var(--ios-blue);
-            border: 1px solid var(--glass-border); 
-            border-radius: 22px;
-            cursor: pointer;
-            box-shadow: 
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-                0 4px 12px rgba(0, 0, 0, 0.06);
-            transition: all 0.15s;
-            margin-bottom: 0;
-            white-space: nowrap;
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            color: var(--ios-blue); border: 1px solid var(--glass-border); border-radius: 22px; cursor: pointer;
+            box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(255, 255, 255, 0.5), 0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s; margin-bottom: 0; white-space: nowrap;
         }
         .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
-
         .entry-links { display: flex; gap: 10px; margin-bottom: 16px; }
         .entry-links a { 
-            flex: 1; text-align: center; text-decoration: none; padding: 18px 8px; 
-            border-radius: 22px; 
-            color: var(--text-primary); font-weight: 600; font-size: 14px; 
+            flex: 1; text-align: center; text-decoration: none; padding: 18px 8px; border-radius: 22px;
+            color: var(--text-primary); font-weight: 600; font-size: 14px;
             background: var(--glass-light);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
             border: 1px solid var(--glass-border);
-            box-shadow: 
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-                0 4px 16px rgba(0, 0, 0, 0.05);
-            /* 缩短 transition，让按下立即有反应 */
+            box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(255, 255, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.05);
             transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
-            position: relative;
-            overflow: hidden;
-            /* 移动端原生点击高亮 */
-            -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2);
-            touch-action: manipulation;
+            position: relative; overflow: hidden;
+            -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2); touch-action: manipulation;
         }
         .entry-links a::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 15%; right: 15%;
-            height: 1px;
+            content: ""; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
         }
-        .entry-links a:active { 
-            transform: scale(0.94); 
-            background: rgba(255, 255, 255, 0.9); 
-            transition: transform 0.03s ease, background 0.03s ease;
-        }
+        .entry-links a:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.9); transition: transform 0.03s ease, background 0.03s ease; }
         .entry-order { color: #007AFF; }
         .entry-after { color: #FF9500; }
         .entry-kami { color: #6F42C1; }
-
-        /* 点击导航后的锁定态：立即生效，等待 pageshow 统一清理 */
-        .entry-links a.nav-locked,
-        .back-btn.nav-locked {
-            pointer-events: none;
-            transform: scale(0.94);
-            transition: transform 0.03s ease;
+        .entry-links a.nav-locked, .back-btn.nav-locked {
+            pointer-events: none; transform: scale(0.94); transition: transform 0.03s ease;
         }
-        .back-btn.nav-locked {
-            transform: translateY(-50%) scale(0.9);
-        }
-
+        .back-btn.nav-locked { transform: translateY(-50%) scale(0.9); }
         .top-bar { margin-bottom: 20px; }
         .top-bar button { 
             width: 100%; padding: 18px; font-size: 16px; font-weight: 600;
             background: linear-gradient(180deg, rgba(10, 132, 255, 0.95) 0%, rgba(0, 100, 220, 0.95) 100%);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            color: #fff; 
-            border: 1px solid rgba(255, 255, 255, 0.4); 
-            border-radius: 22px;
-            cursor: pointer;
-            box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.1),
-                0 8px 24px rgba(10, 132, 255, 0.3);
-            transition: all 0.15s;
-            letter-spacing: -0.2px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 0;
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 22px; cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 8px 24px rgba(10, 132, 255, 0.3);
+            transition: all 0.15s; letter-spacing: -0.2px; position: relative; overflow: hidden; margin-bottom: 0;
         }
         .top-bar button::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 20%; right: 20%;
-            height: 1px;
+            content: ""; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
         }
         .top-bar button:active { transform: scale(0.98); }
-
         button { 
-            padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; 
-            background: var(--ios-blue); 
-            transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s; 
+            padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600;
+            background: var(--ios-blue);
+            transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s;
             width: 100%; margin-bottom: 10px;
         }
         button:active { transform: scale(0.92); opacity: 0.85; filter: brightness(0.9); }
-        
         .btn-edit { background: var(--ios-orange); color: #fff; }
         .btn-save { background: var(--ios-green); width: auto; margin-bottom: 0; }
-        
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
-        
         tr { 
-            display: flex; flex-wrap: wrap; 
+            display: flex; flex-wrap: wrap;
             background: var(--glass-light);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border-radius: 26px; 
-            margin-bottom: 14px; padding: 20px; 
+            backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 26px; margin-bottom: 14px; padding: 20px;
             border: 1px solid var(--glass-border);
-            box-shadow: 
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-                0 6px 20px rgba(0, 0, 0, 0.06);
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
+            box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(255, 255, 255, 0.5), 0 6px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s; position: relative; overflow: hidden;
         }
         tr::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 15%; right: 15%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
-            z-index: 2;
+            content: ""; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent); z-index: 2;
         }
         tr:active { background: rgba(255, 255, 255, 0.7); }
-        
         td { 
-            display: flex; align-items: center; 
-            padding: 0; border: none; 
-            font-size: 13px; text-align: left; color: var(--text-primary); 
-            flex: 0 0 auto; margin-right: 12px; 
-            position: relative;
-            z-index: 1;
+            display: flex; align-items: center; padding: 0; border: none;
+            font-size: 13px; text-align: left; color: var(--text-primary);
+            flex: 0 0 auto; margin-right: 12px; position: relative; z-index: 1;
         }
         td::before { content: attr(data-label); font-weight: 500; color: var(--text-secondary); margin-right: 4px; flex-shrink: 0; }
-        
-        td[data-label="标题"], td[data-label="状态 / 操作"] { 
-            flex: 0 0 100%; width: 100%; margin-right: 0;
-        }
-        
-        td[data-label="标题"] { 
-            padding-bottom: 8px; margin-bottom: 6px; 
-            border-bottom: 1px solid rgba(60,60,67,0.08); 
-            display: block; 
+        td[data-label="标题"], td[data-label="状态 / 操作"] { flex: 0 0 100%; width: 100%; margin-right: 0; }
+        td[data-label="标题"] {
+            padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); display: block;
         }
         td[data-label="标题"]::before { display: none; }
-        
-        .product-title-wrapper {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
-        }
-        .product-thumb {
-            width: 64px; 
-            height: 64px;
-            border-radius: 10px;
-            object-fit: cover;
-            background: #f0f0f0;
-            flex-shrink: 0;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .product-meta {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-        }
+        .product-title-wrapper { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
+        .product-thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f0f0f0; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); }
+        .product-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .product-title-text {
-            font-size: 15px; 
-            font-weight: 700; 
-            line-height: 1.35; 
-            margin-bottom: 4px;
-            display: -webkit-box; 
-            -webkit-line-clamp: 2; 
-            -webkit-box-orient: vertical; 
-            overflow: hidden;
+            font-size: 15px; font-weight: 700; line-height: 1.35; margin-bottom: 4px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
-        .product-id-text {
-            font-size: 11px; 
-            color: var(--text-tertiary); 
-            font-family: monospace;
-        }
-
-        td[data-label="状态 / 操作"] { 
-            margin-top: 10px; padding-top: 12px; 
-            border-top: none; 
+        .product-id-text { font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
+        td[data-label="状态 / 操作"] {
+            margin-top: 10px; padding-top: 12px; border-top: none;
             display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-start;
         }
         td[data-label="状态 / 操作"]::before { display: none; }
         td[data-label="状态 / 操作"] button { padding: 10px 16px; font-size: 13px; margin: 0; border-radius: 100px; width: auto; font-weight: 600; }
-        
-        /* ===== SKU 展开行（移动端默认布局，由媒体查询接管） ===== */
         tr.sku-row {
             display: flex; flex-wrap: wrap;
             background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border-radius: 20px;
-            margin-top: -8px; margin-bottom: 14px;
-            margin-left: 10px; 
-            padding: 14px; 
-            border: 1px solid var(--glass-border);
-            border-left: 4px solid var(--ios-blue);
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-radius: 20px; margin-top: -8px; margin-bottom: 14px; margin-left: 10px; padding: 14px;
+            border: 1px solid var(--glass-border); border-left: 4px solid var(--ios-blue);
             box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px rgba(0,0,0,0.04);
         }
         tr.sku-row td { font-size: 13px; padding: 0; margin: 0; border: none; }
-        tr.sku-row td[data-label="SKU信息"] { 
-            flex: 1 1 100%; width: 100%; display: block; 
-        }
-        tr.sku-row td[data-label="操作"] { 
-            flex: 0 0 100%; width: 100%; 
-            display: flex; justify-content: flex-end; 
+        tr.sku-row td[data-label="SKU信息"] { flex: 1 1 100%; width: 100%; display: block; }
+        tr.sku-row td[data-label="操作"] {
+            flex: 0 0 100%; width: 100%; display: flex; justify-content: flex-end;
             margin-top: 10px; padding: 0; border: none;
         }
-
-        .sku-info-row {
-            display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
-            width: 100%;
-        }
-        .sku-id {
-            flex: 0 0 100%;
-            font-size: 11px; color: var(--text-tertiary); font-family: monospace;
-        }
-        .sku-name {
-            flex: 0 0 100%;
-            font-weight: 600; font-size: 13px; color: var(--text-primary);
-            word-break: break-word;
-        }
-        .sku-field {
-            display: flex; align-items: center; gap: 4px;
-            flex: 1 1 0; min-width: 0;
-            font-size: 12px; color: var(--text-secondary);
-        }
-        .sku-field .input-box { 
-            flex: 1; min-width: 0;
-            padding: 6px 2px; 
-            font-size: 13px; 
-            text-align: center; 
-            margin: 0; 
-            border: 1px solid rgba(0,0,0,0.1); 
-            border-radius: 8px; 
-            outline: none; 
-            transition: all 0.2s;
-            background: #fff;
-            -webkit-appearance: none;
+        .sku-info-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; width: 100%; }
+        .sku-id { flex: 0 0 100%; font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
+        .sku-name { flex: 0 0 100%; font-weight: 600; font-size: 13px; color: var(--text-primary); word-break: break-word; }
+        .sku-field { display: flex; align-items: center; gap: 4px; flex: 1 1 0; min-width: 0; font-size: 12px; color: var(--text-secondary); }
+        .sku-field .input-box {
+            flex: 1; min-width: 0; padding: 6px 2px; font-size: 13px; text-align: center; margin: 0;
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; outline: none; transition: all 0.2s;
+            background: #fff; -webkit-appearance: none;
         }
         .sku-field .input-box:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 2px rgba(0,122,255,0.15); }
-
         tr.sku-row td[data-label="操作"] .btn-save {
-            width: auto !important;
-            padding: 8px 18px !important;
-            font-size: 12px !important;
-            white-space: nowrap;
-            border-radius: 100px !important;
-            margin: 0 !important;
+            width: auto !important; padding: 8px 18px !important; font-size: 12px !important;
+            white-space: nowrap; border-radius: 100px !important; margin: 0 !important;
         }
-
         .status-btn {
             display: inline-flex !important; align-items: center; justify-content: center;
             padding: 10px 16px !important; border-radius: 100px !important;
@@ -381,362 +196,149 @@
         .status-btn-off { background: var(--ios-red) !important; color: #fff !important; }
         .status-btn-sold { background: var(--ios-gray) !important; color: #fff !important; }
         .status-btn-unknown { background: var(--ios-orange) !important; color: #fff !important; }
-
         .status-msg { margin-top: 12px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
-
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
         .modal-content { 
             background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border-radius: 28px 28px 0 0; 
+            backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 28px 28px 0 0;
             padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
-            width: 100%; max-height: 90vh; 
-            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
             border: 1px solid var(--glass-border);
             box-shadow: 0 -10px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,1);
-            animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
         .modal-content h2 { margin-top: 0; border-bottom: 1px solid rgba(60,60,67,0.08); padding-bottom: 12px; font-size: 18px; font-weight: 700; }
-
-        /* ===== 弹窗头部（标题 + 编辑按钮） ===== */
         .modal-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            border-bottom: 1px solid rgba(60,60,67,0.08);
-            padding-bottom: 12px;
-            margin-bottom: 18px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            border-bottom: 1px solid rgba(60,60,67,0.08); padding-bottom: 12px; margin-bottom: 18px;
         }
         .modal-header-row h2 {
-            margin: 0;
-            padding: 0;
-            border: none;
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 18px;
-            font-weight: 700;
+            margin: 0; padding: 0; border: none; flex: 1; min-width: 0;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-size: 18px; font-weight: 700;
         }
         .modal-edit-btn {
-            width: auto !important;
-            margin: 0 !important;
-            padding: 9px 18px !important;
-            border-radius: 100px !important;
-            font-size: 13px !important;
-            font-weight: 600 !important;
-            background: var(--ios-orange) !important;
-            color: #fff !important;
-            border: 1px solid rgba(255,255,255,0.5) !important;
-            flex-shrink: 0;
+            width: auto !important; margin: 0 !important; padding: 9px 18px !important;
+            border-radius: 100px !important; font-size: 13px !important; font-weight: 600 !important;
+            background: var(--ios-orange) !important; color: #fff !important;
+            border: 1px solid rgba(255,255,255,0.5) !important; flex-shrink: 0;
             box-shadow: 0 2px 10px rgba(255,149,0,0.35);
         }
         .modal-edit-btn:active { transform: scale(0.94) !important; opacity: 0.85 !important; }
-        
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); }
-        .form-group input[type="text"], .form-group input[type="number"], .form-group textarea { 
-            width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.08); 
-            background: rgba(255,255,255,0.7); border-radius: 14px; 
-            font-size: 16px; outline: none; box-sizing: border-box; transition: all 0.2s;
+        .form-group input[type="text"], .form-group input[type="number"], .form-group textarea {
+            width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.7); border-radius: 14px; font-size: 16px;
+            outline: none; box-sizing: border-box; transition: all 0.2s;
         }
         .form-group input:focus, .form-group textarea:focus { border-color: var(--ios-blue); background: #fff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         .form-group textarea { height: 110px; resize: vertical; }
-        
         .modal-footer { text-align: right; margin-top: 20px; border-top: 1px solid rgba(60,60,67,0.08); padding-top: 16px; display: flex; gap: 12px; justify-content: flex-end; }
         .modal-footer button { width: auto; padding: 12px 24px; margin-bottom: 0; font-size: 14px; border-radius: 100px; }
-
         .sku-edit-section { margin-top: 20px; border-top: 1px dashed rgba(60,60,67,0.15); padding-top: 16px; }
         .sku-edit-section h3 { font-size: 14px; margin-bottom: 12px; color: var(--ios-blue); }
         .sku-edit-item { background: rgba(255,255,255,0.6); border-radius: 14px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--glass-border); border-left: 4px solid var(--ios-blue); }
         .sku-edit-item .sku-title { font-weight: 600; font-size: 13px; margin-bottom: 10px; color: var(--text-primary); }
         .sku-edit-item .sku-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
-        .sku-edit-item .sku-inputs input { 
-            flex: 1; min-width: 0; width: 50%; padding: 12px; font-size: 16px; 
-            border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; 
+        .sku-edit-item .sku-inputs input {
+            flex: 1; min-width: 0; width: 50%; padding: 12px; font-size: 16px;
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 10px;
             box-sizing: border-box; outline: none; transition: all 0.2s; background: #fff;
         }
         .sku-edit-item .sku-inputs input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
-
         .image-preview-container {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0,0,0,0.03);
-            border: 1px dashed rgba(0,0,0,0.15);
-            border-radius: 12px;
-            min-height: 70px;
-            align-content: flex-start;
+            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding: 10px;
+            background: rgba(0,0,0,0.03); border: 1px dashed rgba(0,0,0,0.15);
+            border-radius: 12px; min-height: 70px; align-content: flex-start;
         }
         .image-preview-item {
-            position: relative;
-            width: 70px;
-            height: 70px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.08);
-            background: #fff;
-            flex-shrink: 0;
+            position: relative; width: 70px; height: 70px; border-radius: 8px; overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.08); background: #fff; flex-shrink: 0;
         }
-        .image-preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
         .image-preview-item .delete-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 20px;
-            height: 20px;
-            background: rgba(0,0,0,0.6);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            cursor: pointer;
-            line-height: 1;
-            font-weight: bold;
+            position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+            background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer; line-height: 1; font-weight: bold;
         }
-
-        /* ===== 查看属性内容样式 ===== */
-        .viewer-section {
-            margin-bottom: 22px;
-        }
+        .viewer-section { margin-bottom: 22px; }
         .viewer-section-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--ios-blue);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 13px; font-weight: 700; color: var(--ios-blue);
+            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
         }
-        .viewer-section-title::before {
-            content: "";
-            width: 3px;
-            height: 14px;
-            background: var(--ios-blue);
-            border-radius: 2px;
-        }
+        .viewer-section-title::before { content: ""; width: 3px; height: 14px; background: var(--ios-blue); border-radius: 2px; }
         .viewer-content-box {
-            background: rgba(255,255,255,0.6);
-            border: 1px solid rgba(60,60,67,0.08);
-            border-radius: 14px;
-            padding: 14px;
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 260px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(60,60,67,0.08);
+            border-radius: 14px; padding: 14px; font-size: 14px; line-height: 1.6;
+            color: var(--text-primary); white-space: pre-wrap; word-break: break-word;
+            max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
-        .viewer-content-box.empty {
-            color: var(--text-tertiary);
-            text-align: center;
-            padding: 24px;
-        }
-
-        /* 基础信息网格 */
-        .viewer-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
+        .viewer-content-box.empty { color: var(--text-tertiary); text-align: center; padding: 24px; }
+        .viewer-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .viewer-info-item {
-            background: rgba(255,255,255,0.6);
-            border: 1px solid rgba(60,60,67,0.08);
-            border-radius: 12px;
-            padding: 10px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(60,60,67,0.08);
+            border-radius: 12px; padding: 10px 12px;
+            display: flex; flex-direction: column; gap: 4px; min-width: 0;
         }
         .viewer-info-item span { font-size: 11px; color: var(--text-secondary); }
         .viewer-info-item b { font-size: 14px; word-break: break-word; color: var(--text-primary); }
         .viewer-info-item b.price { color: var(--ios-orange); }
         .viewer-info-item b.stock { color: var(--ios-green); }
-
-        .viewer-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .viewer-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .viewer-thumb {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            background: #f0f0f0;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            background: #f0f0f0; flex-shrink: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
         .viewer-thumb:hover { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
-        .viewer-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+        .viewer-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .viewer-thumb .index-badge {
-            position: absolute;
-            bottom: 4px;
-            right: 4px;
-            background: rgba(0,0,0,0.55);
-            color: #fff;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-weight: 600;
+            position: absolute; bottom: 4px; right: 4px;
+            background: rgba(0,0,0,0.55); color: #fff; font-size: 10px;
+            padding: 2px 6px; border-radius: 8px; font-weight: 600;
         }
-        .viewer-sku-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .viewer-sku-list { display: flex; flex-direction: column; gap: 8px; }
         .viewer-sku-item {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(60,60,67,0.08);
-            border-left: 3px solid var(--ios-blue);
-            border-radius: 12px;
-            padding: 12px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            background: rgba(255,255,255,0.7); border: 1px solid rgba(60,60,67,0.08);
+            border-left: 3px solid var(--ios-blue); border-radius: 12px; padding: 12px 14px;
+            display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
         }
-        .viewer-sku-item .sku-text {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-            flex: 1;
-            min-width: 0;
-            word-break: break-word;
-        }
-        .viewer-sku-item .sku-meta {
-            display: flex;
-            gap: 16px;
-            flex-shrink: 0;
-        }
-        .viewer-sku-item .sku-meta span {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        .viewer-sku-item .sku-meta b {
-            color: var(--ios-orange);
-            font-weight: 700;
-        }
-        .viewer-sku-item .sku-meta .stock-num {
-            color: var(--ios-green);
-        }
-
+        .viewer-sku-item .sku-text { font-size: 13px; font-weight: 600; color: var(--text-primary); flex: 1; min-width: 0; word-break: break-word; }
+        .viewer-sku-item .sku-meta { display: flex; gap: 16px; flex-shrink: 0; }
+        .viewer-sku-item .sku-meta span { font-size: 12px; color: var(--text-secondary); }
+        .viewer-sku-item .sku-meta b { color: var(--ios-orange); font-weight: 700; }
+        .viewer-sku-item .sku-meta .stock-num { color: var(--ios-green); }
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
             .viewer-thumb { width: 80px; height: 80px; }
             .modal-header-row h2 { font-size: 16px; }
-            
-            /* 手机端：操作按钮保持一行，按钮变窄均分 */
-            td[data-label="状态 / 操作"] {
-                display: flex !important;
-                flex-wrap: nowrap !important;
-                gap: 5px !important;
-                justify-content: unset !important;
+            td[data-label="状态 / 操作"] { display: flex !important; flex-wrap: nowrap !important; gap: 5px !important; justify-content: unset !important; }
+            td[data-label="状态 / 操作"] button, td[data-label="状态 / 操作"] .status-btn {
+                flex: 1 1 0 !important; width: auto !important; min-width: 0 !important;
+                padding: 8px 2px !important; font-size: 11px !important; margin: 0 !important;
+                white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px;
             }
-            td[data-label="状态 / 操作"] button,
-            td[data-label="状态 / 操作"] .status-btn {
-                flex: 1 1 0 !important;
-                width: auto !important;
-                min-width: 0 !important;
-                padding: 8px 2px !important;
-                font-size: 11px !important;
-                margin: 0 !important;
-                white-space: nowrap !important;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                letter-spacing: -0.3px;
-            }
-
-            /* ===== 移动端 SKU 展开行垂直紧凑布局 ===== */
-            tr.sku-row {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                padding: 12px !important;
-                margin-top: -4px !important;
-                margin-bottom: 12px !important;
-            }
-            tr.sku-row td {
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            tr.sku-row td[data-label="SKU信息"] {
-                margin-bottom: 8px !important;
-            }
-            tr.sku-row td[data-label="操作"] {
-                display: flex !important;
-                justify-content: flex-end !important;
-            }
-            .sku-info-row {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                gap: 8px !important;
-            }
-            .sku-id {
-                display: none !important; /* 隐藏ID，节省空间 */
-            }
+            tr.sku-row { flex-direction: column !important; align-items: stretch !important; padding: 12px !important; margin-top: -4px !important; margin-bottom: 12px !important; }
+            tr.sku-row td { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            tr.sku-row td[data-label="SKU信息"] { margin-bottom: 8px !important; }
+            tr.sku-row td[data-label="操作"] { display: flex !important; justify-content: flex-end !important; }
+            .sku-info-row { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; }
+            .sku-id { display: none !important; }
             .sku-name {
-                display: -webkit-box !important;
-                -webkit-line-clamp: 1 !important; /* 默认折叠只显示一行 */
-                -webkit-box-orient: vertical !important;
-                overflow: hidden !important;
-                font-size: 13px !important;
-                font-weight: 600 !important;
-                cursor: pointer !important;
-                word-break: break-all !important;
-                padding: 2px 0 !important;
-                transition: all 0.2s;
+                display: -webkit-box !important; -webkit-line-clamp: 1 !important;
+                -webkit-box-orient: vertical !important; overflow: hidden !important;
+                font-size: 13px !important; font-weight: 600 !important; cursor: pointer !important;
+                word-break: break-all !important; padding: 2px 0 !important; transition: all 0.2s;
             }
-            .sku-name.expanded {
-                -webkit-line-clamp: unset !important; /* 展开显示全部 */
-                display: block !important;
-            }
-            .sku-fields-group {
-                display: flex !important;
-                align-items: center !important;
-                gap: 8px !important;
-                width: 100% !important;
-            }
-            .sku-field {
-                flex: 1 !important;
-                font-size: 12px !important;
-            }
-            .sku-field .input-box {
-                width: 100% !important;
-                flex: 1 !important;
-                padding: 8px 4px !important;
-                font-size: 13px !important;
-            }
-            tr.sku-row td[data-label="操作"] .btn-save {
-                padding: 6px 16px !important;
-                font-size: 12px !important;
-            }
+            .sku-name.expanded { -webkit-line-clamp: unset !important; display: block !important; }
+            .sku-fields-group { display: flex !important; align-items: center !important; gap: 8px !important; width: 100% !important; }
+            .sku-field { flex: 1 !important; font-size: 12px !important; }
+            .sku-field .input-box { width: 100% !important; flex: 1 !important; padding: 8px 4px !important; font-size: 13px !important; }
+            tr.sku-row td[data-label="操作"] .btn-save { padding: 6px 16px !important; font-size: 12px !important; }
         }
         button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
         .btn-loading { pointer-events: none; opacity: 0.8; }
@@ -746,28 +348,19 @@
             border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         @media (min-width: 768px) {
             body { padding: 32px; }
             .container { padding: 0; max-width: 1200px; }
-            
             .top-header { margin-bottom: 20px; }
-            .store-bar { max-width: none; margin: 0; } 
+            .store-bar { max-width: none; margin: 0; }
             .logout-btn button { padding: 14px 28px; font-size: 15px; }
-
             .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
             .entry-links a { padding: 16px; font-size: 15px; }
-
             .top-bar button { width: auto; margin-bottom: 0; padding: 12px 24px; font-size: 14px; float: right; }
-            
-            .table-wrapper { 
-                overflow-x: auto; 
-                clear: both;
-                border-radius: 22px; 
-                border: 1px solid var(--glass-border);
+            .table-wrapper {
+                overflow-x: auto; clear: both; border-radius: 22px; border: 1px solid var(--glass-border);
                 background: var(--glass-light);
-                backdrop-filter: blur(30px) saturate(180%);
-                -webkit-backdrop-filter: blur(30px) saturate(180%);
+                backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
                 box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
             }
             table { display: table !important; width: 100%; border-collapse: collapse; }
@@ -775,102 +368,57 @@
             thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
             thead tr::before { display: none; }
             thead th { display: table-cell !important; padding: 18px !important; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid rgba(60,60,67,0.08); white-space: nowrap; font-size: 13px; }
-            
-            tbody tr { 
-                display: table-row !important; 
-                background: transparent !important; 
-                border: none !important; 
-                box-shadow: none !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                border-radius: 0 !important; 
-                border-bottom: 1px solid rgba(60,60,67,0.06) !important;
-                overflow: visible;
+            tbody tr {
+                display: table-row !important; background: transparent !important;
+                border: none !important; box-shadow: none !important;
+                margin: 0 !important; padding: 0 !important; border-radius: 0 !important;
+                border-bottom: 1px solid rgba(60,60,67,0.06) !important; overflow: visible;
             }
             tbody tr::before { display: none; }
             tbody tr:hover { background: rgba(255, 255, 255, 0.4) !important; }
-            tbody td { 
-                display: table-cell !important; 
-                padding: 18px !important; 
-                text-align: left; 
-                border: none !important; 
-                vertical-align: middle; 
-                width: auto !important; 
-                margin: 0 !important; 
-                font-size: 14px; 
-                color: var(--text-primary) !important; 
+            tbody td {
+                display: table-cell !important; padding: 18px !important; text-align: left;
+                border: none !important; vertical-align: middle;
+                width: auto !important; margin: 0 !important;
+                font-size: 14px; color: var(--text-primary) !important;
             }
             tbody td::before { display: none !important; }
-            
             tbody td[data-label="标题"] { min-width: 200px; border-bottom: none !important; padding-bottom: 18px !important; margin-bottom: 0 !important; }
             .product-thumb { width: 50px; height: 50px; border-radius: 8px; }
             .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: unset; }
-
-            /* 桌面端「状态 / 操作」列改为表格单元格 + 按钮不换行 */
-            tbody td[data-label="状态 / 操作"] { 
-                display: table-cell !important; 
-                white-space: nowrap !important; 
-                border-top: none !important; 
-                margin-top: 0 !important; 
-                padding-top: 18px !important; 
-                vertical-align: middle !important;
-                text-align: left !important;
+            tbody td[data-label="状态 / 操作"] {
+                display: table-cell !important; white-space: nowrap !important;
+                border-top: none !important; margin-top: 0 !important;
+                padding-top: 18px !important; vertical-align: middle !important; text-align: left !important;
             }
-            tbody td[data-label="状态 / 操作"] button,
-            tbody td[data-label="状态 / 操作"] .status-btn { 
-                display: inline-flex !important; 
-                align-items: center;
-                justify-content: center;
-                width: auto !important; 
-                margin: 0 8px 0 0 !important; 
-                padding: 8px 14px !important; 
-                font-size: 13px !important; 
-                white-space: nowrap !important;
-                vertical-align: middle !important;
-                flex: none !important;
+            tbody td[data-label="状态 / 操作"] button, tbody td[data-label="状态 / 操作"] .status-btn {
+                display: inline-flex !important; align-items: center; justify-content: center;
+                width: auto !important; margin: 0 8px 0 0 !important; padding: 8px 14px !important;
+                font-size: 13px !important; white-space: nowrap !important;
+                vertical-align: middle !important; flex: none !important;
             }
             tbody td[data-label="状态 / 操作"] button:last-child { margin-right: 0 !important; }
-
-            /* ===== SKU 展开行（桌面端） ===== */
-            tr.sku-row { 
-                display: table-row !important; 
-                background: rgba(255,255,255,0.4) !important; 
-                border-radius: 0 !important; 
-                margin: 0 !important; 
-                box-shadow: none !important; 
-                border: none !important; 
-                border-left: none !important; 
-                backdrop-filter: none; 
+            tr.sku-row {
+                display: table-row !important; background: rgba(255,255,255,0.4) !important;
+                border-radius: 0 !important; margin: 0 !important; box-shadow: none !important;
+                border: none !important; border-left: none !important; backdrop-filter: none;
             }
-            tr.sku-row td { 
-                display: table-cell !important; 
-                padding: 16px 18px !important; 
-                font-size: 14px !important; 
-                width: auto !important; 
-                margin: 0 !important; 
-                vertical-align: middle !important;
-                text-align: left !important;
-                border-bottom: 1px solid rgba(60,60,67,0.06) !important; 
+            tr.sku-row td {
+                display: table-cell !important; padding: 16px 18px !important; font-size: 14px !important;
+                width: auto !important; margin: 0 !important; vertical-align: middle !important;
+                text-align: left !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important;
             }
             tr.sku-row td[data-label="操作"] { white-space: nowrap !important; }
-            tr.sku-row td[data-label="操作"] .btn-save {
-                padding: 8px 16px !important;
-                font-size: 13px !important;
-            }
-
+            tr.sku-row td[data-label="操作"] .btn-save { padding: 8px 16px !important; font-size: 13px !important; }
             .sku-info-row { flex-wrap: nowrap; gap: 16px; }
             .sku-id { flex: 0 0 auto; font-size: 12px; }
             .sku-name { flex: 0 0 auto; font-size: 14px; }
             .sku-field { flex: 0 0 auto; font-size: 13px; }
             .sku-field .input-box { width: 90px; flex: none; padding: 8px !important; font-size: 14px !important; }
-
             .modal-overlay { align-items: center; }
-            .modal-content { 
-                border-radius: 28px; 
-                width: 90%; max-width: 600px; 
-                margin: auto; max-height: 85vh; 
-                animation: fadeIn 0.2s; 
-                padding: 28px;
+            .modal-content {
+                border-radius: 28px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh;
+                animation: fadeIn 0.2s; padding: 28px;
             }
             @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
             .sku-edit-item .sku-inputs input { font-size: 15px; }
@@ -912,7 +460,6 @@
     </div>
 </div>
 
-<!-- ======== 商品弹窗（查看属性 + 编辑 二合一） ======== -->
 <div id="productModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header-row">
@@ -920,7 +467,6 @@
             <button id="modalEditToggleBtn" class="modal-edit-btn" onclick="switchToEditMode()">编辑</button>
         </div>
 
-        <!-- ============ 查看模式 ============ -->
         <div id="viewModeBody">
             <div class="viewer-section">
                 <div class="viewer-section-title">基础信息</div>
@@ -960,7 +506,6 @@
             </div>
         </div>
 
-        <!-- ============ 编辑模式 ============ -->
         <div id="editModeBody" style="display:none;">
             <input type="hidden" id="editProductId">
             <div class="form-group">
@@ -992,7 +537,6 @@
             </div>
         </div>
 
-        <!-- ============ 底部按钮 ============ -->
         <div class="modal-footer" id="viewModeFooter">
             <button style="background: var(--ios-gray);" onclick="closeProductModal()">关闭</button>
         </div>
@@ -1003,7 +547,6 @@
     </div>
 </div>
 
-<!-- 全屏放大图片层 -->
 <div id="imageZoomOverlay" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); z-index: 2000; justify-content: center; align-items: center; cursor: zoom-out;" onclick="closeZoom()">
     <img id="zoomedImage" src="" style="max-width: 95%; max-height: 95%; object-fit: contain; box-shadow: 0 0 30px rgba(0,0,0,0.8); border-radius: 6px;">
 </div>
@@ -1011,23 +554,20 @@
 <script>
     const WORKER_URL = "https://api.1113630283.online";
     let isNavigating = false;
-    
-    let currentProductData = []; 
-    const productDetailCache = {}; 
-    const skuCache = {}; 
+    let currentProductData = [];
+    const productDetailCache = {};
+    const skuCache = {};
 
     const MAX_CONCURRENT = 3;
     let activeRequests = 0;
-    
+
     async function fetchWithControl(url, options, timeout = 8000, isBackground = false) {
         if (!isBackground && activeRequests >= MAX_CONCURRENT) {
             throw new Error('当前请求过多，请稍后重试（正在处理其他操作）');
         }
         if (!isBackground) activeRequests++;
-        
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
-        
         try {
             const response = await fetch(url, { ...options, signal: controller.signal });
             clearTimeout(id);
@@ -1043,29 +583,22 @@
         }
     }
 
-    // ======= 全局点击事件：按钮防抖与状态恢复 =======
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.entry-links a, .back-btn');
-
         if (!btn && !link) return;
-
         if (link) {
             if (link.classList.contains('nav-locked')) {
                 e.stopImmediatePropagation(); e.preventDefault(); return;
             }
             link.classList.add('nav-locked');
-            // 不再设置定时器，交给 pageshow 统一清理
             return;
         }
-
         if (btn) {
             if (btn.disabled) return;
             if (btn.classList.contains('no-global-loading')) return;
             if (btn.closest('#imageZoomOverlay') || btn.closest('#productModal')) return;
-            if (!btn.dataset.originalText) {
-                btn.dataset.originalText = btn.innerText;
-            }
+            if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerText;
             btn.disabled = true;
             btn.classList.add('btn-loading');
         }
@@ -1080,29 +613,21 @@
         }
     }
 
-    /* ================= 弹窗状态 ================= */
-    let modalProductId = null;      // 当前弹窗商品
-    let modalDetailData = null;     // 当前弹窗详情数据
-    let modalMode = 'view';         // 'view' | 'edit'
+    let modalProductId = null;
+    let modalDetailData = null;
+    let modalMode = 'view';
     let modalHeaderTitle = '商品属性';
-    let isSaving = false;           // 防重复提交
-
+    let isSaving = false;
     let editFormDirty = false;
 
-    // 编辑区任意输入 → 标记为脏（事件委托）
     document.getElementById('editModeBody').addEventListener('input', function() {
         editFormDirty = true;
     });
 
-    /* ======= 点击遮罩空白区域：智能处理 ======= */
     document.getElementById('productModal').addEventListener('click', function(e) {
-        // 只有直接点击遮罩层本身（而不是它内部的 .modal-content）才触发
-        if (e.target === this) {
-            handleModalCloseAttempt();
-        }
+        if (e.target === this) handleModalCloseAttempt();
     });
 
-    // 点击表格空白处收起 SKU 行（弹窗内点击不触发）
     document.addEventListener('click', function(e) {
         if (e.target.closest('.modal-content')) return;
         if (!e.target.closest('.sku-row') && !e.target.closest('button[onclick^="toggleSkuList"]')) {
@@ -1122,29 +647,22 @@
     const productStatusMsg = document.getElementById('productStatusMsg');
     const userNameDisplay = document.getElementById('userNameDisplay');
 
-    /* ================= 预加载其他页面数据 ================= */
     async function preloadOtherPages() {
-        console.log("开始后台静默预加载其他页面数据...");
-        
         try {
             if (!sessionStorage.getItem('preload_orders')) {
-                const response = await fetchWithControl(WORKER_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ path: "/api/open/order/list", body: { page_no: 1, page_size: 20 } }) 
+                const response = await fetchWithControl(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: "/api/open/order/list", body: { page_no: 1, page_size: 20 } })
                 }, 10000, true);
                 const result = await response.json();
                 if (result.code === 0) {
                     sessionStorage.setItem('preload_orders', JSON.stringify(result.data));
-                    console.log("订单页面预加载成功");
                 }
             }
-        } catch (e) { console.log("订单页面预加载失败", e); }
-
-        console.log("所有页面预加载完成！");
+        } catch (e) { }
     }
 
-    /* ================= 图片预览（编辑区） ================= */
     function renderImagePreview() {
         const imagesText = document.getElementById('editImages').value;
         const container = document.getElementById('imagePreviewContainer');
@@ -1181,27 +699,21 @@
         editFormDirty = true;
     });
 
-    /* ================= 全局强制刷新 ================= */
     async function refreshAllData(btn) {
         try {
-            // 1. 清空前端所有本地缓存
             sessionStorage.removeItem('preload_product_list');
             sessionStorage.removeItem('preload_product_list_time');
             sessionStorage.removeItem('preload_orders');
             Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
             Object.keys(skuCache).forEach(k => delete skuCache[k]);
-            
-            // 2. 强制向 Worker 请求最新数据，并带上暗号
             await loadProducts(false, true);
         } catch (e) {
             console.error("刷新失败", e);
         } finally {
-            // ⚠️ 重点修复：使用 restoreButton 清除 btn-loading 类，否则旋转图标永远不会消失
             if (btn) restoreButton(btn);
         }
     }
 
-    /* ================= 商品列表渲染 ================= */
     function renderProductRow(product, isUpdate = false) {
         let imgUrl = '';
         if (productDetailCache[product.product_id]) {
@@ -1215,7 +727,6 @@
             else if (product.image) imgUrl = product.image;
             else if (product.publish_shop && product.publish_shop[0] && product.publish_shop[0].images) imgUrl = product.publish_shop[0].images[0];
         }
-        
         if (imgUrl && !imgUrl.startsWith('http')) imgUrl = 'https://img.alicdn.com/' + imgUrl;
 
         let statusActionBtn = '';
@@ -1258,7 +769,7 @@
                 <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
             </td>
         `;
-        
+
         if (isUpdate) {
             const oldTr = productTableBody.querySelector(`tr[data-product-id="${product.product_id}"]`);
             if (oldTr) oldTr.replaceWith(tr);
@@ -1267,18 +778,15 @@
         }
     }
 
-    // ⚠️ 修改 loadProducts 函数，支持 forceWorkerRefresh
     async function loadProducts(useCache = true, bypassWorkerCache = false) {
         const refreshBtn = document.querySelector('.top-bar button');
-        const CACHE_EXPIRE = 5 * 60 * 1000; // 缓存有效期5分钟
-        
-        // 强制刷新时清空缓存
+        const CACHE_EXPIRE = 5 * 60 * 1000;
+
         if (!useCache) {
             sessionStorage.removeItem('preload_product_list');
             sessionStorage.removeItem('preload_product_list_time');
         }
 
-        // 1. 尝试读取缓存，快速渲染，且判断过期
         if (useCache) {
             const cached = sessionStorage.getItem('preload_product_list');
             const cacheTime = sessionStorage.getItem('preload_product_list_time');
@@ -1289,7 +797,6 @@
                     if (list.length > 0) {
                         productStatusMsg.innerText = "已显示缓存数据";
                         currentProductData = list;
-                        // 按上架状态排序
                         currentProductData.sort((a, b) => {
                             const aWeight = (a.product_status === 22) ? 0 : 1;
                             const bWeight = (b.product_status === 22) ? 0 : 1;
@@ -1297,14 +804,10 @@
                         });
                         productTableBody.innerHTML = "";
                         currentProductData.forEach(product => renderProductRow(product));
-                        
-                        // 缓存有效，直接返回，不再发起网络请求，解决排队问题
                         if (refreshBtn) restoreButton(refreshBtn);
                         return;
                     }
-                } catch (e) {
-                    console.error("解析商品缓存失败", e);
-                }
+                } catch (e) { console.error("解析商品缓存失败", e); }
             }
         }
 
@@ -1313,25 +816,20 @@
             if (!useCache) productTableBody.innerHTML = "";
         }
 
-        // 2. 发起真实请求
         try {
-            // 构造请求头，如果需要绕过 Worker 缓存，就带上暗号
             const headers = { 'Content-Type': 'application/json' };
-            if (bypassWorkerCache) {
-                headers['X-Force-Refresh'] = 'true'; // ⚠️ 发送暗号
-            }
+            if (bypassWorkerCache) headers['X-Force-Refresh'] = 'true';
 
-            const response = await fetchWithControl(WORKER_URL, { 
-                method: 'POST', 
-                headers: headers, 
-                body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } }) 
+            const response = await fetchWithControl(WORKER_URL, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ path: "/api/open/product/list", body: { page: 1, page_size: 10 } })
             });
             const result = await response.json();
             if (result.code === 0) {
                 productStatusMsg.innerText = "加载成功！";
                 currentProductData = result.data.list || [];
-                
-                // 更新缓存和时间戳
+
                 sessionStorage.setItem('preload_product_list', JSON.stringify(result.data));
                 sessionStorage.setItem('preload_product_list_time', Date.now().toString());
 
@@ -1341,27 +839,24 @@
                 currentProductData.sort((a, b) => {
                     const aWeight = (a.product_status === 22) ? 0 : 1;
                     const bWeight = (b.product_status === 22) ? 0 : 1;
-                    return aWeight - bWeight; 
+                    return aWeight - bWeight;
                 });
 
                 productTableBody.innerHTML = "";
                 currentProductData.forEach(product => renderProductRow(product));
-                
-                // 执行并发预加载
+
                 prefetchProductDetails(currentProductData);
-                
-                // 延迟到浏览器空闲时执行其他页面的预加载，避开首屏请求高峰
+
                 if (window.requestIdleCallback) {
                     window.requestIdleCallback(() => preloadOtherPages(), { timeout: 5000 });
                 } else {
                     setTimeout(preloadOtherPages, 5000);
                 }
-                
-            } else { 
-                productStatusMsg.innerText = "加载失败：" + result.msg; 
+            } else {
+                productStatusMsg.innerText = "加载失败：" + result.msg;
             }
-        } catch (error) { 
-            productStatusMsg.innerText = "请求出错：" + error.message; 
+        } catch (error) {
+            productStatusMsg.innerText = "请求出错：" + error.message;
         } finally {
             if (refreshBtn) restoreButton(refreshBtn);
         }
@@ -1369,19 +864,13 @@
 
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
-        
-        // 排序：优先预加载已上架的商品
         const sortedProducts = [...products].sort((a, b) => {
             const aWeight = (a.product_status === 22) ? 0 : 1;
             const bWeight = (b.product_status === 22) ? 0 : 1;
             return aWeight - bWeight;
         });
-
-        // 设置真正的并发数（避免浏览器同域名连接数限制导致的排队，3个是比较平滑的值）
-        const CONCURRENT_LIMIT = 3; 
+        const CONCURRENT_LIMIT = 3;
         let index = 0;
-
-        // 并发工作线程
         async function worker() {
             while (index < sortedProducts.length) {
                 const product = sortedProducts[index++];
@@ -1389,10 +878,9 @@
                     try {
                         const response = await fetchWithControl(WORKER_URL, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
                             body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: product.product_id } })
-                        }, 10000, true); // isBackground = true，绕过前台并发限制，但不占用主动请求名额
-                        
+                        }, 10000, true);
                         const result = await response.json();
                         if (result.code === 0 && result.data) {
                             productDetailCache[product.product_id] = result.data;
@@ -1408,14 +896,10 @@
                 }
             }
         }
-
-        // 启动 3 个并发线程
         const workers = Array.from({ length: CONCURRENT_LIMIT }, worker);
         await Promise.all(workers);
-        console.log("所有商品详情预加载完成！");
     }
 
-    /* ================= 弹窗：模式切换 ================= */
     function setModalMode(mode) {
         modalMode = mode;
         const isEdit = (mode === 'edit');
@@ -1432,13 +916,11 @@
         setModalMode('edit');
     }
 
-    /* ======== 取消按钮（底部） ======== */
     window.cancelEditMode = function() {
         if (isSaving) return;
         if (editFormDirty) {
             if (!confirm('放弃当前未保存的修改并返回查看模式？')) return;
         }
-        // 用缓存数据重新渲染编辑表单，清空脏状态
         if (modalProductId !== null && modalDetailData) {
             renderEditForm(modalProductId, modalDetailData);
         }
@@ -1446,7 +928,6 @@
         setModalMode('view');
     }
 
-    /* ======== 关闭按钮 / ESC 键入口 ======== */
     window.closeProductModal = function() {
         if (modalMode === 'edit' && editFormDirty) {
             handleModalCloseAttempt();
@@ -1455,37 +936,22 @@
         }
     }
 
-    /* ======== 核心：关闭尝试（含未保存检查） ======== */
     async function handleModalCloseAttempt() {
         if (isSaving) return;
-
-        // 非编辑模式，或没有改动，直接关闭
         if (modalMode !== 'edit' || !editFormDirty) {
             forceCloseProductModal();
             return;
         }
-
-        // 有未保存修改 → 询问是否保存
         const wantSave = confirm(
-            '检测到未保存的修改\n\n' +
-            '点击【确定】保存并关闭\n' +
-            '点击【取消】放弃修改并关闭'
+            '检测到未保存的修改\n\n点击【确定】保存并关闭\n点击【取消】放弃修改并关闭'
         );
-
         if (wantSave) {
             isSaving = true;
             const ok = await saveProductFromModal(true);
             isSaving = false;
-            if (ok) {
-                forceCloseProductModal();
-            }
-            // 保存失败保持弹窗打开，让用户修改
+            if (ok) forceCloseProductModal();
         } else {
-            // 用户选放弃，再确认一次防止误触
-            if (confirm('确定放弃修改并关闭吗？')) {
-                forceCloseProductModal();
-            }
-            // 选“取消”则留在编辑模式继续改
+            if (confirm('确定放弃修改并关闭吗？')) forceCloseProductModal();
         }
     }
 
@@ -1497,17 +963,15 @@
         setModalMode('view');
     }
 
-    /* ================= 打开弹窗 ================= */
     async function openProductModal(productId, btn, startEdit = false) {
         const originalText = btn ? btn.innerText : '';
         if (btn) { btn.disabled = true; btn.innerText = '加载中...'; }
-
         try {
             let detailData = productDetailCache[productId];
             if (!detailData) {
                 const response = await fetchWithControl(WORKER_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
                     body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
                 });
                 const result = await response.json();
@@ -1519,17 +983,13 @@
                     throw new Error(result.msg || '获取详情失败');
                 }
             }
-
             modalProductId = productId;
             modalDetailData = detailData;
-
             renderViewMode(productId, detailData);
             renderEditForm(productId, detailData);
             editFormDirty = false;
-
             document.getElementById('productModal').style.display = 'flex';
             setModalMode(startEdit ? 'edit' : 'view');
-
         } catch (error) {
             alert('获取商品属性失败：' + error.message);
         } finally {
@@ -1542,15 +1002,11 @@
         }
     }
 
-    /* ================= 渲染：查看模式 ================= */
     function renderViewMode(productId, detailData) {
         const product = currentProductData.find(p => p.product_id === productId) || {};
         const title = product.title || detailData.title || '无标题';
-
         modalHeaderTitle = '商品属性 · ' + title;
         document.getElementById('productModalTitle').innerText = modalHeaderTitle;
-
-        // 基础信息
         document.getElementById('viewerTitleText').textContent = title;
         document.getElementById('viewerPriceText').textContent =
             (product.price !== undefined && product.price !== null && product.price !== '')
@@ -1559,11 +1015,8 @@
             (product.stock !== undefined && product.stock !== null) ? product.stock : '-';
         document.getElementById('viewerIdText').textContent = productId;
 
-        // 商品描述
         let content = detailData.content;
-        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
-            content = detailData.publish_shop[0].content;
-        }
+        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) content = detailData.publish_shop[0].content;
         const contentBox = document.getElementById('viewerContentBox');
         if (content && content.trim()) {
             contentBox.classList.remove('empty');
@@ -1573,7 +1026,6 @@
             contentBox.textContent = '暂无商品描述';
         }
 
-        // 商品图片
         let images = [];
         if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images && detailData.publish_shop[0].images.length > 0) {
             images = detailData.publish_shop[0].images;
@@ -1585,7 +1037,6 @@
 
         const imageCountEl = document.getElementById('viewerImageCount');
         imageCountEl.textContent = images.length > 0 ? `（共 ${images.length} 张，点击可放大）` : '';
-
         const grid = document.getElementById('imageGrid');
         grid.innerHTML = '';
         if (images.length === 0) {
@@ -1605,12 +1056,10 @@
             });
         }
 
-        // SKU 规格
         const skuSection = document.getElementById('viewerSkuSection');
         const skuListEl = document.getElementById('viewerSkuList');
         const skuCountEl = document.getElementById('viewerSkuCount');
         const skuItems = detailData.sku_items || [];
-
         if (skuItems.length > 0) {
             skuSection.style.display = 'block';
             skuCountEl.textContent = `（共 ${skuItems.length} 个规格）`;
@@ -1633,11 +1082,9 @@
         }
     }
 
-    /* ================= 渲染：编辑模式 ================= */
     function renderEditForm(productId, detailData) {
         if (!detailData) detailData = {};
         const product = currentProductData.find(p => p.product_id === productId) || {};
-
         document.getElementById('editProductId').value = productId || '';
         document.getElementById('editTitle').value = product.title || detailData.title || '';
         document.getElementById('editPrice').value =
@@ -1645,15 +1092,9 @@
                 ? (product.price / 100).toFixed(2) : '';
         document.getElementById('editStock').value =
             (product.stock !== undefined && product.stock !== null) ? product.stock : '';
-
-        // 描述
         let content = detailData.content;
-        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) {
-            content = detailData.publish_shop[0].content;
-        }
+        if (!content && detailData.publish_shop && detailData.publish_shop.length > 0) content = detailData.publish_shop[0].content;
         document.getElementById('editContent').value = content || '';
-
-        // 图片
         let images = [];
         if (detailData.publish_shop && detailData.publish_shop[0] && detailData.publish_shop[0].images) {
             images = detailData.publish_shop[0].images;
@@ -1663,14 +1104,13 @@
         document.getElementById('editImages').value = images.join('\n');
         renderImagePreview();
 
-        // SKU
         if (detailData.sku_items && detailData.sku_items.length > 0) {
             document.getElementById('editSkuContainer').style.display = 'block';
             let skuHtml = '';
             detailData.sku_items.forEach(sku => {
                 const priceYuan = (sku.price / 100).toFixed(2);
                 skuHtml += `
-                    <div class="sku-edit-item" data-sku-text="${sku.sku_text}">
+                    <div class="sku-edit-item" data-sku-text="${sku.sku_text}" data-sku-id="${sku.sku_id}" data-sku-outer-id="${sku.outer_id || ''}">
                         <div class="sku-title">${sku.sku_text}</div>
                         <div class="sku-inputs">
                             <input type="number" step="0.01" class="sku-price-input" data-sku-id="${sku.sku_id}" value="${priceYuan}" placeholder="价格(元)">
@@ -1686,7 +1126,6 @@
         }
     }
 
-    /* ================= 底部“保存修改”按钮 ================= */
     async function submitEditProduct(btn) {
         if (isSaving) return;
         if (btn) { btn.disabled = true; btn.innerText = '保存中...'; }
@@ -1696,10 +1135,6 @@
         if (btn) { btn.disabled = false; btn.innerText = '保存修改'; }
     }
 
-    /* ================= 核心保存逻辑 =================
-       返回 true 表示保存成功；false 表示失败（已弹窗提示）
-       silentSuccess: true 时不弹成功提示
-    ================================================== */
     async function saveProductFromModal(silentSuccess) {
         const productId = parseInt(document.getElementById('editProductId').value);
         const title = document.getElementById('editTitle').value.trim();
@@ -1707,19 +1142,15 @@
         const stock = parseInt(document.getElementById('editStock').value);
         const content = document.getElementById('editContent').value.trim();
         const imagesText = document.getElementById('editImages').value.trim();
-        const userName = userNameDisplay.textContent.trim(); 
-
+        const userName = userNameDisplay.textContent.trim();
         const images = imagesText.split('\n').map(line => line.trim()).filter(url => url !== '');
 
-        if (!title || !priceYuan || isNaN(stock) || !content) {
-            alert("请完整填写所有必填项！");
-            return false;
-        }
+        if (!title || !priceYuan || isNaN(stock) || !content) { alert("请完整填写所有必填项！"); return false; }
         if (!userName) { alert("找不到当前店铺名称，请刷新页面！"); return false; }
         if (images.length === 0) { alert("商品图片至少需要保留1张！"); return false; }
         if (images.length > 9) { alert("商品图片最多只能传9张！"); return false; }
 
-        const priceFen = Math.round(parseFloat(priceYuan) * 100); 
+        const priceFen = Math.round(parseFloat(priceYuan) * 100);
         const skuItems = [];
         const skuContainer = document.getElementById('skuListWrapper');
         if (document.getElementById('editSkuContainer').style.display !== 'none') {
@@ -1728,10 +1159,12 @@
                 const pv = parseFloat(item.querySelector('.sku-price-input').value);
                 const sv = parseInt(item.querySelector('.sku-stock-input').value);
                 if (isNaN(pv) || isNaN(sv)) { skuValid = false; }
-                skuItems.push({ 
-                    sku_text: item.getAttribute('data-sku-text'), 
-                    price: Math.round(pv * 100), 
-                    stock: sv 
+                skuItems.push({
+                    sku_id: Number(item.getAttribute('data-sku-id')),
+                    sku_text: item.getAttribute('data-sku-text'),
+                    price: Math.round(pv * 100),
+                    stock: sv,
+                    outer_id: item.getAttribute('data-sku-outer-id') || ''
                 });
             });
             if (!skuValid) { alert("SKU 的价格或库存填写有误，请检查！"); return false; }
@@ -1746,13 +1179,12 @@
         if (skuItems.length > 0) requestBody.sku_items = skuItems;
 
         try {
-            const response = await fetchWithControl(WORKER_URL, { 
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody }) 
+            const response = await fetchWithControl(WORKER_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody })
             });
             const result = await response.json();
             if (result.code === 0) {
-                // 同步本地数据
                 const product = currentProductData.find(p => p.product_id === productId);
                 if (product) {
                     product.title = title;
@@ -1771,20 +1203,16 @@
                     d.sku_items = skuItems;
                     skuCache[productId] = skuItems;
                 }
-
                 if (product) renderProductRow(product, true);
-
-                // 刷新弹窗内容并切回查看
                 modalDetailData = d;
                 renderViewMode(productId, d);
                 editFormDirty = false;
                 setModalMode('view');
 
-                // 清空商品列表缓存，下次进入会重新获取
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
 
-                // ⚠️ 强制刷新列表，绕过 Worker 缓存获取最新数据
+                // 所有 detail/list 均带 X-Force-Refresh，可立即刷新
                 loadProducts(false, true);
 
                 if (!silentSuccess) alert("商品和 SKU 修改成功！");
@@ -1799,7 +1227,6 @@
         }
     }
 
-    /* ================= 表格内 SKU 展开 ================= */
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
         btn.classList.remove('btn-loading');
@@ -1808,7 +1235,9 @@
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
         let nextRow = mainRow.nextElementSibling;
-        while (nextRow && nextRow.classList.contains('sku-row')) { let rowToDelete = nextRow; nextRow = nextRow.nextElementSibling; rowToDelete.remove(); }
+        while (nextRow && nextRow.classList.contains('sku-row')) {
+            let rowToDelete = nextRow; nextRow = nextRow.nextElementSibling; rowToDelete.remove();
+        }
         btn.innerText = "展开规格"; btn.setAttribute('data-expanded', 'false');
         if (isExpanded) { restoreButton(btn); return; }
 
@@ -1817,23 +1246,28 @@
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
-        if (skuCache[productId]) {
-            renderSkuRows(mainRow, skuCache[productId], productId);
-            btn.innerText = "收起规格"; btn.setAttribute('data-expanded', 'true'); restoreButton(btn); return;
-        }
-
         btn.innerText = "加载中..."; btn.disabled = true; btn.classList.add('btn-loading');
         try {
-            const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
+            // 每次都强制拉取最新 detail，避免使用过期的 skuCache
+            const response = await fetchWithControl(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+            });
             const result = await response.json();
-            if (result.code === 0 && result.data.sku_items) {
-                skuCache[productId] = result.data.sku_items; productDetailCache[productId] = result.data;
+            if (result.code === 0 && result.data.sku_items && result.data.sku_items.length > 0) {
+                skuCache[productId] = result.data.sku_items;
+                productDetailCache[productId] = result.data;
                 renderSkuRows(mainRow, result.data.sku_items, productId);
                 btn.innerText = "收起规格"; btn.setAttribute('data-expanded', 'true');
-            } else { alert("该商品暂无规格数据"); }
-        } catch (error) { alert("获取规格失败：" + error.message); } finally {
+            } else {
+                alert("该商品暂无规格数据");
+            }
+        } catch (error) {
+            alert("获取规格失败：" + error.message);
+        } finally {
             btn.disabled = false; btn.classList.remove('btn-loading'); delete btn.dataset.originalText;
-            if (btn.getAttribute('data-expanded') !== 'true') { btn.innerText = "展开规格"; }
+            if (btn.getAttribute('data-expanded') !== 'true') btn.innerText = "展开规格";
         }
     }
 
@@ -1859,36 +1293,132 @@
         mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
     }
 
+    /* =========================================================
+       表格 SKU 保存（彻底修复版）
+       关键点：
+       1. 每次都向服务端拉最新 detail（带 force），不依赖可能过期的 skuCache
+       2. sku_id 强制 Number()，与弹窗保存完全一致
+       3. 请求体与弹窗保存格式一致：product_id + price + stock + publish_shop + sku_items
+       4. 详细日志便于排查
+    ========================================================= */
     async function updateSkuData(productId, skuId, saveBtn) {
-        const stockInput = document.getElementById(`stock_${skuId}`); const priceInput = document.getElementById(`price_${skuId}`);
-        const newStockStr = stockInput.value; const newPriceYuanStr = priceInput.value;
+        const stockInput = document.getElementById(`stock_${skuId}`);
+        const priceInput = document.getElementById(`price_${skuId}`);
+        if (!stockInput || !priceInput) { restoreButton(saveBtn); return alert("找不到输入框，请重新展开规格"); }
+
+        const newStockStr = stockInput.value;
+        const newPriceYuanStr = priceInput.value;
         if (newStockStr === '' || newPriceYuanStr === '') { restoreButton(saveBtn); return alert("请输入价格和库存"); }
-        const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100); const newStock = parseInt(newStockStr);
-        if(saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
+
+        const newPriceFen = Math.round(parseFloat(newPriceYuanStr) * 100);
+        const newStock = parseInt(newStockStr);
+        if (isNaN(newPriceFen) || isNaN(newStock)) { restoreButton(saveBtn); return alert("价格或库存格式错误"); }
+
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = "保存中..."; }
+
         try {
-            let skuItems = skuCache[productId];
-            if (!skuItems) {
-                const detailResponse = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } }) });
-                const detailResult = await detailResponse.json();
-                if (detailResult.code !== 0 || !detailResult.data.sku_items) throw new Error("获取原规格失败");
-                skuItems = detailResult.data.sku_items; skuCache[productId] = skuItems;
+            // ---- 1. 强制拉最新 detail（防止使用过期 skuCache） ----
+            const detailResponse = await fetchWithControl(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
+                body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
+            });
+            const detailResult = await detailResponse.json();
+            if (detailResult.code !== 0 || !detailResult.data) {
+                throw new Error(detailResult.msg || "获取商品详情失败");
             }
-            const updatedSkuItems = skuItems.map(sku => sku.sku_id === skuId ? { ...sku, price: newPriceFen, stock: newStock } : sku);
-            skuCache[productId] = updatedSkuItems; if (productDetailCache[productId]) productDetailCache[productId].sku_items = updatedSkuItems;
-            const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/edit", body: { product_id: productId, sku_items: updatedSkuItems.map(s => ({ sku_text: s.sku_text, price: s.price, stock: s.stock })) } }) });
+            const detail = detailResult.data;
+            const skuItems = detail.sku_items || [];
+            if (skuItems.length === 0) throw new Error("该商品没有 SKU 数据");
+
+            // ---- 2. 更新目标 SKU ----
+            let matched = false;
+            const updatedSkuItems = skuItems.map(sku => {
+                if (Number(sku.sku_id) === Number(skuId)) {
+                    matched = true;
+                    return { ...sku, price: newPriceFen, stock: newStock };
+                }
+                return sku;
+            });
+            if (!matched) throw new Error("未找到对应规格（sku_id 不匹配）");
+
+            // ---- 3. 组装 sku_items：类型与弹窗保存完全一致 ----
+            const skuPayload = updatedSkuItems.map(s => ({
+                sku_id: Number(s.sku_id),
+                sku_text: String(s.sku_text || ''),
+                price: Number(s.price),
+                stock: Number(s.stock),
+                outer_id: String(s.outer_id || '')
+            }));
+
+            // ---- 4. 商品级字段（与弹窗保存一致） ----
+            const product = currentProductData.find(p => p.product_id === productId) || {};
+            const ps = (detail.publish_shop && detail.publish_shop[0]) || {};
+            const userName = userNameDisplay.textContent.trim();
+
+            const title = product.title || detail.title || ps.title || '';
+            const content = detail.content || ps.content || '';
+            let images = ps.images || detail.images || [];
+            if ((!images || images.length === 0) && detail.image) images = [detail.image];
+
+            const productPrice = (product.price != null) ? Number(product.price)
+                : (detail.price != null) ? Number(detail.price)
+                : Number(updatedSkuItems[0].price);
+            const productStock = (product.stock != null) ? Number(product.stock)
+                : (detail.stock != null) ? Number(detail.stock)
+                : updatedSkuItems.reduce((sum, s) => sum + (Number(s.stock) || 0), 0);
+
+            if (!userName) throw new Error("找不到当前店铺名称");
+            if (!title) throw new Error("商品标题为空，请先打开「查看属性」刷新数据");
+            if (!content) throw new Error("商品描述为空，请先打开「查看属性」刷新数据");
+            if (!images || images.length === 0) throw new Error("商品图片为空，请先打开「查看属性」刷新数据");
+
+            const requestBody = {
+                product_id: Number(productId),
+                price: productPrice,
+                stock: productStock,
+                publish_shop: [{
+                    user_name: userName,
+                    title: title,
+                    content: content,
+                    images: images
+                }],
+                sku_items: skuPayload
+            };
+
+            console.log('[updateSkuData] 请求体:', JSON.stringify(requestBody, null, 2));
+
+            // ---- 5. 提交 ----
+            const response = await fetchWithControl(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: "/api/open/product/edit", body: requestBody })
+            });
             const result = await response.json();
-            if (result.code === 0) { 
-                alert("SKU 修改成功！"); 
-                // 清空缓存，下次返回重新获取
+            console.log('[updateSkuData] 服务端响应:', result);
+
+            if (result.code === 0) {
+                skuCache[productId] = updatedSkuItems;
+                productDetailCache[productId] = detail;
+                productDetailCache[productId].sku_items = updatedSkuItems;
+
+                alert("SKU 修改成功！");
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
-                // ⚠️ 强制刷新列表
+
+                // 立即刷新：所有 detail/list 请求都带 X-Force-Refresh
                 loadProducts(false, true);
-            } else { alert("修改失败：" + result.msg); }
-        } catch (error) { alert("请求出错：" + error.message); } finally { if(saveBtn) restoreButton(saveBtn); }
+            } else {
+                alert("修改失败：" + (result.msg || JSON.stringify(result)));
+            }
+        } catch (error) {
+            console.error('[updateSkuData] 异常:', error);
+            alert("请求出错：" + error.message);
+        } finally {
+            if (saveBtn) restoreButton(saveBtn);
+        }
     }
 
-    /* ================= 上下架 ================= */
     async function publishProduct(productId, btn) {
         const userName = userNameDisplay.textContent.trim();
         if (!userName) { restoreButton(btn); return alert("找不到当前店铺名称！"); }
@@ -1897,13 +1427,12 @@
         try {
             const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/publish", body: { product_id: parseInt(productId), user_name: [userName] } }) });
             const result = await response.json();
-            if (result.code === 0) { 
-                alert("上架指令发送成功！"); 
-                sessionStorage.removeItem('preload_orders'); 
+            if (result.code === 0) {
+                alert("上架指令发送成功！");
+                sessionStorage.removeItem('preload_orders');
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
-                // ⚠️ 修改：传 true，强制绕过 Worker 缓存获取最新数据
-                loadProducts(false, true); 
+                loadProducts(false, true);
             } else { alert("上架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
@@ -1914,18 +1443,16 @@
         try {
             const response = await fetchWithControl(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: "/api/open/product/downShelf", body: { product_id: parseInt(productId) } }) });
             const result = await response.json();
-            if (result.code === 0) { 
-                alert("下架指令发送成功！"); 
-                sessionStorage.removeItem('preload_orders'); 
+            if (result.code === 0) {
+                alert("下架指令发送成功！");
+                sessionStorage.removeItem('preload_orders');
                 sessionStorage.removeItem('preload_product_list');
                 sessionStorage.removeItem('preload_product_list_time');
-                // ⚠️ 修改：传 true，强制绕过 Worker 缓存获取最新数据
-                loadProducts(false, true); 
+                loadProducts(false, true);
             } else { alert("下架失败：" + result.msg); }
         } catch (error) { alert("请求出错：" + error.message); } finally { restoreButton(btn); }
     }
 
-    /* ================= 图片放大 ================= */
     function zoomImage(url) {
         document.getElementById('zoomedImage').src = url;
         document.getElementById('imageZoomOverlay').style.display = 'flex';
@@ -1945,18 +1472,11 @@
         }
     });
 
-    /* ================= 启动：支持 BFCache 恢复 ================= */
     window.addEventListener('pageshow', function(event) {
-        // ⚠️ 强制重置导航按钮状态（清理类，而不是内联样式）
         isNavigating = false;
         document.querySelectorAll('.nav-locked').forEach(el => el.classList.remove('nav-locked'));
-
         if (!event.persisted) {
-            // 首次加载或正常刷新
             loadProducts(true);
-        } else {
-            // 从 BFCache 恢复，页面状态已保留，无需重新加载
-            console.log('从 BFCache 恢复，跳过商品加载');
         }
     });
 </script>
