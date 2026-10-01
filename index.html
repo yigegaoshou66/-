@@ -126,7 +126,7 @@
         td[data-label="标题"], td[data-label="状态 / 操作"] { flex: 0 0 100%; width: 100%; margin-right: 0; }
         td[data-label="标题"] {
             padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); display: block;
-            position: relative; padding-right: 42px;   /* ★ 为右上角置顶按钮预留空间 */
+            position: relative; padding-right: 42px;   /* 为右上角置顶按钮预留空间 */
         }
         td[data-label="标题"]::before { display: none; }
         .product-title-wrapper { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
@@ -138,7 +138,7 @@
         }
         .product-id-text { font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
 
-        /* ★★★ 置顶按钮 ★★★ */
+        /* 置顶按钮 */
         .pin-btn {
             position: absolute !important;
             top: -8px !important;
@@ -167,7 +167,6 @@
         .pin-btn.pinned { color: var(--ios-orange) !important; background: rgba(255, 242, 224, 0.95) !important; }
         .pin-btn.pinned svg { fill: currentColor; }
         .pin-btn:active { transform: scale(0.85) !important; opacity: 1 !important; filter: none !important; }
-        /* ★★★ 置顶按钮结束 ★★★ */
 
         td[data-label="状态 / 操作"] {
             margin-top: 10px; padding-top: 12px; border-top: none;
@@ -175,6 +174,8 @@
         }
         td[data-label="状态 / 操作"]::before { display: none; }
         td[data-label="状态 / 操作"] button { padding: 10px 16px; font-size: 13px; margin: 0; border-radius: 100px; width: auto; font-weight: 600; }
+        
+        /* 手机端 SKU 保持原貌 */
         tr.sku-row {
             display: flex; flex-wrap: wrap;
             background: rgba(255, 255, 255, 0.45);
@@ -192,6 +193,7 @@
         .sku-info-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; width: 100%; }
         .sku-id { flex: 0 0 100%; font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
         .sku-name { flex: 0 0 100%; font-weight: 600; font-size: 13px; color: var(--text-primary); word-break: break-word; }
+        .sku-fields-group { display: flex; align-items: center; gap: 8px; width: 100%; }
         .sku-field { display: flex; align-items: center; gap: 4px; flex: 1 1 0; min-width: 0; font-size: 12px; color: var(--text-secondary); }
         .sku-field .input-box {
             flex: 1; min-width: 0; padding: 6px 2px; font-size: 13px; text-align: center; margin: 0;
@@ -331,6 +333,8 @@
         .viewer-sku-item .sku-meta span { font-size: 12px; color: var(--text-secondary); }
         .viewer-sku-item .sku-meta b { color: var(--ios-orange); font-weight: 700; }
         .viewer-sku-item .sku-meta .stock-num { color: var(--ios-green); }
+
+        /* 手机端专用适配（原封不动保留） */
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
             .viewer-thumb { width: 80px; height: 80px; }
@@ -359,6 +363,7 @@
             .sku-field .input-box { width: 100% !important; flex: 1 !important; padding: 8px 4px !important; font-size: 13px !important; }
             tr.sku-row td[data-label="操作"] .btn-save { padding: 6px 16px !important; font-size: 12px !important; }
         }
+
         button:disabled { cursor: not-allowed !important; transform: none !important; opacity: 0.6 !important; }
         .btn-loading { pointer-events: none; opacity: 0.8; }
         .btn-loading::after {
@@ -367,6 +372,8 @@
             border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ================= 电脑端（桌面端宽度 >= 768px）专项修复 ================= */
         @media (min-width: 768px) {
             body { padding: 32px; }
             .container { padding: 0; max-width: 1200px; }
@@ -381,11 +388,13 @@
                 backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
                 box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.05);
             }
-            table { display: table !important; width: 100%; border-collapse: collapse; }
+            table { display: table !important; width: 100%; border-collapse: collapse; table-layout: fixed; }
             thead { display: table-header-group !important; background: rgba(255, 255, 255, 0.4); }
             thead tr { display: table-row !important; background: none !important; border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
             thead tr::before { display: none; }
             thead th { display: table-cell !important; padding: 18px !important; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid rgba(60,60,67,0.08); white-space: nowrap; font-size: 13px; }
+            thead th.col-actions { width: 340px; text-align: right; }
+
             tbody tr {
                 display: table-row !important; background: transparent !important;
                 border: none !important; box-shadow: none !important;
@@ -401,47 +410,81 @@
                 font-size: 14px; color: var(--text-primary) !important;
             }
             tbody td::before { display: none !important; }
-            tbody td[data-label="标题"] { min-width: 200px; border-bottom: none !important; padding-bottom: 18px !important; margin-bottom: 0 !important; padding-right: 56px !important; }
-            /* ★ 桌面端置顶按钮位置微调 */
-            .pin-btn { top: 8px !important; right: 8px !important; width: 30px !important; height: 30px !important; }
-            .pin-btn svg { width: 15px; height: 15px; }
-            .product-thumb { width: 50px; height: 50px; border-radius: 8px; }
-            .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: unset; }
+            
+            /* 桌面端标题栏置顶按钮修复：不再孤悬最右侧，而是与图片同列自然居中展示 */
+            tbody td[data-label="标题"] {
+                border-bottom: none !important; padding: 18px !important; margin-bottom: 0 !important;
+                position: relative;
+            }
+            .pin-btn {
+                position: static !important;
+                width: 32px !important; height: 32px !important;
+                border-radius: 8px !important; margin-right: 8px !important;
+                display: inline-flex !important; flex-shrink: 0 !important;
+                background: transparent !important; border: 1px solid transparent !important;
+                box-shadow: none !important;
+            }
+            .pin-btn:hover { background: rgba(255,255,255,0.7) !important; border-color: rgba(0,0,0,0.05) !important; }
+            .pin-btn.pinned { background: rgba(255, 242, 224, 0.9) !important; }
+
+            .product-thumb { width: 52px; height: 52px; border-radius: 8px; }
+            .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: 1; }
+            
+            /* 状态/操作列右对齐，保证对齐整齐不乱跑 */
             tbody td[data-label="状态 / 操作"] {
                 display: table-cell !important; white-space: nowrap !important;
                 border-top: none !important; margin-top: 0 !important;
-                padding-top: 18px !important; vertical-align: middle !important; text-align: left !important;
+                padding: 18px !important; vertical-align: middle !important; text-align: right !important;
+                width: 340px !important;
             }
             tbody td[data-label="状态 / 操作"] button, tbody td[data-label="状态 / 操作"] .status-btn {
                 display: inline-flex !important; align-items: center; justify-content: center;
-                width: auto !important; margin: 0 8px 0 0 !important; padding: 8px 14px !important;
+                width: auto !important; margin: 0 0 0 8px !important; padding: 8px 14px !important;
                 font-size: 13px !important; white-space: nowrap !important;
                 vertical-align: middle !important; flex: none !important;
             }
-            tbody td[data-label="状态 / 操作"] button:last-child { margin-right: 0 !important; }
+
+            /* ★★★ 电脑端 SKU 展开行的精准修复：整行合并，单行流式优雅排列 ★★★ */
             tr.sku-row {
-                display: table-row !important; background: rgba(255,255,255,0.4) !important;
+                display: table-row !important; background: rgba(255,255,255,0.45) !important;
                 border-radius: 0 !important; margin: 0 !important; box-shadow: none !important;
                 border: none !important; border-left: none !important; backdrop-filter: none;
             }
             tr.sku-row td {
-                display: table-cell !important; padding: 16px 18px !important; font-size: 14px !important;
-                width: auto !important; margin: 0 !important; vertical-align: middle !important;
-                text-align: left !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important;
+                display: table-cell !important; padding: 14px 20px !important; font-size: 14px !important;
+                vertical-align: middle !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important;
             }
-            tr.sku-row td[data-label="操作"] { white-space: nowrap !important; }
-            tr.sku-row td[data-label="操作"] .btn-save { padding: 8px 16px !important; font-size: 13px !important; }
-            .sku-info-row { flex-wrap: nowrap; gap: 16px; }
-            .sku-id { flex: 0 0 auto; font-size: 12px; }
-            .sku-name { flex: 0 0 auto; font-size: 14px; }
-            .sku-field { flex: 0 0 auto; font-size: 13px; }
-            .sku-field .input-box { width: 90px; flex: none; padding: 8px !important; font-size: 14px !important; }
+            tr.sku-row td.desktop-sku-cell {
+                padding: 12px 20px 12px 76px !important; /* 优雅缩进，与主商品对齐形成层级关系 */
+            }
+            .desktop-sku-layout {
+                display: flex !important; align-items: center !important; justify-content: space-between !important;
+                width: 100% !important; gap: 16px !important;
+            }
+            .desktop-sku-layout .sku-name {
+                flex: 1 1 auto !important; font-size: 14px !important; font-weight: 500 !important;
+                color: var(--text-primary) !important;
+            }
+            .desktop-sku-layout .sku-fields-group {
+                flex: 0 0 auto !important; display: flex !important; align-items: center !important; gap: 14px !important; width: auto !important;
+            }
+            .desktop-sku-layout .sku-field {
+                display: flex !important; align-items: center !important; gap: 6px !important; font-size: 13px !important;
+            }
+            .desktop-sku-layout .sku-field .input-box {
+                width: 96px !important; padding: 6px 8px !important; font-size: 13px !important; text-align: center !important;
+            }
+            .desktop-sku-layout .btn-save {
+                width: auto !important; padding: 7px 18px !important; font-size: 13px !important;
+                white-space: nowrap !important; border-radius: 100px !important; margin: 0 !important;
+            }
+
             .modal-overlay { align-items: center; }
             .modal-content {
                 border-radius: 28px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh;
                 animation: fadeIn 0.2s; padding: 28px;
             }
-            @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+            @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { transform: scale(1); } }
             .sku-edit-item .sku-inputs input { font-size: 15px; }
             .image-preview-item { width: 80px; height: 80px; }
             .viewer-thumb { width: 120px; height: 120px; }
@@ -473,7 +516,7 @@
 
         <div class="table-wrapper">
             <table id="productTable">
-                <thead><tr><th>商品信息</th><th>状态 / 操作</th></tr></thead>
+                <thead><tr><th>商品信息</th><th class="col-actions">状态 / 操作</th></tr></thead>
                 <tbody id="productTableBody"></tbody>
             </table>
         </div>
@@ -581,7 +624,7 @@
     const MAX_CONCURRENT = 3;
     let activeRequests = 0;
 
-    /* ==================== ★ 置顶功能（本地存储） ★ ==================== */
+    /* ==================== 置顶功能（本地存储） ==================== */
     const PIN_STORAGE_KEY = 'pinned_product_ids';
 
     function getPinnedIds() {
@@ -607,7 +650,6 @@
         return getPinnedIds().indexOf(Number(productId)) !== -1;
     }
 
-    // 统一的排序规则：置顶优先（按置顶顺序） → 已上架优先
     function getProductComparator() {
         const pinned = getPinnedIds();
         return function (a, b) {
@@ -640,7 +682,7 @@
         if (ids.indexOf(id) !== -1) {
             ids = ids.filter(x => x !== id);
         } else {
-            ids.unshift(id); // 最新置顶的排最前
+            ids.unshift(id);
         }
         savePinnedIds(ids);
         rerenderProductList();
@@ -836,7 +878,6 @@
             imgHtml = `<div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; color:#aaa; border:1px solid #ddd;">无图</div>`;
         }
 
-        /* ★ 置顶按钮渲染 */
         const pinned = isPinned(product.product_id);
         const pinBtnHtml = `
             <button class="pin-btn no-global-loading${pinned ? ' pinned' : ''}"
@@ -851,8 +892,8 @@
 
         tr.innerHTML = `
             <td data-label="标题">
-                ${pinBtnHtml}
                 <div class="product-title-wrapper">
+                    ${pinBtnHtml}
                     ${imgHtml}
                     <div class="product-meta">
                         <b class="product-title-text">${product.title || '无标题'}</b>
@@ -860,7 +901,7 @@
                     </div>
                 </div>
             </td>
-            <td data-label="状态 / 操作" style="text-align:left;">
+            <td data-label="状态 / 操作">
                 ${statusActionBtn}
                 <button class="no-global-loading" onclick="openProductModal(${product.product_id}, this, false)" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px; background: var(--ios-blue);">查看属性</button>
                 <button onclick="toggleSkuList(event, ${product.product_id}, this)" data-expanded="false" style="padding:10px 16px; font-size:13px; width:auto; border-radius:100px;">展开规格</button>
@@ -894,7 +935,7 @@
                     if (list.length > 0) {
                         productStatusMsg.innerText = "已显示缓存数据";
                         currentProductData = list;
-                        applyProductSort();                       // ★ 使用统一排序（含置顶）
+                        applyProductSort();
                         productTableBody.innerHTML = "";
                         currentProductData.forEach(product => renderProductRow(product));
                         if (refreshBtn) restoreButton(refreshBtn);
@@ -929,7 +970,7 @@
                 Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
                 Object.keys(skuCache).forEach(k => delete skuCache[k]);
 
-                applyProductSort();                           // ★ 使用统一排序（含置顶）
+                applyProductSort();
 
                 productTableBody.innerHTML = "";
                 currentProductData.forEach(product => renderProductRow(product));
@@ -953,7 +994,7 @@
 
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
-        const sortedProducts = [...products].sort(getProductComparator());   // ★ 预加载顺序跟随置顶
+        const sortedProducts = [...products].sort(getProductComparator());
         const CONCURRENT_LIMIT = 3;
         let index = 0;
         async function worker() {
@@ -1354,23 +1395,44 @@
         }
     }
 
+    /* 兼容移动端卡片 + 桌面端跨行对齐的双模式渲染 */
     function renderSkuRows(mainRow, skuItems, productId) {
+        const isDesktop = window.innerWidth >= 768;
         const fragment = document.createDocumentFragment();
+
         skuItems.forEach(sku => {
             const skuTr = document.createElement('tr');
             skuTr.className = 'sku-row';
-            skuTr.innerHTML = `
-                <td data-label="SKU信息">
-                    <div class="sku-info-row">
-                        <span class="sku-name" onclick="this.classList.toggle('expanded')" title="点击展开/收起完整名称">${sku.sku_text}</span>
-                        <div class="sku-fields-group">
-                            <span class="sku-field">价 <input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${(sku.price / 100).toFixed(2)}"></span>
-                            <span class="sku-field">库 <input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></span>
+
+            if (isDesktop) {
+                // 桌面端使用 colspan="2" 横向排布
+                skuTr.innerHTML = `
+                    <td colspan="2" class="desktop-sku-cell">
+                        <div class="desktop-sku-layout">
+                            <span class="sku-name">${sku.sku_text || '默认规格'}</span>
+                            <div class="sku-fields-group">
+                                <span class="sku-field">价格 <input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${(sku.price / 100).toFixed(2)}"></span>
+                                <span class="sku-field">库存 <input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></span>
+                                <button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id}, this)">保存</button>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id}, this)">保存</button></td>
-            `;
+                    </td>
+                `;
+            } else {
+                // 手机端完整恢复原有结构和 data-label
+                skuTr.innerHTML = `
+                    <td data-label="SKU信息">
+                        <div class="sku-info-row">
+                            <span class="sku-name" onclick="this.classList.toggle('expanded')" title="点击展开/收起完整名称">${sku.sku_text}</span>
+                            <div class="sku-fields-group">
+                                <span class="sku-field">价 <input type="number" step="0.01" class="input-box" id="price_${sku.sku_id}" value="${(sku.price / 100).toFixed(2)}"></span>
+                                <span class="sku-field">库 <input type="number" class="input-box" id="stock_${sku.sku_id}" value="${sku.stock}"></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="操作"><button class="btn-save" onclick="updateSkuData(${productId}, ${sku.sku_id}, this)">保存</button></td>
+                `;
+            }
             fragment.appendChild(skuTr);
         });
         mainRow.parentNode.insertBefore(fragment, mainRow.nextSibling);
