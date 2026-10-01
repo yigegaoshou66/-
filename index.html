@@ -126,6 +126,7 @@
         td[data-label="标题"], td[data-label="状态 / 操作"] { flex: 0 0 100%; width: 100%; margin-right: 0; }
         td[data-label="标题"] {
             padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); display: block;
+            position: relative; padding-right: 42px;   /* ★ 为右上角置顶按钮预留空间 */
         }
         td[data-label="标题"]::before { display: none; }
         .product-title-wrapper { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
@@ -136,6 +137,38 @@
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
         .product-id-text { font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
+
+        /* ★★★ 置顶按钮 ★★★ */
+        .pin-btn {
+            position: absolute !important;
+            top: -8px !important;
+            right: -8px !important;
+            width: 34px !important;
+            height: 34px !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+            color: var(--ios-gray) !important;
+            cursor: pointer;
+            z-index: 5;
+            transition: transform 0.12s ease, color 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pin-btn svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+        .pin-btn.pinned { color: var(--ios-orange) !important; background: rgba(255, 242, 224, 0.95) !important; }
+        .pin-btn.pinned svg { fill: currentColor; }
+        .pin-btn:active { transform: scale(0.85) !important; opacity: 1 !important; filter: none !important; }
+        /* ★★★ 置顶按钮结束 ★★★ */
+
         td[data-label="状态 / 操作"] {
             margin-top: 10px; padding-top: 12px; border-top: none;
             display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-start;
@@ -368,7 +401,10 @@
                 font-size: 14px; color: var(--text-primary) !important;
             }
             tbody td::before { display: none !important; }
-            tbody td[data-label="标题"] { min-width: 200px; border-bottom: none !important; padding-bottom: 18px !important; margin-bottom: 0 !important; }
+            tbody td[data-label="标题"] { min-width: 200px; border-bottom: none !important; padding-bottom: 18px !important; margin-bottom: 0 !important; padding-right: 56px !important; }
+            /* ★ 桌面端置顶按钮位置微调 */
+            .pin-btn { top: 8px !important; right: 8px !important; width: 30px !important; height: 30px !important; }
+            .pin-btn svg { width: 15px; height: 15px; }
             .product-thumb { width: 50px; height: 50px; border-radius: 8px; }
             .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: unset; }
             tbody td[data-label="状态 / 操作"] {
@@ -544,6 +580,72 @@
 
     const MAX_CONCURRENT = 3;
     let activeRequests = 0;
+
+    /* ==================== ★ 置顶功能（本地存储） ★ ==================== */
+    const PIN_STORAGE_KEY = 'pinned_product_ids';
+
+    function getPinnedIds() {
+        try {
+            const raw = localStorage.getItem(PIN_STORAGE_KEY);
+            if (!raw) return [];
+            const arr = JSON.parse(raw);
+            return Array.isArray(arr) ? arr.map(Number).filter(n => !isNaN(n)) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function savePinnedIds(ids) {
+        try {
+            localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(ids));
+        } catch (e) {
+            console.warn('置顶数据保存失败', e);
+        }
+    }
+
+    function isPinned(productId) {
+        return getPinnedIds().indexOf(Number(productId)) !== -1;
+    }
+
+    // 统一的排序规则：置顶优先（按置顶顺序） → 已上架优先
+    function getProductComparator() {
+        const pinned = getPinnedIds();
+        return function (a, b) {
+            const ai = pinned.indexOf(Number(a.product_id));
+            const bi = pinned.indexOf(Number(b.product_id));
+            const aPinned = ai !== -1, bPinned = bi !== -1;
+            if (aPinned && bPinned) return ai - bi;
+            if (aPinned) return -1;
+            if (bPinned) return 1;
+            const aWeight = (a.product_status === 22) ? 0 : 1;
+            const bWeight = (b.product_status === 22) ? 0 : 1;
+            return aWeight - bWeight;
+        };
+    }
+
+    function applyProductSort() {
+        currentProductData.sort(getProductComparator());
+    }
+
+    function rerenderProductList() {
+        applyProductSort();
+        productTableBody.innerHTML = '';
+        currentProductData.forEach(product => renderProductRow(product));
+    }
+
+    window.togglePin = function (event, productId) {
+        if (event) { event.stopPropagation(); event.preventDefault(); }
+        const id = Number(productId);
+        let ids = getPinnedIds();
+        if (ids.indexOf(id) !== -1) {
+            ids = ids.filter(x => x !== id);
+        } else {
+            ids.unshift(id); // 最新置顶的排最前
+        }
+        savePinnedIds(ids);
+        rerenderProductList();
+    };
+    /* ==================== 置顶功能结束 ==================== */
 
     async function fetchWithControl(url, options, timeout = 8000, isBackground = false) {
         if (!isBackground && activeRequests >= MAX_CONCURRENT) {
@@ -734,11 +836,22 @@
             imgHtml = `<div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; color:#aaa; border:1px solid #ddd;">无图</div>`;
         }
 
+        /* ★ 置顶按钮渲染 */
+        const pinned = isPinned(product.product_id);
+        const pinBtnHtml = `
+            <button class="pin-btn no-global-loading${pinned ? ' pinned' : ''}"
+                    onclick="togglePin(event, ${product.product_id})"
+                    title="${pinned ? '取消置顶' : '置顶该商品'}"
+                    aria-label="${pinned ? '取消置顶' : '置顶该商品'}">
+                <svg viewBox="0 0 24 24"><path d="M12 2.8l2.9 6.1 6.7.9-4.9 4.6 1.2 6.6L12 17.6 6.1 20.8l1.2-6.6L2.4 9.8l6.7-.9L12 2.8z"/></svg>
+            </button>`;
+
         const tr = document.createElement('tr');
         tr.dataset.productId = product.product_id;
 
         tr.innerHTML = `
             <td data-label="标题">
+                ${pinBtnHtml}
                 <div class="product-title-wrapper">
                     ${imgHtml}
                     <div class="product-meta">
@@ -763,7 +876,6 @@
     }
 
     async function loadProducts(useCache = true, bypassWorkerCache = false) {
-        // ★ 刷新按钮已整合到右上角，这里改为按 id 查找
         const refreshBtn = document.getElementById('globalRefreshBtn');
         const CACHE_EXPIRE = 5 * 60 * 1000;
 
@@ -782,11 +894,7 @@
                     if (list.length > 0) {
                         productStatusMsg.innerText = "已显示缓存数据";
                         currentProductData = list;
-                        currentProductData.sort((a, b) => {
-                            const aWeight = (a.product_status === 22) ? 0 : 1;
-                            const bWeight = (b.product_status === 22) ? 0 : 1;
-                            return aWeight - bWeight;
-                        });
+                        applyProductSort();                       // ★ 使用统一排序（含置顶）
                         productTableBody.innerHTML = "";
                         currentProductData.forEach(product => renderProductRow(product));
                         if (refreshBtn) restoreButton(refreshBtn);
@@ -821,11 +929,7 @@
                 Object.keys(productDetailCache).forEach(k => delete productDetailCache[k]);
                 Object.keys(skuCache).forEach(k => delete skuCache[k]);
 
-                currentProductData.sort((a, b) => {
-                    const aWeight = (a.product_status === 22) ? 0 : 1;
-                    const bWeight = (b.product_status === 22) ? 0 : 1;
-                    return aWeight - bWeight;
-                });
+                applyProductSort();                           // ★ 使用统一排序（含置顶）
 
                 productTableBody.innerHTML = "";
                 currentProductData.forEach(product => renderProductRow(product));
@@ -849,11 +953,7 @@
 
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
-        const sortedProducts = [...products].sort((a, b) => {
-            const aWeight = (a.product_status === 22) ? 0 : 1;
-            const bWeight = (b.product_status === 22) ? 0 : 1;
-            return aWeight - bWeight;
-        });
+        const sortedProducts = [...products].sort(getProductComparator());   // ★ 预加载顺序跟随置顶
         const CONCURRENT_LIMIT = 3;
         let index = 0;
         async function worker() {
