@@ -20,26 +20,24 @@
             --glass-light-strong: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(255, 255, 255, 0.9);
             --glass-highlight: rgba(255, 255, 255, 1);
-            --tabbar-h: 78px;
+            --tabbar-h: 64px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* ✅ 修复：移除 min-height，让高度完全由内容决定 */
         html, body { margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
             padding: 16px;
-            padding-bottom: calc(var(--tabbar-h) + 20px + env(safe-area-inset-bottom));
+            /* 关键：底部留出 Tab Bar 的高度 + 安全区 */
+            padding-bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom));
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
             background: #F2F4F8;
             position: relative;
             overflow-x: hidden;
-            /* ✅ 不再设置 min-height: 100vh */
         }
 
-        /* 动态彩色背景：用 fixed 铺满视口，与内容高度无关 */
         body::before {
             content: ""; position: fixed; inset: -100px; z-index: 0;
             background:
@@ -87,19 +85,21 @@
         }
         .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
 
-        /* ==================== 底部 Tab Bar ==================== */
+        /* ==================== 底部 Tab Bar（iOS 原生风格） ==================== */
         .app-tabbar {
             position: fixed;
             left: 0; right: 0; bottom: 0;
             z-index: 500;
             display: flex;
             gap: 8px;
-            padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.85) 100%);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border-top: 1px solid rgba(255,255,255,0.9);
-            box-shadow: 0 -8px 32px rgba(0,0,0,0.08);
+            /* 用 iOS 原生风格的磨砂玻璃：白色半透明 + blur，内容能模糊透出来 */
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            /* 顶部极细分隔线（iOS 原生做法），而不是白色渐变 */
+            border-top: 0.5px solid rgba(60, 60, 67, 0.18);
+            /* 不需要 box-shadow，iOS 原生 Tab Bar 就是一条细线 */
         }
         .tab-card {
             flex: 1;
@@ -107,40 +107,30 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 10px 6px;
-            border-radius: 20px;
+            gap: 4px;
+            padding: 6px 4px;
+            border-radius: 14px;
             text-decoration: none;
             color: var(--text-primary);
-            background: rgba(255,255,255,0.55);
-            border: 1px solid rgba(255,255,255,0.9);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,1), 0 2px 10px rgba(0,0,0,0.04);
-            transition: transform 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            transition: transform 0.12s ease, background 0.12s ease;
             position: relative;
-            overflow: hidden;
             touch-action: manipulation;
         }
-        .tab-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 20%; right: 20%; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
-            pointer-events: none;
-        }
         .tab-card:active {
-            transform: scale(0.95);
-            background: rgba(255,255,255,0.9);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,1), 0 1px 4px rgba(0,0,0,0.06);
+            transform: scale(0.92);
+            background: rgba(0, 0, 0, 0.05);
         }
         .tab-card.nav-locked {
             pointer-events: none;
-            transform: scale(0.95);
-            transition: transform 0.03s ease;
+            transform: scale(0.92);
         }
         .tab-icon-wrap {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -158,14 +148,14 @@
             stroke-linejoin: round;
         }
         .tab-label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             letter-spacing: -0.2px;
             color: var(--text-primary);
         }
-        .entry-order .tab-icon-wrap { background: rgba(0, 122, 255, 0.12); color: var(--ios-blue); }
-        .entry-after .tab-icon-wrap { background: rgba(255, 149, 0, 0.14); color: var(--ios-orange); }
-        .entry-kami  .tab-icon-wrap { background: rgba(111, 66, 193, 0.12); color: #6F42C1; }
+        .entry-order .tab-icon-wrap { background: rgba(0, 122, 255, 0.14); color: var(--ios-blue); }
+        .entry-after .tab-icon-wrap { background: rgba(255, 149, 0, 0.16); color: var(--ios-orange); }
+        .entry-kami  .tab-icon-wrap { background: rgba(111, 66, 193, 0.14); color: #6F42C1; }
 
         /* ==================== 表格 / 卡片 ==================== */
         button {
@@ -453,33 +443,39 @@
         @media (min-width: 768px) {
             body {
                 padding: 32px;
-                padding-bottom: 140px;
+                padding-bottom: 120px;
             }
             .top-header { margin-bottom: 20px; }
             .store-bar { max-width: none; margin: 0; }
             .logout-btn button { padding: 14px 28px; font-size: 15px; }
 
-            /* 桌面端底部导航：浮动居中的圆角条 */
+            /* 桌面端底部导航：居中浮动圆角条 */
             .app-tabbar {
                 left: 50%;
                 right: auto;
                 transform: translateX(-50%);
-                width: calc(100% - 64px);
-                max-width: 760px;
+                width: auto;
+                min-width: 420px;
                 bottom: 24px;
-                padding: 12px 16px;
-                border-radius: 24px;
+                padding: 8px 12px;
+                border-radius: 20px;
                 border: 1px solid rgba(255,255,255,0.9);
+                background: rgba(255,255,255,0.78);
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
                 box-shadow: 0 10px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+                gap: 4px;
             }
             .tab-card {
+                flex: 1;
+                min-width: 120px;
                 flex-direction: row;
-                gap: 12px;
-                padding: 12px 20px;
-                border-radius: 16px;
+                gap: 10px;
+                padding: 10px 16px;
+                border-radius: 14px;
             }
-            .tab-label { font-size: 15px; }
-            .tab-icon-wrap { width: 36px; height: 36px; }
+            .tab-label { font-size: 14px; }
+            .tab-icon-wrap { width: 32px; height: 32px; }
 
             .table-wrapper {
                 overflow-x: auto; clear: both; border-radius: 22px; border: 1px solid var(--glass-border);
@@ -591,7 +587,6 @@
 <body>
 
 <div class="container">
-    <!-- 顶部栏 -->
     <div class="top-header">
         <div class="store-bar">
             <span class="store-label">当前店铺：</span>
@@ -602,7 +597,6 @@
         </div>
     </div>
 
-    <!-- 中间：商品列表 -->
     <div id="product-page">
         <div id="productStatusMsg" class="status-msg">正在加载商品列表...</div>
 
@@ -615,7 +609,6 @@
     </div>
 </div>
 
-<!-- 底部：App 风格 Tab Bar（三个卡片） -->
 <nav class="app-tabbar" aria-label="主导航">
     <a href="orders.html" class="tab-card entry-order" aria-label="订单">
         <span class="tab-icon-wrap">
@@ -637,7 +630,6 @@
     </a>
 </nav>
 
-<!-- ==================== 商品属性 Modal ==================== -->
 <div id="productModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header-row">
