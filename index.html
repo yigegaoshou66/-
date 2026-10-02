@@ -21,14 +21,14 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { margin: 0; padding: 0; min-height: 100vh; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
             padding: 16px; color: var(--text-primary); -webkit-font-smoothing: antialiased;
             background: #F2F4F8; position: relative; overflow-x: hidden; min-height: 100vh;
         }
         body::before {
             content: ""; position: fixed; inset: -100px; z-index: 0;
-            background: 
+            background:
                 radial-gradient(circle at 15% 20%, rgba(255, 150, 150, 0.6) 0%, transparent 30%),
                 radial-gradient(circle at 85% 15%, rgba(120, 180, 255, 0.6) 0%, transparent 32%),
                 radial-gradient(circle at 70% 60%, rgba(150, 230, 180, 0.5) 0%, transparent 33%),
@@ -58,7 +58,7 @@
         }
         .store-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
         .store-name { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
-        .logout-btn button { 
+        .logout-btn button {
             width: auto; padding: 14px 20px; font-size: 14px; font-weight: 600;
             background: var(--glass-light-strong);
             backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
@@ -68,7 +68,7 @@
         }
         .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
         .entry-links { display: flex; gap: 10px; margin-bottom: 16px; }
-        .entry-links a { 
+        .entry-links a {
             flex: 1; text-align: center; text-decoration: none; padding: 18px 8px; border-radius: 22px;
             color: var(--text-primary); font-weight: 600; font-size: 14px;
             background: var(--glass-light);
@@ -91,7 +91,7 @@
             pointer-events: none; transform: scale(0.94); transition: transform 0.03s ease;
         }
         .back-btn.nav-locked { transform: translateY(-50%) scale(0.9); }
-        button { 
+        button {
             padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600;
             background: var(--ios-blue);
             transition: transform 0.05s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.05s, box-shadow 0.05s;
@@ -103,7 +103,7 @@
         .table-wrapper { display: block; }
         table { width: 100%; border-collapse: collapse; }
         thead { display: none; }
-        tr { 
+        tr {
             display: flex; flex-wrap: wrap;
             background: var(--glass-light);
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -117,7 +117,7 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent); z-index: 2;
         }
         tr:active { background: rgba(255, 255, 255, 0.7); }
-        td { 
+        td {
             display: flex; align-items: center; padding: 0; border: none;
             font-size: 13px; text-align: left; color: var(--text-primary);
             flex: 0 0 auto; margin-right: 12px; position: relative; z-index: 1;
@@ -126,7 +126,7 @@
         td[data-label="标题"], td[data-label="状态 / 操作"] { flex: 0 0 100%; width: 100%; margin-right: 0; }
         td[data-label="标题"] {
             padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid rgba(60,60,67,0.08); display: block;
-            position: relative; padding-right: 42px;   /* 为右上角置顶按钮预留空间 */
+            position: relative; padding-right: 42px;
         }
         td[data-label="标题"]::before { display: none; }
         .product-title-wrapper { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
@@ -138,7 +138,6 @@
         }
         .product-id-text { font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
 
-        /* 置顶按钮 */
         .pin-btn {
             position: absolute !important;
             top: -8px !important;
@@ -174,8 +173,7 @@
         }
         td[data-label="状态 / 操作"]::before { display: none; }
         td[data-label="状态 / 操作"] button { padding: 10px 16px; font-size: 13px; margin: 0; border-radius: 100px; width: auto; font-weight: 600; }
-        
-        /* 手机端 SKU 保持原貌 */
+
         tr.sku-row {
             display: flex; flex-wrap: wrap;
             background: rgba(255, 255, 255, 0.45);
@@ -219,7 +217,7 @@
         .status-btn-unknown { background: var(--ios-orange) !important; color: #fff !important; }
         .status-msg { margin-top: 20px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
-        .modal-content { 
+        .modal-content {
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
             border-radius: 28px 28px 0 0;
@@ -334,7 +332,6 @@
         .viewer-sku-item .sku-meta b { color: var(--ios-orange); font-weight: 700; }
         .viewer-sku-item .sku-meta .stock-num { color: var(--ios-green); }
 
-        /* 手机端专用适配（原封不动保留） */
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
             .viewer-thumb { width: 80px; height: 80px; }
@@ -373,7 +370,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ================= 电脑端（桌面端宽度 >= 768px）专项修复 ================= */
         @media (min-width: 768px) {
             body { padding: 32px; }
             .container { padding: 0; max-width: 1200px; }
@@ -410,8 +406,7 @@
                 font-size: 14px; color: var(--text-primary) !important;
             }
             tbody td::before { display: none !important; }
-            
-            /* 桌面端标题栏置顶按钮修复：不再孤悬最右侧，而是与图片同列自然居中展示 */
+
             tbody td[data-label="标题"] {
                 border-bottom: none !important; padding: 18px !important; margin-bottom: 0 !important;
                 position: relative;
@@ -429,8 +424,7 @@
 
             .product-thumb { width: 52px; height: 52px; border-radius: 8px; }
             .product-title-text { font-size: 15px; font-weight: 600; -webkit-line-clamp: 1; }
-            
-            /* 状态/操作列右对齐，保证对齐整齐不乱跑 */
+
             tbody td[data-label="状态 / 操作"] {
                 display: table-cell !important; white-space: nowrap !important;
                 border-top: none !important; margin-top: 0 !important;
@@ -444,7 +438,6 @@
                 vertical-align: middle !important; flex: none !important;
             }
 
-            /* ★★★ 电脑端 SKU 展开行的精准修复：整行合并，单行流式优雅排列 ★★★ */
             tr.sku-row {
                 display: table-row !important; background: rgba(255,255,255,0.45) !important;
                 border-radius: 0 !important; margin: 0 !important; box-shadow: none !important;
@@ -455,7 +448,7 @@
                 vertical-align: middle !important; border-bottom: 1px solid rgba(60,60,67,0.06) !important;
             }
             tr.sku-row td.desktop-sku-cell {
-                padding: 12px 20px 12px 76px !important; /* 优雅缩进，与主商品对齐形成层级关系 */
+                padding: 12px 20px 12px 76px !important;
             }
             .desktop-sku-layout {
                 display: flex !important; align-items: center !important; justify-content: space-between !important;
@@ -484,7 +477,7 @@
                 border-radius: 28px; width: 90%; max-width: 600px; margin: auto; max-height: 85vh;
                 animation: fadeIn 0.2s; padding: 28px;
             }
-            @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { transform: scale(1); } }
+            @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
             .sku-edit-item .sku-inputs input { font-size: 15px; }
             .image-preview-item { width: 80px; height: 80px; }
             .viewer-thumb { width: 120px; height: 120px; }
@@ -615,30 +608,47 @@
 </div>
 
 <script>
+    /* ==================== 全局常量 ==================== */
     const WORKER_URL = "https://api.1113630283.online";
-    let isNavigating = false;
+    const PLACEHOLDER_IMG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg==";
+    const CACHE_EXPIRE = 5 * 60 * 1000;
+    const MAX_CONCURRENT = 3;
+
+    /* ==================== 工具函数 ==================== */
+    function toFullImageUrl(url) {
+        if (!url) return '';
+        return url.startsWith('http') ? url : 'https://img.alicdn.com/' + url;
+    }
+
+    function imgTagHtml(src, className, extraAttrs = '') {
+        return `<img src="${src}" loading="lazy" class="${className}" ${extraAttrs} onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">`;
+    }
+
+    /* ==================== 全局状态 ==================== */
     let currentProductData = [];
     const productDetailCache = {};
     const skuCache = {};
 
-    const MAX_CONCURRENT = 3;
     let activeRequests = 0;
 
-    /* ==================== 置顶功能（本地存储） ==================== */
+    /* ==================== 置顶功能（带内存缓存 + 跨标签页同步） ==================== */
     const PIN_STORAGE_KEY = 'pinned_product_ids';
+    let _pinnedIdsCache = null;
 
     function getPinnedIds() {
+        if (_pinnedIdsCache !== null) return _pinnedIdsCache;
         try {
             const raw = localStorage.getItem(PIN_STORAGE_KEY);
-            if (!raw) return [];
-            const arr = JSON.parse(raw);
-            return Array.isArray(arr) ? arr.map(Number).filter(n => !isNaN(n)) : [];
+            const arr = raw ? JSON.parse(raw) : [];
+            _pinnedIdsCache = Array.isArray(arr) ? arr.map(Number).filter(n => !isNaN(n)) : [];
         } catch (e) {
-            return [];
+            _pinnedIdsCache = [];
         }
+        return _pinnedIdsCache;
     }
 
     function savePinnedIds(ids) {
+        _pinnedIdsCache = ids;
         try {
             localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(ids));
         } catch (e) {
@@ -678,7 +688,7 @@
     window.togglePin = function (event, productId) {
         if (event) { event.stopPropagation(); event.preventDefault(); }
         const id = Number(productId);
-        let ids = getPinnedIds();
+        let ids = getPinnedIds().slice();
         if (ids.indexOf(id) !== -1) {
             ids = ids.filter(x => x !== id);
         } else {
@@ -687,6 +697,14 @@
         savePinnedIds(ids);
         rerenderProductList();
     };
+
+    // 跨标签页同步置顶状态
+    window.addEventListener('storage', (e) => {
+        if (e.key === PIN_STORAGE_KEY) {
+            _pinnedIdsCache = null;
+            rerenderProductList();
+        }
+    });
     /* ==================== 置顶功能结束 ==================== */
 
     async function fetchWithControl(url, options, timeout = 8000, isBackground = false) {
@@ -703,7 +721,7 @@
         } catch (error) {
             clearTimeout(id);
             if (error.name === 'AbortError') {
-                throw new Error('请求超时（超过' + (timeout/1000) + '秒），请检查网络或稍后再试');
+                throw new Error('请求超时（超过' + (timeout / 1000) + '秒），请检查网络或稍后再试');
             }
             throw error;
         } finally {
@@ -711,7 +729,7 @@
         }
     }
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const btn = e.target.closest('button');
         const link = e.target.closest('.entry-links a, .back-btn');
         if (!btn && !link) return;
@@ -748,15 +766,15 @@
     let isSaving = false;
     let editFormDirty = false;
 
-    document.getElementById('editModeBody').addEventListener('input', function() {
+    document.getElementById('editModeBody').addEventListener('input', function () {
         editFormDirty = true;
     });
 
-    document.getElementById('productModal').addEventListener('click', function(e) {
+    document.getElementById('productModal').addEventListener('click', function (e) {
         if (e.target === this) handleModalCloseAttempt();
     });
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target.closest('.modal-content')) return;
         if (!e.target.closest('.sku-row') && !e.target.closest('button[onclick^="toggleSkuList"]')) {
             const expandedRows = document.querySelectorAll('.sku-row');
@@ -800,31 +818,36 @@
             container.innerHTML = '<div style="color: #aaa; font-size: 12px; line-height: 50px; text-align: center; width: 100%;">暂无图片</div>';
             return;
         }
+        const frag = document.createDocumentFragment();
         images.forEach((url, index) => {
-            let fullUrl = url;
-            if (!url.startsWith('http')) fullUrl = 'https://img.alicdn.com/' + url;
+            const fullUrl = toFullImageUrl(url);
             const div = document.createElement('div');
             div.className = 'image-preview-item';
             div.innerHTML = `
-                <img src="${fullUrl}" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">
+                ${imgTagHtml(fullUrl, '')}
                 <div class="delete-btn" onclick="removeImage(${index})">×</div>
             `;
-            container.appendChild(div);
+            frag.appendChild(div);
         });
+        container.appendChild(frag);
     }
 
-    window.removeImage = function(index) {
+    window.removeImage = function (index) {
         const textarea = document.getElementById('editImages');
         const images = textarea.value.split('\n').map(line => line.trim()).filter(url => url !== '');
         images.splice(index, 1);
         textarea.value = images.join('\n');
+        clearTimeout(_previewTimer);
         renderImagePreview();
         editFormDirty = true;
     }
 
-    document.getElementById('editImages').addEventListener('input', function() {
-        renderImagePreview();
+    // 图片预览防抖
+    let _previewTimer = null;
+    document.getElementById('editImages').addEventListener('input', function () {
         editFormDirty = true;
+        clearTimeout(_previewTimer);
+        _previewTimer = setTimeout(renderImagePreview, 120);
     });
 
     async function refreshAllData(btn) {
@@ -855,7 +878,7 @@
             else if (product.image) imgUrl = product.image;
             else if (product.publish_shop && product.publish_shop[0] && product.publish_shop[0].images) imgUrl = product.publish_shop[0].images[0];
         }
-        if (imgUrl && !imgUrl.startsWith('http')) imgUrl = 'https://img.alicdn.com/' + imgUrl;
+        imgUrl = toFullImageUrl(imgUrl);
 
         let statusActionBtn = '';
         if (product.product_status === 22) {
@@ -871,12 +894,9 @@
             statusActionBtn = `<button class="status-btn status-btn-unknown" onclick="publishProduct(${product.product_id}, this)" title="点击尝试重新上架">状态异常(${product.product_status || '无'})</button>`;
         }
 
-        let imgHtml = '';
-        if (imgUrl) {
-            imgHtml = `<img src="${imgUrl}" loading="lazy" style="content-visibility: auto;" class="product-thumb" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">`;
-        } else {
-            imgHtml = `<div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; color:#aaa; border:1px solid #ddd;">无图</div>`;
-        }
+        const imgHtml = imgUrl
+            ? imgTagHtml(imgUrl, 'product-thumb')
+            : `<div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; color:#aaa; border:1px solid #ddd;">无图</div>`;
 
         const pinned = isPinned(product.product_id);
         const pinBtnHtml = `
@@ -918,7 +938,6 @@
 
     async function loadProducts(useCache = true, bypassWorkerCache = false) {
         const refreshBtn = document.getElementById('globalRefreshBtn');
-        const CACHE_EXPIRE = 5 * 60 * 1000;
 
         if (!useCache) {
             sessionStorage.removeItem('preload_product_list');
@@ -992,6 +1011,7 @@
         }
     }
 
+    // ✅ 预加载详情：不再强制穿透缓存，让 Worker 缓存发挥作用
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
         const sortedProducts = [...products].sort(getProductComparator());
@@ -1004,7 +1024,7 @@
                     try {
                         const response = await fetchWithControl(WORKER_URL, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: product.product_id } })
                         }, 10000, true);
                         const result = await response.json();
@@ -1037,12 +1057,12 @@
         document.getElementById('productModalTitle').innerText = isEdit ? '编辑商品信息' : modalHeaderTitle;
     }
 
-    window.switchToEditMode = function() {
+    window.switchToEditMode = function () {
         editFormDirty = false;
         setModalMode('edit');
     }
 
-    window.cancelEditMode = function() {
+    window.cancelEditMode = function () {
         if (isSaving) return;
         if (editFormDirty) {
             if (!confirm('放弃当前未保存的修改并返回查看模式？')) return;
@@ -1054,7 +1074,7 @@
         setModalMode('view');
     }
 
-    window.closeProductModal = function() {
+    window.closeProductModal = function () {
         if (modalMode === 'edit' && editFormDirty) {
             handleModalCloseAttempt();
         } else {
@@ -1095,9 +1115,10 @@
         try {
             let detailData = productDetailCache[productId];
             if (!detailData) {
+                // ✅ 使用缓存版请求，Worker 写操作已自动清缓存
                 const response = await fetchWithControl(WORKER_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
                 });
                 const result = await response.json();
@@ -1168,18 +1189,19 @@
         if (images.length === 0) {
             grid.innerHTML = '<div style="color:#aaa; padding: 20px; text-align:center; width:100%; font-size:13px;">暂无图片</div>';
         } else {
+            const frag = document.createDocumentFragment();
             images.forEach((imgUrl, index) => {
-                let fullUrl = imgUrl;
-                if (!fullUrl.startsWith('http')) fullUrl = 'https://img.alicdn.com/' + fullUrl;
+                const fullUrl = toFullImageUrl(imgUrl);
                 const thumb = document.createElement('div');
                 thumb.className = 'viewer-thumb';
                 thumb.innerHTML = `
-                    <img src="${fullUrl}" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg=='">
+                    ${imgTagHtml(fullUrl, '')}
                     <span class="index-badge">${index + 1}/${images.length}</span>
                 `;
                 thumb.addEventListener('click', () => zoomImage(fullUrl));
-                grid.appendChild(thumb);
+                frag.appendChild(thumb);
             });
+            grid.appendChild(frag);
         }
 
         const skuSection = document.getElementById('viewerSkuSection');
@@ -1228,6 +1250,7 @@
             images = detailData.images;
         }
         document.getElementById('editImages').value = images.join('\n');
+        clearTimeout(_previewTimer);
         renderImagePreview();
 
         if (detailData.sku_items && detailData.sku_items.length > 0) {
@@ -1352,6 +1375,7 @@
         }
     }
 
+    // ✅ 展开规格：优先使用缓存
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
         btn.classList.remove('btn-loading');
@@ -1359,23 +1383,42 @@
         const mainRow = btn.closest('tr');
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
+        // 折叠当前行现有的 SKU
         let nextRow = mainRow.nextElementSibling;
         while (nextRow && nextRow.classList.contains('sku-row')) {
-            let rowToDelete = nextRow; nextRow = nextRow.nextElementSibling; rowToDelete.remove();
+            const rowToDelete = nextRow;
+            nextRow = nextRow.nextElementSibling;
+            rowToDelete.remove();
         }
-        btn.innerText = "展开规格"; btn.setAttribute('data-expanded', 'false');
+        btn.innerText = "展开规格";
+        btn.setAttribute('data-expanded', 'false');
         if (isExpanded) { restoreButton(btn); return; }
 
+        // 折叠其他展开的 SKU
         document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
-            if (otherBtn !== btn) { otherBtn.innerText = "展开规格"; otherBtn.setAttribute('data-expanded', 'false'); restoreButton(otherBtn); }
+            if (otherBtn !== btn) {
+                otherBtn.innerText = "展开规格";
+                otherBtn.setAttribute('data-expanded', 'false');
+                restoreButton(otherBtn);
+            }
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
-        btn.innerText = "加载中..."; btn.disabled = true; btn.classList.add('btn-loading');
+        // ★ 命中缓存，直接渲染
+        if (skuCache[productId] && skuCache[productId].length > 0) {
+            renderSkuRows(mainRow, skuCache[productId], productId);
+            btn.innerText = "收起规格";
+            btn.setAttribute('data-expanded', 'true');
+            return;
+        }
+
+        btn.innerText = "加载中...";
+        btn.disabled = true;
+        btn.classList.add('btn-loading');
         try {
             const response = await fetchWithControl(WORKER_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
             });
             const result = await response.json();
@@ -1383,19 +1426,21 @@
                 skuCache[productId] = result.data.sku_items;
                 productDetailCache[productId] = result.data;
                 renderSkuRows(mainRow, result.data.sku_items, productId);
-                btn.innerText = "收起规格"; btn.setAttribute('data-expanded', 'true');
+                btn.innerText = "收起规格";
+                btn.setAttribute('data-expanded', 'true');
             } else {
                 alert("该商品暂无规格数据");
             }
         } catch (error) {
             alert("获取规格失败：" + error.message);
         } finally {
-            btn.disabled = false; btn.classList.remove('btn-loading'); delete btn.dataset.originalText;
+            btn.disabled = false;
+            btn.classList.remove('btn-loading');
+            delete btn.dataset.originalText;
             if (btn.getAttribute('data-expanded') !== 'true') btn.innerText = "展开规格";
         }
     }
 
-    /* 兼容移动端卡片 + 桌面端跨行对齐的双模式渲染 */
     function renderSkuRows(mainRow, skuItems, productId) {
         const isDesktop = window.innerWidth >= 768;
         const fragment = document.createDocumentFragment();
@@ -1405,7 +1450,6 @@
             skuTr.className = 'sku-row';
 
             if (isDesktop) {
-                // 桌面端使用 colspan="2" 横向排布
                 skuTr.innerHTML = `
                     <td colspan="2" class="desktop-sku-cell">
                         <div class="desktop-sku-layout">
@@ -1419,7 +1463,6 @@
                     </td>
                 `;
             } else {
-                // 手机端完整恢复原有结构和 data-label
                 skuTr.innerHTML = `
                     <td data-label="SKU信息">
                         <div class="sku-info-row">
@@ -1456,7 +1499,7 @@
         try {
             const detailResponse = await fetchWithControl(WORKER_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Force-Refresh': 'true' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: "/api/open/product/detail", body: { product_id: productId } })
             });
             const detailResult = await detailResponse.json();
@@ -1591,7 +1634,7 @@
         document.getElementById('zoomedImage').src = '';
     }
 
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             const zoomOverlay = document.getElementById('imageZoomOverlay');
             if (zoomOverlay.style.display === 'flex') { closeZoom(); return; }
@@ -1600,8 +1643,7 @@
         }
     });
 
-    window.addEventListener('pageshow', function(event) {
-        isNavigating = false;
+    window.addEventListener('pageshow', function (event) {
         document.querySelectorAll('.nav-locked').forEach(el => el.classList.remove('nav-locked'));
         if (!event.persisted) {
             loadProducts(true);
