@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>闲管家 · 综合管理助手</title>
     <style>
         :root {
@@ -23,8 +25,15 @@
         html, body { margin: 0; padding: 0; min-height: 100vh; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-            padding: 16px; color: var(--text-primary); -webkit-font-smoothing: antialiased;
-            background: #F2F4F8; position: relative; overflow-x: hidden; min-height: 100vh;
+            padding: 16px;
+            /* 底部预留 tab bar 空间 */
+            padding-bottom: calc(108px + env(safe-area-inset-bottom));
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            background: #F2F4F8;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
         body::before {
             content: ""; position: fixed; inset: -100px; z-index: 0;
@@ -46,7 +55,9 @@
             50% { transform: translate(20px, -30px) scale(1.1); }
             100% { transform: translate(-20px, 20px) scale(1.05); }
         }
-        .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0; }
+
+        /* ==================== 顶部栏 ==================== */
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
         .store-bar {
             display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-radius: 22px;
@@ -67,30 +78,88 @@
             transition: all 0.15s; margin-bottom: 0; white-space: nowrap;
         }
         .logout-btn button:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.9); }
-        .entry-links { display: flex; gap: 10px; margin-bottom: 16px; }
-        .entry-links a {
-            flex: 1; text-align: center; text-decoration: none; padding: 18px 8px; border-radius: 22px;
-            color: var(--text-primary); font-weight: 600; font-size: 14px;
-            background: var(--glass-light);
-            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(255, 255, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.05);
-            transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
-            position: relative; overflow: hidden;
-            -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2); touch-action: manipulation;
+
+        /* ==================== 底部 Tab Bar ==================== */
+        .app-tabbar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 500;
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.85) 100%);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-top: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.08);
         }
-        .entry-links a::before {
-            content: ""; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+        .tab-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 6px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,1), 0 2px 10px rgba(0,0,0,0.04);
+            transition: transform 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        .tab-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 20%; right: 20%; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
+            pointer-events: none;
         }
-        .entry-links a:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.9); transition: transform 0.03s ease, background 0.03s ease; }
-        .entry-order { color: #007AFF; }
-        .entry-after { color: #FF9500; }
-        .entry-kami { color: #6F42C1; }
-        .entry-links a.nav-locked, .back-btn.nav-locked {
-            pointer-events: none; transform: scale(0.94); transition: transform 0.03s ease;
+        .tab-card:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.9);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,1), 0 1px 4px rgba(0,0,0,0.06);
         }
-        .back-btn.nav-locked { transform: translateY(-50%) scale(0.9); }
+        .tab-card.nav-locked {
+            pointer-events: none;
+            transform: scale(0.95);
+            transition: transform 0.03s ease;
+        }
+        .tab-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.1s ease;
+        }
+        .tab-card:active .tab-icon-wrap { transform: scale(0.9); }
+        .tab-icon-wrap svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.9;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .tab-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            color: var(--text-primary);
+        }
+        .entry-order .tab-icon-wrap { background: rgba(0, 122, 255, 0.12); color: var(--ios-blue); }
+        .entry-after .tab-icon-wrap { background: rgba(255, 149, 0, 0.14); color: var(--ios-orange); }
+        .entry-kami  .tab-icon-wrap { background: rgba(111, 66, 193, 0.12); color: #6F42C1; }
+
+        /* ==================== 表格 / 卡片 ==================== */
         button {
             padding: 10px 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600;
             background: var(--ios-blue);
@@ -160,7 +229,6 @@
             cursor: pointer;
             z-index: 5;
             transition: transform 0.12s ease, color 0.12s ease, background 0.12s ease;
-            -webkit-tap-highlight-color: transparent;
         }
         .pin-btn svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
         .pin-btn.pinned { color: var(--ios-orange) !important; background: rgba(255, 242, 224, 0.95) !important; }
@@ -216,6 +284,8 @@
         .status-btn-sold { background: var(--ios-gray) !important; color: #fff !important; }
         .status-btn-unknown { background: var(--ios-orange) !important; color: #fff !important; }
         .status-msg { margin-top: 20px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-align: center; }
+
+        /* ==================== Modal ==================== */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); justify-content: center; align-items: flex-end; z-index: 1000; }
         .modal-content {
             background: rgba(255, 255, 255, 0.92);
@@ -332,6 +402,7 @@
         .viewer-sku-item .sku-meta b { color: var(--ios-orange); font-weight: 700; }
         .viewer-sku-item .sku-meta .stock-num { color: var(--ios-green); }
 
+        /* ==================== 移动端适配 ==================== */
         @media (max-width: 768px) {
             button:active { transform: scale(0.9) !important; opacity: 0.7 !important; transition: transform 0.1s, opacity 0.1s; }
             .viewer-thumb { width: 80px; height: 80px; }
@@ -370,14 +441,38 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ==================== 桌面端适配 ==================== */
         @media (min-width: 768px) {
-            body { padding: 32px; }
-            .container { padding: 0; max-width: 1200px; }
+            body {
+                padding: 32px;
+                padding-bottom: 140px;
+            }
             .top-header { margin-bottom: 20px; }
             .store-bar { max-width: none; margin: 0; }
             .logout-btn button { padding: 14px 28px; font-size: 15px; }
-            .entry-links { flex-direction: row; gap: 12px; margin-bottom: 20px; }
-            .entry-links a { padding: 16px; font-size: 15px; }
+
+            /* 桌面端底部导航：浮动居中的圆角条 */
+            .app-tabbar {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: calc(100% - 64px);
+                max-width: 760px;
+                bottom: 24px;
+                padding: 12px 16px;
+                border-radius: 24px;
+                border: 1px solid rgba(255,255,255,0.9);
+                box-shadow: 0 10px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+            }
+            .tab-card {
+                flex-direction: row;
+                gap: 12px;
+                padding: 12px 20px;
+                border-radius: 16px;
+            }
+            .tab-label { font-size: 15px; }
+            .tab-icon-wrap { width: 36px; height: 36px; }
+
             .table-wrapper {
                 overflow-x: auto; clear: both; border-radius: 22px; border: 1px solid var(--glass-border);
                 background: var(--glass-light);
@@ -488,6 +583,7 @@
 <body>
 
 <div class="container">
+    <!-- 顶部栏 -->
     <div class="top-header">
         <div class="store-bar">
             <span class="store-label">当前店铺：</span>
@@ -498,12 +594,7 @@
         </div>
     </div>
 
-    <div class="entry-links">
-        <a href="orders.html" class="entry-order">订单</a>
-        <a href="shouhou.html" class="entry-after">售后</a>
-        <a href="kami.html" class="entry-kami">卡密</a>
-    </div>
-
+    <!-- 中间：商品列表 -->
     <div id="product-page">
         <div id="productStatusMsg" class="status-msg">正在加载商品列表...</div>
 
@@ -516,6 +607,29 @@
     </div>
 </div>
 
+<!-- 底部：App 风格 Tab Bar（三个卡片） -->
+<nav class="app-tabbar" aria-label="主导航">
+    <a href="orders.html" class="tab-card entry-order" aria-label="订单">
+        <span class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>
+        </span>
+        <span class="tab-label">订单</span>
+    </a>
+    <a href="shouhou.html" class="tab-card entry-after" aria-label="售后">
+        <span class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span class="tab-label">售后</span>
+    </a>
+    <a href="kami.html" class="tab-card entry-kami" aria-label="卡密">
+        <span class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M10.85 12.15L19 4"/><path d="M18 5l2 2"/><path d="M15 8l2 2"/></svg>
+        </span>
+        <span class="tab-label">卡密</span>
+    </a>
+</nav>
+
+<!-- ==================== 商品属性 Modal ==================== -->
 <div id="productModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header-row">
@@ -628,10 +742,9 @@
     let currentProductData = [];
     const productDetailCache = {};
     const skuCache = {};
-
     let activeRequests = 0;
 
-    /* ==================== 置顶功能（带内存缓存 + 跨标签页同步） ==================== */
+    /* ==================== 置顶功能 ==================== */
     const PIN_STORAGE_KEY = 'pinned_product_ids';
     let _pinnedIdsCache = null;
 
@@ -698,14 +811,12 @@
         rerenderProductList();
     };
 
-    // 跨标签页同步置顶状态
     window.addEventListener('storage', (e) => {
         if (e.key === PIN_STORAGE_KEY) {
             _pinnedIdsCache = null;
             rerenderProductList();
         }
     });
-    /* ==================== 置顶功能结束 ==================== */
 
     async function fetchWithControl(url, options, timeout = 8000, isBackground = false) {
         if (!isBackground && activeRequests >= MAX_CONCURRENT) {
@@ -731,7 +842,7 @@
 
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('button');
-        const link = e.target.closest('.entry-links a, .back-btn');
+        const link = e.target.closest('.app-tabbar a, .back-btn');
         if (!btn && !link) return;
         if (link) {
             if (link.classList.contains('nav-locked')) {
@@ -842,7 +953,6 @@
         editFormDirty = true;
     }
 
-    // 图片预览防抖
     let _previewTimer = null;
     document.getElementById('editImages').addEventListener('input', function () {
         editFormDirty = true;
@@ -1011,7 +1121,6 @@
         }
     }
 
-    // ✅ 预加载详情：不再强制穿透缓存，让 Worker 缓存发挥作用
     async function prefetchProductDetails(products) {
         if (products.length === 0) return;
         const sortedProducts = [...products].sort(getProductComparator());
@@ -1115,7 +1224,6 @@
         try {
             let detailData = productDetailCache[productId];
             if (!detailData) {
-                // ✅ 使用缓存版请求，Worker 写操作已自动清缓存
                 const response = await fetchWithControl(WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1375,7 +1483,6 @@
         }
     }
 
-    // ✅ 展开规格：优先使用缓存
     async function toggleSkuList(event, productId, btn) {
         if (event) event.stopPropagation();
         btn.classList.remove('btn-loading');
@@ -1383,7 +1490,6 @@
         const mainRow = btn.closest('tr');
         const isExpanded = btn.getAttribute('data-expanded') === 'true';
 
-        // 折叠当前行现有的 SKU
         let nextRow = mainRow.nextElementSibling;
         while (nextRow && nextRow.classList.contains('sku-row')) {
             const rowToDelete = nextRow;
@@ -1394,7 +1500,6 @@
         btn.setAttribute('data-expanded', 'false');
         if (isExpanded) { restoreButton(btn); return; }
 
-        // 折叠其他展开的 SKU
         document.querySelectorAll('#productTableBody button[data-expanded="true"]').forEach(otherBtn => {
             if (otherBtn !== btn) {
                 otherBtn.innerText = "展开规格";
@@ -1404,7 +1509,6 @@
         });
         document.querySelectorAll('.sku-row').forEach(row => row.remove());
 
-        // ★ 命中缓存，直接渲染
         if (skuCache[productId] && skuCache[productId].length > 0) {
             renderSkuRows(mainRow, skuCache[productId], productId);
             btn.innerText = "收起规格";
